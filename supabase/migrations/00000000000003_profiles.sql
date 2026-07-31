@@ -20,15 +20,10 @@ create policy "profiles_self_update" on public.profiles
   for update using ((select auth.uid()) = id)
   with check ((select auth.uid()) = id);
 
--- Fellow chapter members can read each other's basic profile (roster views).
-create policy "profiles_chapter_peer_read" on public.profiles
-  for select using (
-    id in (
-      select cm2.profile_id from public.chapter_members cm2
-      where cm2.chapter_id in (select public.current_chapter_ids())
-        and cm2.is_deleted = false
-    )
-  );
+-- profiles_chapter_peer_read policy (roster views) is created in
+-- 00000000000004_chapter_members.sql, once that table exists — a raw SQL
+-- policy expression is validated against the catalog at creation time,
+-- unlike a plpgsql function body.
 
 -- Auto-create a profile row on signup.
 create or replace function public.handle_new_user()

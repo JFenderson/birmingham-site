@@ -40,3 +40,16 @@ create policy "chapter_members_officer_update" on public.chapter_members
 -- No delete policy: hard deletes are denied entirely, use is_deleted instead.
 -- audit_row_change() trigger for this table is attached in
 -- 00000000000010_audit_logs.sql, once that function exists.
+
+-- Fellow chapter members can read each other's basic profile (roster
+-- views). Defined here, not in 00000000000003_profiles.sql, since this
+-- raw SQL policy expression references chapter_members directly and is
+-- validated against the catalog at creation time.
+create policy "profiles_chapter_peer_read" on public.profiles
+  for select using (
+    id in (
+      select cm2.profile_id from public.chapter_members cm2
+      where cm2.chapter_id in (select public.current_chapter_ids())
+        and cm2.is_deleted = false
+    )
+  );
