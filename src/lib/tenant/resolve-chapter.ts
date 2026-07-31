@@ -16,9 +16,18 @@ export function resolveTenantFromRequest(
 ): TenantContext | null {
   const rootDomain = process.env.ROOT_DOMAIN ?? "";
   const slugMap = loadChapterSlugMap();
+  const hostname = (host ?? "").split(":")[0]?.toLowerCase() ?? "";
 
-  // Dev/CI override, only outside production.
-  if (process.env.NODE_ENV !== "production") {
+  // The ?__tenant= override is allowed outside production, and on Vercel's
+  // shared *.vercel.app domain even in a production build — that shared
+  // domain can't carry real subdomains (miles.birmingham-site.vercel.app
+  // isn't provisionable without owning the vercel.app zone), so it's the
+  // only way to exercise non-root tenants there. It's still scoped to this
+  // one shared testing domain, not any arbitrary production host.
+  const overrideAllowed =
+    process.env.NODE_ENV !== "production" || hostname.endsWith(".vercel.app");
+
+  if (overrideAllowed) {
     const override = searchParams.get("__tenant");
     if (override) {
       const chapterId = slugMap[override];
@@ -26,7 +35,6 @@ export function resolveTenantFromRequest(
     }
   }
 
-  const hostname = (host ?? "").split(":")[0]?.toLowerCase() ?? "";
   if (!hostname) return null;
 
   let slug: string;
