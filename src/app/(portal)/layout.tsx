@@ -1,0 +1,42 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { requireRole, PermissionError } from "@/lib/auth/rbac";
+
+const ALL_ROLES = [
+  "Member",
+  "Treasurer",
+  "Secretary",
+  "Intake Director",
+  "Admin",
+] as const;
+
+export default async function PortalLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  let role;
+  try {
+    ({ role } = await requireRole(ALL_ROLES));
+  } catch (err) {
+    if (err instanceof PermissionError) {
+      redirect("/login");
+    }
+    throw err;
+  }
+
+  return (
+    <div className="flex flex-1 flex-col">
+      <nav className="flex items-center gap-4 border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
+        <Link href="/dashboard" className="font-semibold">
+          Dashboard
+        </Link>
+        {role === "Admin" && (
+          <Link href="/admin" className="text-sm text-zinc-600 dark:text-zinc-400">
+            Admin
+          </Link>
+        )}
+        <span className="ml-auto text-sm text-zinc-500">{role}</span>
+      </nav>
+      <main className="flex-1 px-6 py-8">{children}</main>
+    </div>
+  );
+}
