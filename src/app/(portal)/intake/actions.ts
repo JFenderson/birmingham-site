@@ -6,6 +6,27 @@ import { intakeStageSchema, intakeNoteSchema } from "@/lib/validation/schemas";
 
 const INTAKE_ROLES = ["Intake Director", "Admin"] as const;
 
+/**
+ * Confirms prospectiveMemberId actually belongs to the caller's chapter
+ * before any write — chapterId alone isn't enough to scope a write to a
+ * *different* row's foreign key (see addNote below, which was vulnerable
+ * to attaching a note to another chapter's applicant before this check
+ * was added).
+ */
+async function assertOwnedByChapter(
+  supabase: Awaited<ReturnType<typeof requireRole>>["supabase"],
+  prospectiveMemberId: string,
+  chapterId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("prospective_members")
+    .select("id")
+    .eq("id", prospectiveMemberId)
+    .eq("chapter_id", chapterId)
+    .maybeSingle();
+  return !!data;
+}
+
 export async function updateStage(
   prospectiveMemberId: string,
   input: { pipelineStage: string }
@@ -15,6 +36,10 @@ export async function updateStage(
   const parsed = intakeStageSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "Invalid stage." };
+  }
+
+  if (!(await assertOwnedByChapter(supabase, prospectiveMemberId, chapterId))) {
+    return { error: "Application not found." };
   }
 
   const { error } = await supabase
@@ -39,6 +64,10 @@ export async function addNote(
   const parsed = intakeNoteSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "Note cannot be empty." };
+  }
+
+  if (!(await assertOwnedByChapter(supabase, prospectiveMemberId, chapterId))) {
+    return { error: "Application not found." };
   }
 
   const { error } = await supabase.from("prospective_member_notes").insert({
