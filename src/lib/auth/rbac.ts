@@ -39,5 +39,5 @@ export async function requireRole(allowed: readonly MemberRole[]) {
     }
   }
 
-  return { user: session.user, role, chapterId };
+  return { user: session.user, role, chapterId, supabase: session.supabase };
 }

@@ -3,7 +3,7 @@ import type { CurrentChapter } from "@/lib/tenant/get-chapter";
 
 const NAV_LINKS = [
   { href: "/#about", label: "About" },
-  { href: "/#join", label: "Join" },
+  { href: "/join", label: "Join" },
   { href: "/#contact", label: "Contact" },
 ];
 

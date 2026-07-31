@@ -166,7 +166,9 @@ export default async function Home() {
                 Interested in becoming a Sigma?
               </h2>
               <p className="mt-5 max-w-xl text-lg leading-8 text-white/75">
-                Intake, reactivation, and transfer applications are currently being prepared for the next phase of our website. Until then, connect with our officers to learn more about opportunities to serve and grow.
+                Whether you&apos;re a prospective member, a returning brother,
+                or transferring from another chapter, we&apos;d love to hear
+                from you.
               </p>
             </div>
             <div className="rounded-3xl border border-white/10 bg-black/20 p-6">
@@ -174,15 +176,15 @@ export default async function Home() {
                 What to expect
               </p>
               <ul className="mt-4 space-y-3 text-base leading-7 text-white/80">
-                <li>• Clear information about chapter membership and opportunities.</li>
-                <li>• A more polished experience for prospective brothers and supporters.</li>
-                <li>• Continued updates as our community initiatives expand.</li>
+                <li>• A short application covering your background and interest.</li>
+                <li>• Review by our Intake Director and chapter officers.</li>
+                <li>• Personal follow-up to walk you through next steps.</li>
               </ul>
               <Link
-                href="/#contact"
+                href="/join"
                 className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/30 px-5 py-3 font-semibold text-white transition-colors hover:bg-white/10"
               >
-                Contact a Chapter Officer
+                Start Your Application
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>

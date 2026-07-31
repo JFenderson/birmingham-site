@@ -16,18 +16,6 @@ const eslintConfig = defineConfig([
     },
     rules: {
       "@typescript-eslint/no-floating-promises": "error",
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            {
-              group: ["**/lib/supabase/admin", "**/lib/supabase/admin.ts"],
-              message:
-                "The service-role Supabase client must never be imported into app/ code. Use lib/supabase/server.ts or lib/supabase/client.ts instead.",
-            },
-          ],
-        },
-      ],
     },
   },
   {

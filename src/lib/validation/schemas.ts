@@ -22,3 +22,54 @@ export const profileUpdateSchema = z.object({
     .or(z.literal("")),
 });
 export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
+
+const intakeCommonFields = {
+  fullName: z.string().trim().min(1).max(200),
+  email: z.string().trim().email(),
+  phone: z.string().trim().max(20).optional().or(z.literal("")),
+  message: z.string().trim().max(2000).optional().or(z.literal("")),
+};
+
+/**
+ * Public intake/reactivation/transfer submission. Server-side, this is the
+ * only validation an applicant's payload receives before insert — RLS grants
+ * no anon insert policy on prospective_members, so the Server Action (using
+ * the service-role client) is the sole enforcement point.
+ */
+export const intakeFormSchema = z.discriminatedUnion("formType", [
+  z.object({
+    formType: z.literal("intake"),
+    ...intakeCommonFields,
+    schoolName: z.string().trim().min(1).max(200),
+    major: z.string().trim().max(200).optional().or(z.literal("")),
+    expectedGraduationYear: z.string().trim().max(9).optional().or(z.literal("")),
+  }),
+  z.object({
+    formType: z.literal("reactivation"),
+    ...intakeCommonFields,
+    previousChapterName: z.string().trim().min(1).max(200),
+    yearsInactive: z.string().trim().max(50).optional().or(z.literal("")),
+  }),
+  z.object({
+    formType: z.literal("transfer"),
+    ...intakeCommonFields,
+    previousChapterName: z.string().trim().min(1).max(200),
+  }),
+]);
+export type IntakeFormInput = z.infer<typeof intakeFormSchema>;
+
+export const intakeStageSchema = z.object({
+  pipelineStage: z.enum([
+    "submitted",
+    "under_review",
+    "interview",
+    "approved",
+    "denied",
+    "reactivation",
+    "transfer",
+  ]),
+});
+
+export const intakeNoteSchema = z.object({
+  note: z.string().trim().min(1).max(2000),
+});

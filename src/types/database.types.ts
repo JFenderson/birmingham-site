@@ -387,6 +387,55 @@ export type Database = {
         }
         Relationships: []
       }
+      prospective_member_notes: {
+        Row: {
+          author_id: string | null
+          chapter_id: string
+          created_at: string
+          id: string
+          note: string
+          prospective_member_id: string
+        }
+        Insert: {
+          author_id?: string | null
+          chapter_id: string
+          created_at?: string
+          id?: string
+          note: string
+          prospective_member_id: string
+        }
+        Update: {
+          author_id?: string | null
+          chapter_id?: string
+          created_at?: string
+          id?: string
+          note?: string
+          prospective_member_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospective_member_notes_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospective_member_notes_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospective_member_notes_prospective_member_id_fkey"
+            columns: ["prospective_member_id"]
+            isOneToOne: false
+            referencedRelation: "prospective_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prospective_members: {
         Row: {
           chapter_id: string

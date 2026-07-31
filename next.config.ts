@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  // Local multi-tenant dev uses subdomains of lvh.me (miles.lvh.me, etc.)
+  // instead of localhost. Without this, Next's dev server blocks
+  // cross-origin requests for dev assets (including the hydration bundle)
+  // on those hosts, silently leaving pages unhydrated.
+  allowedDevOrigins: ["lvh.me", "*.lvh.me"],
 };
 
 export default nextConfig;
