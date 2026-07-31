@@ -73,3 +73,32 @@ export const intakeStageSchema = z.object({
 export const intakeNoteSchema = z.object({
   note: z.string().trim().min(1).max(2000),
 });
+
+export const eventFormSchema = z
+  .object({
+    title: z.string().trim().min(1).max(200),
+    description: z.string().trim().max(2000).optional().or(z.literal("")),
+    startsAt: z.string().trim().min(1),
+    locationName: z.string().trim().max(200).optional().or(z.literal("")),
+    geofenceLat: z.coerce.number().min(-90).max(90).optional(),
+    geofenceLng: z.coerce.number().min(-180).max(180).optional(),
+    geofenceRadiusM: z.coerce.number().int().min(10).max(5000).optional(),
+  })
+  .refine(
+    (data) =>
+      (data.geofenceLat === undefined &&
+        data.geofenceLng === undefined &&
+        data.geofenceRadiusM === undefined) ||
+      (data.geofenceLat !== undefined &&
+        data.geofenceLng !== undefined &&
+        data.geofenceRadiusM !== undefined),
+    { message: "Geofence latitude, longitude, and radius must all be set together." }
+  );
+export type EventFormInput = z.infer<typeof eventFormSchema>;
+
+export const checkInSchema = z.object({
+  eventId: z.string().uuid(),
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+});
+export type CheckInInput = z.infer<typeof checkInSchema>;
