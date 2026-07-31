@@ -38,7 +38,7 @@ function LoginForm() {
       onSubmit={(e) => void handleSubmit(onSubmit)(e)}
       className="w-full max-w-sm space-y-4"
     >
-      <h1 className="text-2xl font-semibold">Brothers Only Sign In</h1>
+      <h1 className="text-2xl font-bold text-navy">Brothers Only Sign In</h1>
 
       <div className="space-y-1">
         <label htmlFor="email" className="text-sm font-medium">
@@ -75,7 +75,7 @@ function LoginForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-md bg-foreground px-4 py-2 text-background disabled:opacity-50"
+        className="w-full rounded-md bg-navy px-4 py-2 font-semibold text-white transition-colors hover:bg-navy-dark disabled:opacity-50"
       >
         {isSubmitting ? "Signing in…" : "Sign in"}
       </button>
