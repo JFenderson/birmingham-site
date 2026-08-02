@@ -4,8 +4,9 @@ import { UploadForm } from "./upload-form";
 
 export default async function VaultUploadPage() {
   let role;
+  let chapterId;
   try {
-    ({ role } = await requireRole(["Admin", "Secretary", "Treasurer"]));
+    ({ role, chapterId } = await requireRole(["Admin", "Secretary", "Treasurer"]));
   } catch (err) {
     if (err instanceof MfaRequiredError) redirect("/security/mfa");
     if (err instanceof PermissionError) redirect("/vault");
@@ -15,7 +16,7 @@ export default async function VaultUploadPage() {
   return (
     <div className="max-w-lg space-y-6">
       <h1 className="text-2xl font-semibold">Upload Document</h1>
-      <UploadForm role={role} />
+      <UploadForm role={role} chapterId={chapterId} />
     </div>
   );
 }

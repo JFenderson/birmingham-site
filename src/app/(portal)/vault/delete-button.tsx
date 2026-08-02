@@ -13,13 +13,18 @@ export function DeleteButton({ documentId }: { documentId: string }) {
     if (!confirm("Remove this document?")) return;
     setPending(true);
     setError(null);
-    const result = await softDeleteDocument(documentId);
-    setPending(false);
-    if (result.error) {
-      setError(result.error);
-      return;
+    try {
+      const result = await softDeleteDocument(documentId);
+      setPending(false);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      router.refresh();
+    } catch {
+      setPending(false);
+      setError("Something went wrong — please try again.");
     }
-    router.refresh();
   }
 
   return (

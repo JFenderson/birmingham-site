@@ -31,6 +31,12 @@ export async function finalizeUpload(
 
   const allowedRoles: readonly string[] = CATEGORY_ROLES[data.category];
   if (!allowedRoles.includes(role)) {
+    // TODO(final-review M1): by this point the client has already uploaded
+    // the file to Storage, so rejecting here leaves an orphaned object.
+    // I4's fix makes the client and server chapterId agree by construction,
+    // which should make this rare, but a proper fix (validating role/path
+    // before the client uploads) is a bigger restructuring left for a
+    // future task.
     return { error: `Your role can't upload to ${data.category}.` };
   }
 
@@ -46,6 +52,8 @@ export async function finalizeUpload(
     remainder.length === 0 ||
     remainder.includes("/")
   ) {
+    // TODO(final-review M1): same orphaned-Storage-object caveat as above —
+    // the file is already uploaded by the time we can reject the path here.
     return { error: "Invalid storage path." };
   }
 
@@ -65,7 +73,7 @@ export async function finalizeUpload(
 export async function softDeleteDocument(
   documentId: string
 ): Promise<{ error: string | null }> {
-  const { supabase, chapterId, role } = await requireRole([
+  const { supabase, chapterId, user, role } = await requireRole([
     "Admin",
     "Secretary",
     "Treasurer",
@@ -88,6 +96,26 @@ export async function softDeleteDocument(
   const { error } = await softDeleteDocumentRow({ documentId, chapterId });
 
   if (error) return { error };
+
+  // softDeleteDocumentRow runs the UPDATE via the service-role admin
+  // client, so the audit_documents trigger's auth.uid() call sees null —
+  // the real actor would be lost. Explicitly log the audit event here via
+  // the caller's own authenticated client so the true actor is recorded.
+  // Best-effort only: the soft-delete itself already succeeded above, so
+  // an error here shouldn't fail the user-facing operation.
+  const { error: auditError } = await supabase.rpc("log_audit_event", {
+    p_chapter_id: chapterId,
+    p_user_id: user.id,
+    p_action: "documents.soft_delete",
+    p_target_table: "documents",
+    p_target_id: documentId,
+    p_ip: null,
+    p_metadata: {},
+  });
+  if (auditError) {
+    console.error("log_audit_event failed for documents.soft_delete:", auditError);
+  }
+
   revalidatePath("/vault");
   return { error: null };
 }

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+type Mode = "loading" | "needs-enrollment" | "needs-step-up" | "already-verified";
+
 export function EnrollForm() {
   const router = useRouter();
   const supabase = createClient();
@@ -12,16 +14,33 @@ export function EnrollForm() {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [alreadyEnrolled, setAlreadyEnrolled] = useState(false);
+  const [mode, setMode] = useState<Mode>("loading");
 
   useEffect(() => {
     void (async () => {
       const { data } = await supabase.auth.mfa.listFactors();
       const verified = data?.totp?.find((f) => f.status === "verified");
+
       if (verified) {
-        setAlreadyEnrolled(true);
+        // A verified factor already exists. That does NOT mean this
+        // session is aal2 — signInWithPassword always issues aal1, even
+        // for an already-enrolled user. Check the session's actual
+        // assurance level before deciding whether there's anything left
+        // for the user to do here.
+        const { data: aal } =
+          await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (aal?.currentLevel === "aal2") {
+          setMode("already-verified");
+          return;
+        }
+        // Session is only aal1 despite the existing factor — the user
+        // needs to step up via a fresh challenge/verify against their
+        // existing factor. No new QR code; same factor, same secret.
+        setFactorId(verified.id);
+        setMode("needs-step-up");
         return;
       }
+
       const { data: enrollData, error: enrollError } =
         await supabase.auth.mfa.enroll({ factorType: "totp" });
       if (enrollError) {
@@ -30,6 +49,7 @@ export function EnrollForm() {
       }
       setFactorId(enrollData.id);
       setQrCode(enrollData.totp.qr_code);
+      setMode("needs-enrollment");
     })();
   }, [supabase]);
 
@@ -62,7 +82,7 @@ export function EnrollForm() {
     router.refresh();
   }
 
-  if (alreadyEnrolled) {
+  if (mode === "already-verified") {
     return (
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
         MFA is already enrolled on this account.
@@ -70,18 +90,21 @@ export function EnrollForm() {
     );
   }
 
-  if (!qrCode) {
+  if (mode === "loading" || (mode === "needs-enrollment" && !qrCode)) {
     return <p className="text-sm text-zinc-500">Setting up…</p>;
   }
 
   return (
     <form onSubmit={(e) => void handleVerify(e)} className="space-y-4">
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        Scan this QR code with an authenticator app (Google Authenticator,
-        1Password, Authy), then enter the 6-digit code it generates.
+        {mode === "needs-enrollment"
+          ? "Scan this QR code with an authenticator app (Google Authenticator, 1Password, Authy), then enter the 6-digit code it generates."
+          : "Enter the 6-digit code from your authenticator app to verify it's you."}
       </p>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={qrCode} alt="MFA QR code" className="h-48 w-48" />
+      {mode === "needs-enrollment" && qrCode && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={qrCode} alt="MFA QR code" className="h-48 w-48" />
+      )}
       <div className="space-y-1">
         <label className="text-sm font-medium">Verification Code</label>
         <input

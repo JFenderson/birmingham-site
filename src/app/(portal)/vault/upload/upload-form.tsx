@@ -31,7 +31,13 @@ function categoriesFor(role: MemberRole): string[] {
     .map(([category]) => category);
 }
 
-export function UploadForm({ role }: { role: MemberRole }) {
+export function UploadForm({
+  role,
+  chapterId,
+}: {
+  role: MemberRole;
+  chapterId: string;
+}) {
   const router = useRouter();
   const categories = categoriesFor(role);
   const [category, setCategory] = useState(categories[0] ?? "");
@@ -58,23 +64,14 @@ export function UploadForm({ role }: { role: MemberRole }) {
       }
 
       // Path convention matches 00000000000011_storage_buckets.sql exactly:
-      // '{chapter_id}/{uuid}-{filename}'. chapterId isn't known client-side
-      // here without an extra round-trip, so this reads the caller's own
-      // chapter_members row (RLS-scoped, safe) to get it.
-      const { data: membership } = await supabase
-        .from("chapter_members")
-        .select("chapter_id")
-        .eq("profile_id", user.id)
-        .eq("is_deleted", false)
-        .limit(1)
-        .maybeSingle();
-      if (!membership) {
-        setPending(false);
-        setError("Could not resolve your chapter.");
-        return;
-      }
-
-      const path = `${membership.chapter_id}/${generateId()}-${file.name}`;
+      // '{chapter_id}/{uuid}-{filename}'. chapterId comes from the page's
+      // own requireRole() call (subdomain-derived, server-authoritative)
+      // rather than a client-side chapter_members lookup — a user
+      // belonging to more than one chapter could otherwise pick a chapter
+      // that disagrees with the tenant the Server Action derives, which
+      // would upload into a folder finalizeUpload's path-prefix check then
+      // rejects as invalid, orphaning the Storage object.
+      const path = `${chapterId}/${generateId()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from(category)
         .upload(path, file);

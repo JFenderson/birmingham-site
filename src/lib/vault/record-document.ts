@@ -27,6 +27,13 @@ export async function recordDocument(params: {
 }): Promise<{ error: string | null; documentId?: string }> {
   const bucket = BUCKET_BY_CATEGORY[params.category];
 
+  // Policy decision: financial records are sensitive enough that read
+  // access should match the write restriction (Treasurer/Admin only).
+  // bylaws/minutes intentionally keep the table default (all five roles)
+  // since those are appropriately chapter-wide readable.
+  const visibleToRoles: Database["public"]["Enums"]["member_role"][] | undefined =
+    params.category === "financials" ? ["Treasurer", "Admin"] : undefined;
+
   const { data, error } = await params.supabase
     .from("documents")
     .insert({
@@ -36,6 +43,7 @@ export async function recordDocument(params: {
       storage_bucket: bucket,
       storage_path: params.storagePath,
       uploaded_by: params.uploadedBy,
+      ...(visibleToRoles ? { visible_to_roles: visibleToRoles } : {}),
     })
     .select("id")
     .single();
@@ -61,11 +69,22 @@ export async function recordDocument(params: {
  * application layer before calling this — the same defense-in-depth
  * pattern as recordDocument's Storage cleanup above, and the same
  * reasoning as src/lib/attendance/record-check-in.ts's server-side-only
- * insert. The documents_officer_update RLS policy's WITH CHECK clause has
- * been observed to reject this exact UPDATE even when its own
- * has_role(...) predicate evaluates true in isolation for the same
- * user/chapter/role immediately beforehand, so the write is routed
- * through the admin client rather than the caller's authenticated client.
+ * insert. The observed symptom driving this was NOT a raised 42501 error
+ * from the documents_officer_update policy's WITH CHECK clause — it was a
+ * silent no-op: the UPDATE returned `error: null` with zero rows changed
+ * under the caller's own authenticated client. A silent no-op with no
+ * error is the signature of a USING clause matching zero rows, not a
+ * WITH CHECK violation (which does raise 42501), but the true root cause
+ * was not conclusively pinned down. Routing this write through the admin
+ * client is a pragmatic fix given the app layer above already re-validates
+ * everything the RLS policy would have checked — not a fix based on a
+ * fully-confirmed diagnosis.
+ *
+ * Because this bypasses the RLS layer that would normally attribute the
+ * change to auth.uid() in the audit_documents trigger, the caller passes
+ * along the authenticated actor's own id/chapter and separately logs an
+ * audit event via the caller's own (non-admin) client — see
+ * softDeleteDocument in src/app/(portal)/vault/upload/actions.ts.
  */
 export async function softDeleteDocumentRow(params: {
   documentId: string;
