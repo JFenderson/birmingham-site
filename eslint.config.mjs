@@ -42,6 +42,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // ESLint doesn't read .gitignore automatically — without this, linting
+    // from the repo root recurses into any worktree's own .next build
+    // output (worktrees are gitignored, but not eslint-ignored).
+    ".worktrees/**",
   ]),
 ]);
 
