@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { requireRole, PermissionError } from "@/lib/auth/rbac";
+import { requireRole, PermissionError, MfaRequiredError } from "@/lib/auth/rbac";
 import { StageForm } from "./stage-form";
 import { NoteForm } from "./note-form";
 
@@ -33,6 +33,9 @@ export default async function IntakeDetailPage({
   try {
     session = await requireRole(["Intake Director", "Admin"]);
   } catch (err) {
+    if (err instanceof MfaRequiredError) {
+      redirect("/security/mfa");
+    }
     if (err instanceof PermissionError) {
       redirect("/dashboard");
     }

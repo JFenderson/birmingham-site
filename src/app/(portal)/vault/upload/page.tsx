@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireRole, PermissionError } from "@/lib/auth/rbac";
+import { requireRole, PermissionError, MfaRequiredError } from "@/lib/auth/rbac";
 import { UploadForm } from "./upload-form";
 
 export default async function VaultUploadPage() {
@@ -7,6 +7,7 @@ export default async function VaultUploadPage() {
   try {
     ({ role } = await requireRole(["Admin", "Secretary", "Treasurer"]));
   } catch (err) {
+    if (err instanceof MfaRequiredError) redirect("/security/mfa");
     if (err instanceof PermissionError) redirect("/vault");
     throw err;
   }

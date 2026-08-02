@@ -1,11 +1,14 @@
 import { redirect } from "next/navigation";
-import { requireRole, PermissionError } from "@/lib/auth/rbac";
+import { requireRole, PermissionError, MfaRequiredError } from "@/lib/auth/rbac";
 import { NewEventForm } from "./new-event-form";
 
 export default async function NewEventPage() {
   try {
     await requireRole(["Admin", "Secretary"]);
   } catch (err) {
+    if (err instanceof MfaRequiredError) {
+      redirect("/security/mfa");
+    }
     if (err instanceof PermissionError) {
       redirect("/events");
     }
