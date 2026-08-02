@@ -46,7 +46,7 @@ export function PublicHeader({ chapter }: { chapter: CurrentChapter }) {
                 {item.label}
               </Link>
               {item.children ? (
-                <div className="absolute left-0 top-full hidden min-w-[220px] rounded-xl border border-slate-200 bg-white p-3 shadow-lg group-hover:block">
+                <div className="absolute left-0 top-full hidden min-w-55 rounded-xl border border-slate-200 bg-white p-3 shadow-lg group-hover:block">
                   {item.children.map((child) => (
                     <div key={child} className="rounded-md px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#0047AB]">
                       {child}

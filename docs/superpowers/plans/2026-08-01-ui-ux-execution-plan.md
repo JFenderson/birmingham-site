@@ -252,3 +252,91 @@ Start with MFA UX implementation and review before additional UI work:
 - Update role-guard redirect handling in [src/lib/auth/rbac.ts](src/lib/auth/rbac.ts) and portal call sites
 
 This sequence eliminates the current lockout risk and unlocks all role-gated QA for later phases.
+
+## 10. UI/UX Task Board (Checkbox Tracker)
+
+Status key: `Not Started` means unchecked, `Done` means checked.
+
+### Phase B: MFA Enrollment UX (Priority 1)
+
+- [ ] B1-01 Create security gate page shell at `/security/mfa` with heading and explanatory copy.
+- [ ] B1-02 Build QR enrollment state with loading placeholder.
+- [ ] B1-03 Build verification form state with 6-digit input and disabled submit until valid length.
+- [ ] B1-04 Build already-enrolled state and route to dashboard CTA.
+- [ ] B1-05 Add clear inline error messaging for enroll/challenge/verify failures.
+- [ ] B1-06 Add pending button states for verification flow.
+- [ ] B1-07 Update role-guard redirect UX so MFA-required users go to `/security/mfa`.
+- [ ] B1-08 QA mobile layout for MFA page at 320px, 375px, and 768px widths.
+- [ ] B1-09 QA keyboard-only navigation and visible focus states.
+- [ ] B1-10 Live smoke test with temporary Admin user: locked route -> MFA page -> verify -> dashboard.
+
+### Phase A: Vault UX (Priority 2)
+
+- [ ] A1-01 Create vault list page grouped by category labels.
+- [ ] A1-02 Create empty-state panel for no documents.
+- [ ] A1-03 Create download button with pending state and download-link error state.
+- [ ] A1-04 Add `Vault` item to portal navigation for all roles.
+- [ ] A2-01 Create officer-only upload page shell.
+- [ ] A2-02 Create upload form with role-filtered category options.
+- [ ] A2-03 Add file/title/category validation UX and disabled submit behavior.
+- [ ] A2-04 Add post-upload metadata-finalization error messaging.
+- [ ] A2-05 Create soft-delete button with explicit confirmation prompt.
+- [ ] A2-06 Add delete action to vault list rows for eligible roles.
+- [ ] A2-07 QA role visibility matrix: Member, Secretary, Treasurer, Admin.
+- [ ] A2-08 Live smoke test: upload -> appears in list -> download -> soft delete -> removed from list.
+
+### Phase C: Payments UX (Priority 3)
+
+- [ ] C2-01 Create payment page layout with clear title and trust context.
+- [ ] C2-02 Build payment type selector UX (dues, event fee, donation).
+- [ ] C2-03 Build amount field UX with clear USD guidance and validation.
+- [ ] C2-04 Integrate Square card container with loading/ready indicators.
+- [ ] C2-05 Add processing state and disabled submit behavior during tokenize/charge.
+- [ ] C2-06 Build success receipt state with clear completion copy.
+- [ ] C2-07 Build failure/retry state for tokenize and charge errors.
+- [ ] C2-08 Add `Pay` to portal navigation for all roles.
+- [ ] C2-09 QA payment flow on mobile and desktop viewports.
+- [ ] C2-10 Live sandbox payment test and transaction confirmation.
+
+### Phase D: Transactional Email UX (Priority 4)
+
+- [ ] D1-01 Design intake-received email template with chapter identity and clear next step.
+- [ ] D1-02 Ensure template uses high-contrast, single-column layout.
+- [ ] D1-03 Wire intake email send as best-effort after successful submission.
+- [ ] D2-01 Design payment-confirmation template with amount/type context.
+- [ ] D2-02 Design meeting-reminder template with event details and action guidance.
+- [ ] D2-03 QA all templates in mobile and desktop email clients.
+
+### Phase E: Rate Limit UX (Priority 5)
+
+- [ ] E1-01 Add friendly throttling message copy for user-facing flows.
+- [ ] E1-02 Ensure rate-limit responses do not expose internal technical details.
+- [ ] E1-03 Add cooldown guidance copy where context allows.
+- [ ] E1-04 QA that expected throttling does not surface generic error boundaries.
+
+### Phase F: News/CMS UX (Priority 6)
+
+- [ ] F1-01 Configure Studio editing experience for posts.
+- [ ] F2-01 Build public news list page with cards (title/date/excerpt/image).
+- [ ] F2-02 Build news detail page optimized for long-form readability.
+- [ ] F2-03 Add `News` to public header navigation.
+- [ ] F2-04 QA tenant-scoped visibility across chapter subdomains.
+- [ ] F2-05 QA detail-page typography and spacing on mobile and desktop.
+
+### Shared UI Primitives (Cross-Phase)
+
+- [ ] U1-01 Section header block primitive (eyebrow/title/supporting text).
+- [ ] U1-02 Form field primitive pattern (label/control/error/help text).
+- [ ] U1-03 Primary action button states (default/pending/disabled).
+- [ ] U1-04 Empty state panel pattern.
+- [ ] U1-05 Success notice panel pattern.
+- [ ] U1-06 Destructive action row with confirmation pattern.
+- [ ] U1-07 List row pattern with metadata and trailing actions.
+
+### Final QA Gate (Run Before Marking Phase 2 UI/UX Complete)
+
+- [ ] QG-01 Run `npx tsc --noEmit -p tsconfig.json` with no errors.
+- [ ] QG-02 Run `rm -rf .next && npm run build` with no errors.
+- [ ] QG-03 Run `npm run lint` with no errors.
+- [ ] QG-04 Run role-based smoke walkthroughs for Member, Secretary, Treasurer, Admin.
+- [ ] QG-05 Run mobile responsive walkthrough for portal and public surfaces.
