@@ -1,10 +1,13 @@
 import { redirect } from "next/navigation";
-import { requireRole, PermissionError } from "@/lib/auth/rbac";
+import { requireRole, PermissionError, MfaRequiredError } from "@/lib/auth/rbac";
 
 export default async function AdminPage() {
   try {
     await requireRole(["Admin"]);
   } catch (err) {
+    if (err instanceof MfaRequiredError) {
+      redirect("/security/mfa");
+    }
     if (err instanceof PermissionError) {
       redirect("/dashboard");
     }

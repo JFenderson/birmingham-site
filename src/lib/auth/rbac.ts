@@ -3,6 +3,7 @@ import { getTenantContext } from "@/lib/tenant/resolve-chapter";
 import { MFA_REQUIRED_ROLES, type MemberRole } from "@/types/domain";
 
 export class PermissionError extends Error {}
+export class MfaRequiredError extends Error {}
 
 /**
  * Zero-trust role check. Call this as the FIRST line of every sensitive
@@ -35,7 +36,7 @@ export async function requireRole(allowed: readonly MemberRole[]) {
     const { data: aal } =
       await session.supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     if (aal?.currentLevel !== "aal2") {
-      throw new PermissionError("MFA required");
+      throw new MfaRequiredError();
     }
   }
 

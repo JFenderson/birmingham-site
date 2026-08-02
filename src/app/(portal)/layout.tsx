@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { requireRole, PermissionError } from "@/lib/auth/rbac";
+import { requireRole, PermissionError, MfaRequiredError } from "@/lib/auth/rbac";
 
 const ALL_ROLES = [
   "Member",
@@ -17,6 +17,9 @@ export default async function PortalLayout({
   try {
     ({ role } = await requireRole(ALL_ROLES));
   } catch (err) {
+    if (err instanceof MfaRequiredError) {
+      redirect("/security/mfa");
+    }
     if (err instanceof PermissionError) {
       redirect("/login");
     }
@@ -31,6 +34,9 @@ export default async function PortalLayout({
         </Link>
         <Link href="/events" className="text-sm text-zinc-600 dark:text-zinc-400">
           Events
+        </Link>
+        <Link href="/vault" className="text-sm text-zinc-600 dark:text-zinc-400">
+          Vault
         </Link>
         {(role === "Intake Director" || role === "Admin") && (
           <Link href="/intake" className="text-sm text-zinc-600 dark:text-zinc-400">

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { requireRole, PermissionError } from "@/lib/auth/rbac";
+import { requireRole, PermissionError, MfaRequiredError } from "@/lib/auth/rbac";
 
 const STAGE_LABELS: Record<string, string> = {
   submitted: "Submitted",
@@ -17,6 +17,9 @@ export default async function IntakePage() {
   try {
     session = await requireRole(["Intake Director", "Admin"]);
   } catch (err) {
+    if (err instanceof MfaRequiredError) {
+      redirect("/security/mfa");
+    }
     if (err instanceof PermissionError) {
       redirect("/dashboard");
     }
