@@ -102,3 +102,10 @@ export const checkInSchema = z.object({
   lng: z.number().min(-180).max(180),
 });
 export type CheckInInput = z.infer<typeof checkInSchema>;
+
+export const documentUploadSchema = z.object({
+  category: z.enum(["bylaws", "financials", "minutes"]),
+  title: z.string().trim().min(1).max(200),
+  storagePath: z.string().trim().min(1),
+});
+export type DocumentUploadInput = z.infer<typeof documentUploadSchema>;

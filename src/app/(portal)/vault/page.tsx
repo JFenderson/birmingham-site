@@ -1,5 +1,6 @@
 import { requireRole } from "@/lib/auth/rbac";
 import { DownloadButton } from "./download-button";
+import { DeleteButton } from "./delete-button";
 
 const ALL_ROLES = [
   "Member",
@@ -70,10 +71,13 @@ export default async function VaultPage() {
                       {new Date(doc.created_at).toLocaleDateString()}
                     </p>
                   </div>
-                  <DownloadButton
-                    bucket={doc.storage_bucket}
-                    path={doc.storage_path}
-                  />
+                  <div className="flex items-center gap-3">
+                    <DownloadButton
+                      bucket={doc.storage_bucket}
+                      path={doc.storage_path}
+                    />
+                    {canUpload && <DeleteButton documentId={doc.id} />}
+                  </div>
                 </div>
               ))}
             </div>
