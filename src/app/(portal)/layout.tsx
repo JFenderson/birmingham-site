@@ -38,6 +38,9 @@ export default async function PortalLayout({
         <Link href="/vault" className="text-sm text-zinc-600 dark:text-zinc-400">
           Vault
         </Link>
+        <Link href="/pay" className="text-sm text-zinc-600 dark:text-zinc-400">
+          Pay
+        </Link>
         {(role === "Intake Director" || role === "Admin") && (
           <Link href="/intake" className="text-sm text-zinc-600 dark:text-zinc-400">
             Intake

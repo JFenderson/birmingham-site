@@ -109,3 +109,11 @@ export const documentUploadSchema = z.object({
   storagePath: z.string().trim().min(1),
 });
 export type DocumentUploadInput = z.infer<typeof documentUploadSchema>;
+
+export const paymentIntentSchema = z.object({
+  sourceId: z.string().trim().min(1), // tokenized card nonce from Web Payments SDK
+  amountCents: z.coerce.number().int().min(100).max(1_000_000),
+  type: z.enum(["dues", "event_fee", "donation"]),
+  description: z.string().trim().max(200).optional().or(z.literal("")),
+});
+export type PaymentIntentInput = z.infer<typeof paymentIntentSchema>;
