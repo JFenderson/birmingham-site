@@ -5,7 +5,7 @@ export async function handleSquareWebhookEvent(event: {
   data: { object: { payment?: { id: string; status: string } } };
 }): Promise<void> {
   if (event.type !== "payment.updated") return;
-  const payment = event.data.object.payment;
+  const payment = event.data?.object?.payment;
   if (!payment) return;
 
   const statusMap: Record<string, string> = {
@@ -17,8 +17,15 @@ export async function handleSquareWebhookEvent(event: {
   if (!status) return;
 
   const admin = createAdminClient();
-  await admin
+  const { error } = await admin
     .from("transactions")
     .update({ status })
     .eq("square_payment_id", payment.id);
+
+  if (error) {
+    console.error(
+      `[square] Webhook status update failed. ` +
+        `squarePaymentId=${payment.id} attemptedStatus=${status} error=${error.message}`
+    );
+  }
 }

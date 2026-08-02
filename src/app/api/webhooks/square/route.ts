@@ -11,7 +11,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
-  const event = JSON.parse(body);
+  let event: Parameters<typeof handleSquareWebhookEvent>[0];
+  try {
+    event = JSON.parse(body);
+  } catch {
+    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  }
+
   await handleSquareWebhookEvent(event);
 
   return NextResponse.json({ received: true });
