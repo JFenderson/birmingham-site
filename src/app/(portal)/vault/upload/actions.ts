@@ -34,6 +34,21 @@ export async function finalizeUpload(
     return { error: `Your role can't upload to ${data.category}.` };
   }
 
+  // Validate storagePath is under caller's own chapter folder with no traversal.
+  // The Storage bucket's RLS policy enforces this for the actual file upload,
+  // but documents_officer_insert RLS policy does not re-check the path against
+  // chapter_id, so we must verify it here to prevent metadata IDOR.
+  const expectedPrefix = `${chapterId}/`;
+  const remainder = data.storagePath.slice(expectedPrefix.length);
+  if (
+    !data.storagePath.startsWith(expectedPrefix) ||
+    data.storagePath.includes("..") ||
+    remainder.length === 0 ||
+    remainder.includes("/")
+  ) {
+    return { error: "Invalid storage path." };
+  }
+
   const result = await recordDocument({
     supabase,
     chapterId,
