@@ -17,15 +17,25 @@ export async function handleSquareWebhookEvent(event: {
   if (!status) return;
 
   const admin = createAdminClient();
-  const { error } = await admin
+  const { data, error } = await admin
     .from("transactions")
     .update({ status })
-    .eq("square_payment_id", payment.id);
+    .eq("square_payment_id", payment.id)
+    .select("id");
 
   if (error) {
     console.error(
       `[square] Webhook status update failed. ` +
         `squarePaymentId=${payment.id} attemptedStatus=${status} error=${error.message}`
+    );
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    console.error(
+      `[square] Webhook status update matched zero rows — possible race with ` +
+        `recordTransaction or an unrecorded payment. ` +
+        `squarePaymentId=${payment.id} attemptedStatus=${status}`
     );
   }
 }

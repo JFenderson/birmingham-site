@@ -32,19 +32,37 @@ export function PaymentForm() {
 
   useEffect(() => {
     let cancelled = false;
+    // Square's CDN script may fail to load (blocked, slow, or the app just
+    // isn't configured with credentials). Without a bound, a missing
+    // window.Square would poll forever with the Pay button silently stuck
+    // disabled and no feedback. Bail out after ~5s (50 * 100ms).
+    let attempts = 0;
+    const MAX_ATTEMPTS = 50;
     const interval = setInterval(() => {
-      if (window.Square && !cancelled) {
+      if (cancelled) return;
+      attempts += 1;
+      if (window.Square) {
         clearInterval(interval);
         void (async () => {
-          const payments = await window.Square!.payments(
-            process.env.NEXT_PUBLIC_SQUARE_APP_ID!,
-            process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID!
-          );
-          const card = await payments.card();
-          await card.attach("#card-container");
-          cardRef.current = card;
-          setReady(true);
+          try {
+            const payments = await window.Square!.payments(
+              process.env.NEXT_PUBLIC_SQUARE_APP_ID!,
+              process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID!
+            );
+            const card = await payments.card();
+            await card.attach("#card-container");
+            if (cancelled) return;
+            cardRef.current = card;
+            setReady(true);
+          } catch {
+            if (!cancelled) {
+              setError("Payments aren't available right now — please try again later.");
+            }
+          }
         })();
+      } else if (attempts >= MAX_ATTEMPTS) {
+        clearInterval(interval);
+        setError("Payments aren't available right now — please try again later.");
       }
     }, 100);
     return () => {
@@ -56,28 +74,40 @@ export function PaymentForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!cardRef.current) return;
+
+    const parsedAmount = parseFloat(amount);
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setError("Enter a valid amount.");
+      return;
+    }
+
     setPending(true);
     setError(null);
 
-    const result = await cardRef.current.tokenize();
-    if (result.status !== "OK" || !result.token) {
-      setPending(false);
-      setError("Card details invalid.");
-      return;
-    }
+    try {
+      const result = await cardRef.current.tokenize();
+      if (result.status !== "OK" || !result.token) {
+        setPending(false);
+        setError("Card details invalid.");
+        return;
+      }
 
-    const amountCents = Math.round(parseFloat(amount) * 100);
-    const outcome = await submitPayment({
-      sourceId: result.token,
-      amountCents,
-      type,
-    });
-    setPending(false);
-    if (outcome.error) {
-      setError(outcome.error);
-      return;
+      const amountCents = Math.round(parsedAmount * 100);
+      const outcome = await submitPayment({
+        sourceId: result.token,
+        amountCents,
+        type,
+      });
+      setPending(false);
+      if (outcome.error) {
+        setError(outcome.error);
+        return;
+      }
+      setSuccess(true);
+    } catch {
+      setPending(false);
+      setError("Something went wrong — please check your payment history before trying again.");
     }
-    setSuccess(true);
   }
 
   if (success) {
@@ -107,6 +137,7 @@ export function PaymentForm() {
         <input
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
+          inputMode="decimal"
           className="w-full rounded-md border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
         />
       </div>

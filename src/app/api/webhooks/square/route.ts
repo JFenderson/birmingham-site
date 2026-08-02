@@ -5,7 +5,12 @@ import { handleSquareWebhookEvent } from "@/lib/square/handle-webhook";
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get("x-square-hmacsha256-signature");
-  const notificationUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhooks/square`;
+  // Square's HMAC signature is computed over the exact URL registered in the
+  // Square dashboard for the environment that received the webhook — for a
+  // preview deploy that's the generated *.vercel.app host, not
+  // NEXT_PUBLIC_SITE_URL. Derive it from the incoming request instead so it
+  // matches whatever host Square actually delivered to.
+  const notificationUrl = `${request.nextUrl.origin}/api/webhooks/square`;
 
   if (!signature || !verifySquareSignature(signature, notificationUrl, body)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });

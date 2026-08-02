@@ -4,7 +4,8 @@ import { PaymentForm } from "./payment-form";
 export default function PayPage() {
   const sandboxUrl = "https://sandbox.web.squarecdn.com/v1/square.js";
   const productionUrl = "https://web.squarecdn.com/v1/square.js";
-  const src = process.env.NODE_ENV === "production" ? productionUrl : sandboxUrl;
+  const src =
+    process.env.NEXT_PUBLIC_SQUARE_ENVIRONMENT === "production" ? productionUrl : sandboxUrl;
 
   return (
     <div className="max-w-md space-y-6">
