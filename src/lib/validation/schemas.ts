@@ -117,3 +117,9 @@ export const paymentIntentSchema = z.object({
   description: z.string().trim().max(200).optional().or(z.literal("")),
 });
 export type PaymentIntentInput = z.infer<typeof paymentIntentSchema>;
+
+export const inviteMemberSchema = z.object({
+  fullName: z.string().trim().min(1).max(200),
+  email: z.string().trim().email(),
+});
+export type InviteMemberInput = z.infer<typeof inviteMemberSchema>;
