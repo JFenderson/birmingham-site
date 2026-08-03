@@ -21,9 +21,12 @@ export async function recordTransaction(params: {
     description: params.description,
   });
 
-  if (!error) {
+  if (!error && params.status === "completed") {
     // Best-effort confirmation email — a send failure must never fail the
-    // payment recording itself, which has already succeeded above.
+    // payment recording itself, which has already succeeded above. Only a
+    // completed payment should trigger a "Payment Received" email — a
+    // failed or still-pending payment must still be recorded (unchanged
+    // above) but must NOT tell the member their payment succeeded.
     try {
       const [{ data: profile }, { data: userData }] = await Promise.all([
         admin.from("profiles").select("full_name").eq("id", params.profileId).maybeSingle(),
