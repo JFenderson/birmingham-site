@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { IntakeFormInput } from "@/lib/validation/schemas";
+import { sendIntakeReceivedEmail } from "@/lib/email/send-intake-notification";
 
 /**
  * Inserts a validated intake/reactivation/transfer submission using the
@@ -22,6 +23,26 @@ export async function submitApplication(
     form_type: data.formType,
     submitted_payload: data,
   });
+
+  if (!error) {
+    // Best-effort confirmation email — a send failure must never fail the
+    // application submission itself, which has already succeeded above.
+    try {
+      const { data: chapter } = await admin
+        .from("chapters")
+        .select("name")
+        .eq("id", chapterId)
+        .maybeSingle();
+
+      await sendIntakeReceivedEmail({
+        to: data.email,
+        applicantName: data.fullName,
+        chapterName: chapter?.name ?? "",
+      });
+    } catch {
+      // Email is best-effort — the application itself already succeeded.
+    }
+  }
 
   return { error: error ? "Something went wrong submitting your application." : null };
 }
