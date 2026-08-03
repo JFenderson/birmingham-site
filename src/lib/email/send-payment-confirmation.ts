@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { PaymentConfirmationEmail } from "@/emails/payment-confirmation";
+import { EMAIL_FROM } from "@/lib/email/config";
 
 export async function sendPaymentConfirmationEmail(params: {
   to: string;
@@ -9,7 +10,7 @@ export async function sendPaymentConfirmationEmail(params: {
 }): Promise<void> {
   const resend = new Resend(process.env.RESEND_API_KEY);
   await resend.emails.send({
-    from: "notifications@birminghamsigmas.org",
+    from: EMAIL_FROM,
     to: params.to,
     subject: "Payment Received",
     react: PaymentConfirmationEmail({

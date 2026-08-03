@@ -14,6 +14,8 @@ export function MeetingReminderEmail({
   const when = new Date(startsAt).toLocaleString("en-US", {
     dateStyle: "full",
     timeStyle: "short",
+    timeZone: "America/Chicago",
+    timeZoneName: "short",
   });
 
   return (

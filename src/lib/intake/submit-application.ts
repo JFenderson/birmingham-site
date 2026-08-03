@@ -39,8 +39,12 @@ export async function submitApplication(
         applicantName: data.fullName,
         chapterName: chapter?.name ?? "",
       });
-    } catch {
+    } catch (err) {
       // Email is best-effort — the application itself already succeeded.
+      console.error(
+        `[email] Intake confirmation failed. chapterId=${chapterId} email=${data.email}`,
+        err
+      );
     }
   }
 

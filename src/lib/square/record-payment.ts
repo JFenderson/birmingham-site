@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendPaymentConfirmationEmail } from "@/lib/email/send-payment-confirmation";
+import { resolveRecipient } from "@/lib/email/resolve-recipient";
 
 export async function recordTransaction(params: {
   chapterId: string;
@@ -28,21 +29,21 @@ export async function recordTransaction(params: {
     // failed or still-pending payment must still be recorded (unchanged
     // above) but must NOT tell the member their payment succeeded.
     try {
-      const [{ data: profile }, { data: userData }] = await Promise.all([
-        admin.from("profiles").select("full_name").eq("id", params.profileId).maybeSingle(),
-        admin.auth.admin.getUserById(params.profileId),
-      ]);
-      const email = userData.user?.email;
-      if (email) {
+      const recipient = await resolveRecipient(admin, params.profileId);
+      if (recipient) {
         await sendPaymentConfirmationEmail({
-          to: email,
-          recipientName: profile?.full_name ?? "there",
+          to: recipient.email,
+          recipientName: recipient.name,
           amountCents: params.amountCents,
           type: params.type,
         });
       }
-    } catch {
+    } catch (err) {
       // Email is best-effort — the transaction itself already succeeded.
+      console.error(
+        `[email] Payment confirmation failed. chapterId=${params.chapterId} profileId=${params.profileId} squarePaymentId=${params.squarePaymentId}`,
+        err
+      );
     }
   }
 
