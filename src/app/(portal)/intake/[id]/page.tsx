@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { requireRole, PermissionError, MfaRequiredError } from "@/lib/auth/rbac";
 import { StageForm } from "./stage-form";
 import { NoteForm } from "./note-form";
+import { InviteButton } from "./invite-button";
 
 const STAGE_OPTIONS = [
   "submitted",
@@ -99,6 +100,17 @@ export default async function IntakeDetailPage({
           options={STAGE_OPTIONS}
         />
       </div>
+
+      {applicant.pipeline_stage === "approved" && (
+        <div>
+          <h2 className="text-sm font-semibold uppercase text-zinc-500">
+            Onboarding
+          </h2>
+          <div className="mt-3">
+            <InviteButton fullName={applicant.full_name} email={applicant.email} />
+          </div>
+        </div>
+      )}
 
       <div>
         <h2 className="text-sm font-semibold uppercase text-zinc-500">
