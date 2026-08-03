@@ -11,6 +11,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
+  const inviteExpired = searchParams.get("error") === "invite-expired";
   const {
     register,
     handleSubmit,
@@ -39,6 +40,12 @@ function LoginForm() {
       className="w-full max-w-sm space-y-4"
     >
       <h1 className="text-2xl font-bold text-navy">Brothers Only Sign In</h1>
+
+      {inviteExpired && (
+        <p className="text-sm text-red-600">
+          That invite link has expired. Ask an officer to resend your invite.
+        </p>
+      )}
 
       <div className="space-y-1">
         <label htmlFor="email" className="text-sm font-medium">
