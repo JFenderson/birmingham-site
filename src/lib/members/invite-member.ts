@@ -18,7 +18,7 @@ export async function provisionMemberInvite(params: {
     // Supabase returns a distinct error when the email already belongs to
     // an existing user — this IS the duplicate-invite check; no separate
     // tracking column is needed.
-    if (inviteError?.message?.toLowerCase().includes("already been registered")) {
+    if (inviteError?.code === "email_exists" || inviteError?.message?.toLowerCase().includes("already been registered")) {
       return { error: "This person already has an account." };
     }
     return { error: "Could not send invite. Please try again." };
@@ -39,7 +39,10 @@ export async function provisionMemberInvite(params: {
     // Roll back the orphaned auth user rather than leaving an account with
     // no chapter membership — same "clean up on partial failure" pattern
     // as the vault upload's orphaned-Storage-object cleanup.
-    await admin.auth.admin.deleteUser(userId);
+    const { error: deleteError } = await admin.auth.admin.deleteUser(userId);
+    if (deleteError) {
+      console.error("[invite] rollback failed, orphaned auth user", { userId, error: deleteError });
+    }
     return { error: "Could not complete invite. Please try again." };
   }
 
