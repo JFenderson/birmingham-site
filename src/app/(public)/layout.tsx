@@ -10,7 +10,9 @@ export default async function PublicLayout({
   return (
     <div className="flex flex-1 flex-col">
       <PublicHeader chapter={chapter} />
-      <main className="flex flex-1 flex-col">{children}</main>
+      <main id="main-content" tabIndex={-1} className="flex flex-1 flex-col">
+        {children}
+      </main>
       <PublicFooter chapter={chapter} />
     </div>
   );

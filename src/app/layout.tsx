@@ -1,24 +1,20 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, EB_Garamond } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+// The clean, readable font for paragraphs and small text
+const inter = Inter({ 
+  subsets: ["latin"], 
+  variable: "--font-sans" 
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+// The smooth, modern font for your h1, h2, h3 tags
+const plusJakarta = Plus_Jakarta_Sans({ 
+  subsets: ["latin"], 
+  variable: "--font-heading" 
 });
 
-// Traditional/authoritative serif for headings on the public marketing
-// pages — pairs with the sans body font for a heritage, collegiate feel.
-const ebGaramond = EB_Garamond({
-  variable: "--font-serif",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-});
+
 
 export const metadata: Metadata = {
   title: "Tau Sigma Graduate Chapter",
@@ -31,11 +27,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${ebGaramond.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+<html lang="en" className={`${inter.variable} ${plusJakarta.variable}`}>
+      {/* The 'antialiased' class is crucial for physical smoothness on screens */}
+      <body className="font-sans antialiased text-foreground">
+        {children}
+      </body>
     </html>
   );
 }

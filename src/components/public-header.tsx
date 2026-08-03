@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import type { CurrentChapter } from "@/lib/tenant/get-chapter";
@@ -8,21 +9,37 @@ import type { CurrentChapter } from "@/lib/tenant/get-chapter";
 const NAV_ITEMS = [
   { href: "/", label: "Home" },
   {
-    href: "/#about",
+    href: "/about",
     label: "About",
-    children: ["Programs", "Leadership", "Past Presidents", "Active Roster"],
+    children: [
+      { href: "/about/programs", label: "Programs" },
+      { href: "/about/leadership", label: "Leadership" },
+      { href: "/about/past-presidents", label: "Past Presidents" },
+      { href: "/about/active-roster", label: "Active Roster" },
+    ],
   },
-  { href: "/#photos", label: "Photos" },
+  { href: "/photos", label: "Photos" },
   {
-    href: "/#events",
+    href: "/community-events",
     label: "Events",
-    children: ["BHM Blue and White Weekend", "Shoes for Kids", "Toys for Kids", "Scholarship"],
+    children: [
+      { href: "/community-events/bhm-blue-and-white-weekend", label: "BHM Blue and White Weekend" },
+      { href: "/community-events/shoes-for-kids", label: "Shoes for Kids" },
+      { href: "/community-events/toys-for-kids", label: "Toys for Kids" },
+      { href: "/community-events/scholarship", label: "Scholarship" },
+    ],
   },
-  { href: "/#contact", label: "Contact" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function PublicHeader({ chapter }: { chapter: CurrentChapter }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+
+  const isItemActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
@@ -36,21 +53,29 @@ export function PublicHeader({ chapter }: { chapter: CurrentChapter }) {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-6 lg:flex">
+        <nav id="site-navigation" className="hidden items-center gap-6 lg:flex">
           {NAV_ITEMS.map((item) => (
             <div key={item.label} className="group relative">
               <Link
                 href={item.href}
-                className="text-sm font-medium text-slate-700 transition-colors hover:text-[#0047AB]"
+                className={`text-sm font-medium transition-colors hover:text-[#0047AB] ${
+                  isItemActive(item.href) ? "text-[#0047AB]" : "text-slate-700"
+                }`}
               >
                 {item.label}
               </Link>
               {item.children ? (
                 <div className="absolute left-0 top-full hidden min-w-55 rounded-xl border border-slate-200 bg-white p-3 shadow-lg group-hover:block">
                   {item.children.map((child) => (
-                    <div key={child} className="rounded-md px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#0047AB]">
-                      {child}
-                    </div>
+                    <Link
+                      key={child.label}
+                      href={child.href}
+                      className={`block rounded-md px-3 py-2 text-sm hover:bg-slate-50 hover:text-[#0047AB] ${
+                        isItemActive(child.href) ? "text-[#0047AB]" : "text-slate-600"
+                      }`}
+                    >
+                      {child.label}
+                    </Link>
                   ))}
                 </div>
               ) : null}
@@ -83,7 +108,9 @@ export function PublicHeader({ chapter }: { chapter: CurrentChapter }) {
               <Link
                 key={item.label}
                 href={item.href}
-                className="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#0047AB]"
+                className={`block rounded-lg px-3 py-2 text-sm font-medium hover:bg-slate-50 hover:text-[#0047AB] ${
+                  isItemActive(item.href) ? "text-[#0047AB]" : "text-slate-700"
+                }`}
                 onClick={() => setMobileOpen(false)}
               >
                 {item.label}
