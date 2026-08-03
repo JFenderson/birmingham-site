@@ -67,15 +67,20 @@ function JoinFormFields({ formType }: { formType: FormType }) {
 
   async function onSubmit(values: FieldValues) {
     setError(null);
-    const result = await submitIntakeForm({ ...values, formType } as Parameters<
-      typeof submitIntakeForm
-    >[0]);
+    try {
+      const result = await submitIntakeForm({ ...values, formType } as Parameters<
+        typeof submitIntakeForm
+      >[0]);
 
-    if (!result.success) {
-      setError(result.error);
-      return;
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+      setSubmitted(true);
+    } catch (err) {
+      console.error("[join-form] submission failed", err);
+      setError("Something went wrong — please try again.");
     }
-    setSubmitted(true);
   }
 
   if (submitted) {

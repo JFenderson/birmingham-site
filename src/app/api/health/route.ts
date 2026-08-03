@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
   const { success } = await checkRateLimit(`${ip}:health`, {
     limit: 60,
     windowMs: 60_000,
+    failOpen: true,
   });
 
   if (!success) {
