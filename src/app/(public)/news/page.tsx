@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { sanityClient } from "@/sanity/client";
 import { getCurrentChapter } from "@/lib/tenant/get-chapter";
-import imageUrlBuilder from "@sanity/image-url";
+import { createImageUrlBuilder } from "@sanity/image-url";
 import type { SanityImageSource } from "@sanity/image-url";
 
 interface PostSummary {
@@ -13,23 +13,28 @@ interface PostSummary {
   excerpt: string | null;
 }
 
-const builder = imageUrlBuilder(sanityClient);
+const builder = createImageUrlBuilder(sanityClient);
 function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
 
 async function getPosts(chapterSlug: string): Promise<PostSummary[]> {
-  return sanityClient.fetch(
-    `*[_type == "post" && chapterSlug == $chapterSlug] | order(publishedAt desc) {
-      _id,
-      title,
-      "slug": slug.current,
-      publishedAt,
-      coverImage,
-      "excerpt": array::join(string::split(pt::text(body), "")[0..200], "")
-    }`,
-    { chapterSlug }
-  );
+  try {
+    return await sanityClient.fetch(
+      `*[_type == "post" && chapterSlug == $chapterSlug] | order(publishedAt desc) {
+        _id,
+        title,
+        "slug": slug.current,
+        publishedAt,
+        coverImage,
+        "excerpt": array::join(string::split(pt::text(body), "")[0..200], "")
+      }`,
+      { chapterSlug }
+    );
+  } catch (err) {
+    console.error("[news] failed to fetch posts", err);
+    return [];
+  }
 }
 
 export default async function NewsPage() {
@@ -66,7 +71,10 @@ export default async function NewsPage() {
                   </p>
                 ) : null}
                 {post.excerpt ? (
-                  <p className="mt-3 text-sm leading-7 text-zinc-700">{post.excerpt}…</p>
+                  <p className="mt-3 text-sm leading-7 text-zinc-700">
+                    {post.excerpt}
+                    {post.excerpt.length >= 201 ? "…" : ""}
+                  </p>
                 ) : null}
               </Link>
             ))}

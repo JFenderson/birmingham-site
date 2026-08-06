@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
 import { sanityClient } from "@/sanity/client";
 import { getCurrentChapter } from "@/lib/tenant/get-chapter";
-import imageUrlBuilder from "@sanity/image-url";
+import { createImageUrlBuilder } from "@sanity/image-url";
 import type { SanityImageSource } from "@sanity/image-url";
 
 interface PostDetail {
@@ -13,18 +13,23 @@ interface PostDetail {
   body: unknown;
 }
 
-const builder = imageUrlBuilder(sanityClient);
+const builder = createImageUrlBuilder(sanityClient);
 function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
 
 async function getPost(chapterSlug: string, slug: string): Promise<PostDetail | null> {
-  return sanityClient.fetch(
-    `*[_type == "post" && chapterSlug == $chapterSlug && slug.current == $slug][0] {
-      _id, title, publishedAt, coverImage, body
-    }`,
-    { chapterSlug, slug }
-  );
+  try {
+    return await sanityClient.fetch(
+      `*[_type == "post" && chapterSlug == $chapterSlug && slug.current == $slug][0] {
+        _id, title, publishedAt, coverImage, body
+      }`,
+      { chapterSlug, slug }
+    );
+  } catch (err) {
+    console.error("[news] failed to fetch post", err);
+    return null;
+  }
 }
 
 const portableTextComponents: PortableTextComponents = {
