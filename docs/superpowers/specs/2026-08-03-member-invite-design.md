@@ -1,6 +1,9 @@
 # Member Invite & Onboarding — Design
 
-**Status:** Approved by human partner, ready for implementation planning.
+**Status:** Approved by human partner. Implemented, then corrected post-implementation
+after the final whole-branch review found the "Accept-invite flow" and "Provisioning
+order" sections below described a mechanism Supabase does not actually support (see
+2026-08-05 correction inline). Corrected sections are marked **[CORRECTED 2026-08-05]**.
 
 ## Problem
 
@@ -46,7 +49,12 @@ is rate-limited and explicitly not for production use. This can reuse the
 same Resend account/domain from Phase D via Resend's SMTP credentials (a
 separate credential from the Phase D `RESEND_API_KEY`, which is API-only).
 Flag this to the user the same way prior phases flagged their credential
-dependencies; the live smoke test for this feature is deferred until SMTP is
+dependencies. **[Added 2026-08-05]** Two more one-time setup steps, uncovered
+by the final review: the deployed Supabase project's redirect URL allow-list
+must include every chapter subdomain's `/auth/confirm` path, and the invite
+email template must be customized (see "Accept-invite flow" below) — neither
+is optional, both are required for the accept-invite flow to function at
+all, not just to "deliver reliably" like SMTP. The live smoke test for this feature is deferred until SMTP is
 configured, same pattern as Phases C/D/E's deferred live tests.
 
 ## Architecture
@@ -95,11 +103,23 @@ export async function provisionMemberInvite(params: {
 }): Promise<{ error: string | null }>
 ```
 
-Provisioning order (mirrors the vault upload's "clean up the orphan on
-partial failure" pattern from `src/lib/vault/record-document.ts`):
+**[CORRECTED 2026-08-05]** Provisioning order (mirrors the vault upload's
+"clean up the orphan on partial failure" pattern from
+`src/lib/vault/record-document.ts` — with one correction: on step 2 failure,
+prefer leaving a recoverable orphaned account over an irreversible delete,
+see below):
 
-1. Call `admin.auth.admin.inviteUserByEmail(email, { data: { full_name },
-   redirectTo: \`${SITE_URL}/auth/confirm?next=/accept-invite\` })`.
+1. Compute the invite's `redirectTo` as the **requesting officer's own
+   tenant host** (e.g. `https://miles.lvh.me:3000/auth/confirm`, not a
+   single global `NEXT_PUBLIC_SITE_URL`) — derived from the inbound
+   request's `Host` header inside the Server Action, the same way
+   `proxy.ts` derives tenant context from the host. This matters because
+   Supabase Auth's session cookie is host-scoped: if the confirm/accept
+   flow ran on a different host than the invited member's actual chapter
+   subdomain, the session set during confirmation would not be sent on
+   the subsequent page load, and the member would appear logged out.
+2. Call `admin.auth.admin.inviteUserByEmail(email, { data: { full_name },
+   redirectTo })`.
    - If this errors because the user already exists, return a friendly
      `{ error: "This person already has an account." }` — this IS the
      duplicate-invite check; no separate tracking state needed.
@@ -107,33 +127,70 @@ partial failure" pattern from `src/lib/vault/record-document.ts`):
      (`00000000000003_profiles.sql`) auto-creates the `profiles` row from
      `raw_user_meta_data ->> 'full_name'` the moment the auth user is
      created — no separate profile-insert step needed here.
-2. Insert the `chapter_members` row (`chapter_id`, `profile_id` = the
+3. Insert the `chapter_members` row (`chapter_id`, `profile_id` = the
    invited user's id, `role: 'Member'`) using the admin client (this insert
    is what actually needs the service-role client — the officer's own
    session doesn't have an insert policy broad enough here, and using the
    admin client keeps this consistent with the rest of the codebase's
    privileged-write pattern).
-3. **If step 2 fails:** call `admin.auth.admin.deleteUser(userId)` to avoid
-   an orphaned, unlinked auth account — same shape as the vault's "delete
-   the orphaned Storage object if the metadata insert fails."
+4. **If step 3 fails with a unique-violation** (the `(chapter_id,
+   profile_id)` constraint — meaning this person was already invited to
+   this chapter and Supabase re-issued the invite to the same pending
+   user rather than erroring): return a friendly "This person has already
+   been invited." error. **Do not delete the auth user** — the original
+   design's "delete the orphaned user on any step-3 failure" was flagged
+   in the final review as destructive-by-default: an officer re-clicking
+   "Invite" (the ordinary recovery action when an email doesn't arrive,
+   which is exactly the situation before Auth SMTP is configured) would
+   silently delete the pending invitee's account, cascading their profile
+   and any other chapter memberships. For any *other* unexpected step-3
+   failure, log loudly with the `userId` for manual reconciliation and
+   leave the account in place — a recoverable orphan is preferable to an
+   irreversible deletion.
 
-### Accept-invite flow
+### Accept-invite flow **[CORRECTED 2026-08-05]**
 
-Supabase's invite email links to `redirectTo` with a `?code=` param (PKCE
-flow, consistent with this app's existing `@supabase/ssr` architecture,
-rather than the implicit hash-fragment flow).
+The original design assumed Supabase's invite email links to `redirectTo`
+with a PKCE `?code=` param, exchanged via `exchangeCodeForSession()`. This
+is factually wrong: Supabase's own SDK documents that **PKCE is not
+supported for `inviteUserByEmail`** (the browser that sends the invite and
+the browser that accepts it are different browsers, so there's no local
+PKCE verifier to match against). The corrected mechanism uses an OTP
+token hash instead, consumed via `verifyOtp()`:
 
-1. **`src/app/auth/confirm/route.ts`** (new, small server route) — reads
-   `code` and `next` from the query string, calls
-   `supabase.auth.exchangeCodeForSession(code)` (establishes the session
-   server-side via `@supabase/ssr`'s cookie handling), then redirects to
-   `next` (`/accept-invite`). On failure (expired/invalid code), redirects
-   to `/login?error=invite-expired`.
-2. **`src/app/(public)/accept-invite/page.tsx`** (new) — a client component.
+1. **Custom invite email template** (`supabase/templates/invite.html`,
+   registered via `[auth.email.template.invite]` in `supabase/config.toml`
+   for local dev, and the equivalent Authentication → Email Templates →
+   "Invite user" setting in the deployed Supabase project's dashboard) —
+   overrides Supabase's default template so the link points directly at
+   this app's own confirm route rather than Supabase's hosted verify
+   endpoint: `{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=invite`.
+   Since `redirectTo` (computed in step 1 above) is already a full URL
+   with its own `?next=...` query string, the template appends with `&`,
+   not `?`.
+2. **`src/app/auth/confirm/route.ts`** (new, small server route) — reads
+   `token_hash`, `type`, and `next` from the query string, calls
+   `supabase.auth.verifyOtp({ type: "invite", token_hash })` (establishes
+   the session server-side via `@supabase/ssr`'s cookie handling, on
+   whatever host actually received the request — i.e. the correct chapter
+   subdomain, per the redirectTo fix above), then redirects to a validated
+   `next` (`/accept-invite`; same-origin-relative-path validation from the
+   already-fixed open-redirect finding still applies). On failure
+   (expired/invalid token), redirects to `/login?error=invite-expired`.
+3. **`src/app/(public)/accept-invite/page.tsx`** (new) — a client component.
    Confirms a session exists (redirect to `/login` if not — guards against
    someone hitting this URL directly with no active invite session). Shows
    a "set your password" form; submits via `supabase.auth.updateUser({
    password })`; on success, `router.replace("/dashboard")`.
+
+**New required setup steps** (same shape as the Auth SMTP dependency
+already documented above): the deployed Supabase project's redirect URL
+allow-list (Authentication → URL Configuration → Redirect URLs) must
+include every chapter subdomain's `/auth/confirm` path (a wildcard pattern
+like `https://*.birminghamsigmas.org/auth/confirm` is supported there),
+and the invite email template must be customized to match step 1 above.
+Local `supabase/config.toml` is updated in the same commit as the code fix
+so local dev testing (once SMTP is configured) matches production.
 
 ### Nav
 
@@ -150,12 +207,14 @@ Officer (Admin/Secretary/Intake Director)
   -> inviteMember() Server Action
        -> requireRole() + zod validation
        -> provisionMemberInvite()
+            -> redirectTo computed from the officer's own tenant host
             -> admin.auth.admin.inviteUserByEmail()  [triggers handle_new_user -> profiles row]
             -> insert chapter_members row (role: Member)
-            -> on chapter_members failure: admin.auth.admin.deleteUser() (rollback)
-  -> Supabase sends invite email (via configured Auth SMTP)
-  -> Invited person clicks link -> /auth/confirm?code=...
-       -> exchangeCodeForSession() -> redirect to /accept-invite
+            -> on chapter_members unique-violation: friendly "already invited" error, no delete
+            -> on other chapter_members failure: log loudly, leave the account (no delete)
+  -> Supabase sends invite email (via configured Auth SMTP + custom invite template)
+  -> Invited person clicks link -> /auth/confirm?token_hash=...&type=invite&next=/accept-invite
+       -> verifyOtp({ type: "invite", token_hash }) -> redirect to validated next
   -> /accept-invite: set password -> supabase.auth.updateUser({ password })
   -> redirect to /dashboard, now signed in as a Member
 ```
