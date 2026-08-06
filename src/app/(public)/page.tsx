@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronDown, GraduationCap, HeartHandshake, Users } from "lucide-react";
+import { ArrowRight, GraduationCap, HeartHandshake, Users } from "lucide-react";
 import { getCurrentChapter } from "@/lib/tenant/get-chapter";
 
 const PILLARS = [
@@ -42,11 +42,11 @@ export default async function Home() {
             Service For Humanity. Welcome to the official website of the {chapter.name} of Phi Beta Sigma Fraternity, Inc.
           </p>
           <Link
-            href="/#principles"
+            href="/about"
             className="mt-10 inline-flex items-center gap-1 rounded-full border border-white/40 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/15"
           >
-            Scroll Down
-            <ChevronDown className="h-4 w-4" />
+            Explore Site
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </section>
@@ -65,62 +65,47 @@ export default async function Home() {
         </div>
       </section>
 
-      <section id="about" className="bg-white px-6 py-16 sm:px-8 lg:px-8">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-          <img
-            src="https://lh3.googleusercontent.com/sitesv/AG8ngQX8OB2IKo0LT4dl92aBCrx3h2OqdBlL6nhNQWR_jWAJmDNvkCopyd_5M2f3sJXz2GwoW-Xf0fK9B70sJrfzxrwf3gHjOJrCN3PRZVL6pGpgCRSL2usLvBzVjQnhWsTB4c8fIKIlz4bamr8290pk-dOKUQL5o2UZ1k9SOgP6HG4OhLoEm3_93ek787-E0w_mXDlVQAcp-BQPyFvWNHAqjuQYlgNPSFkYAFlWxwJO=w1280"
-            alt="Tau Sigma Chapter"
-            className="w-full rounded-md object-cover shadow-sm"
-          />
-          <div>
-            <h2 className="text-center text-3xl font-bold text-[#013594] sm:text-4xl">Tau Sigma Chapter</h2>
-            <h3 className="mt-1 text-center text-3xl font-bold text-[#013594] sm:text-4xl">Birmingham Sigmas</h3>
-            <div className="mt-6 space-y-4 text-[15px] leading-8 text-zinc-600">
-              <p>
-                Chartered in <strong className="text-zinc-900">1924</strong>, Tau Sigma proudly serves <strong className="text-zinc-900">Birmingham, AL and Jefferson County, AL Area</strong>. We are also the alumni advisor chapter to the Brothers of the Sigma Chapter of the Fraternity at Miles College, Eta Epsilon at the University of Alabama at Birmingham, Epsilon Tau at Talladega College, and Pi Kappa at Jacksonville State University.
-              </p>
-              <p>
-                We are a chapter that places <strong className="text-zinc-900">BROTHERHOOD</strong> first and <strong className="text-zinc-900">SERVICE</strong> to our community above all. As you browse through our website, we hope you see us as a reflection of our Fraternity&apos;s motto, “Culture for Service and Service for Humanity.”
-              </p>
-            </div>
+      <section className="bg-[#f8f9fc] px-6 py-16 sm:px-8 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <h2 className="text-center text-3xl font-bold text-[#013594] sm:text-4xl">Explore Tau Sigma</h2>
+          <p className="mx-auto mt-4 max-w-3xl text-center text-[15px] leading-8 text-zinc-600">
+            Dive deeper into our chapter history, photo gallery, community programs, and ways to connect.
+          </p>
+
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <Link
+              href="/about"
+              className="rounded-md border border-zinc-200 bg-white p-5 shadow-sm transition-transform hover:-translate-y-0.5"
+            >
+              <p className="text-lg font-semibold text-[#013594]">About</p>
+              <p className="mt-2 text-sm leading-7 text-zinc-600">Learn our legacy, mission, and chapter leadership.</p>
+            </Link>
+
+            <Link
+              href="/photos"
+              className="rounded-md border border-zinc-200 bg-white p-5 shadow-sm transition-transform hover:-translate-y-0.5"
+            >
+              <p className="text-lg font-semibold text-[#013594]">Photos</p>
+              <p className="mt-2 text-sm leading-7 text-zinc-600">View moments from service and brotherhood events.</p>
+            </Link>
+
+            <Link
+              href="/community-events"
+              className="rounded-md border border-zinc-200 bg-white p-5 shadow-sm transition-transform hover:-translate-y-0.5"
+            >
+              <p className="text-lg font-semibold text-[#013594]">Community Events</p>
+              <p className="mt-2 text-sm leading-7 text-zinc-600">See our flagship initiatives and community impact.</p>
+            </Link>
+
+            <Link
+              href="/contact"
+              className="rounded-md border border-zinc-200 bg-white p-5 shadow-sm transition-transform hover:-translate-y-0.5"
+            >
+              <p className="text-lg font-semibold text-[#013594]">Contact</p>
+              <p className="mt-2 text-sm leading-7 text-zinc-600">Reach out for questions, support, or partnership.</p>
+            </Link>
           </div>
         </div>
-      </section>
-
-      <section id="events" className="bg-[#f8f9fc] px-6 py-16 sm:px-8 lg:px-8">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.55fr_1.45fr] lg:items-start">
-          <div>
-            <img
-              src="https://lh3.googleusercontent.com/sitesv/AG8ngQWsiyjTFdYEOWsWDvLtCK_dOaDLIKOo580jj6HKsurMo7pIPbWBjyKGOJD8FOTgJkGpRjefJ9GFRUYcAKFrLqezvO3xERsEJzIVMTwWmXW-9icWLkGGY8UWQufMDwqD8T5Dy9P3jPs6rtDBpee5ykr9qu4g-6Qm4AFCPf_73k_TwStF82qO4yHXHz0QzoIkl49T51KSfDmMpeFenI8cI_M3dKD80E9kddsZOTYK=w1280"
-              alt="Chapter President"
-              className="mx-auto w-full max-w-sm rounded-md object-cover shadow-sm"
-            />
-            <div className="mt-4 text-center">
-              <p className="font-semibold text-[#013594]">Bro. Joseph Fenderson</p>
-              <p className="text-sm text-zinc-700">Chapter President</p>
-              <p className="text-sm text-zinc-700">Alabama 1st Vice Director</p>
-            </div>
-          </div>
-
-          <article className="rounded-md border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-center text-3xl font-bold text-[#013594] sm:text-4xl">President&apos;s Message</h2>
-            <div className="mt-6 space-y-4 text-[15px] leading-8 text-zinc-700">
-              <p>Greetings Brothers, Guests, and Friends,</p>
-              <p>
-                On behalf of the men of the Tau Sigma Chapter of Phi Beta Sigma Fraternity, Inc., I welcome you to our digital home.
-              </p>
-              <p>
-                Founded on the principles of <strong className="text-[#013594]">Brotherhood, Scholarship, and Service</strong>, our chapter continues to stand as a beacon of leadership, community engagement, and fraternal excellence here in Birmingham, Alabama.
-              </p>
-              <p>
-                From our <strong>Shoes for Kids</strong> and <strong>Toys for Kids</strong> initiatives to annual scholarship awards for deserving seniors, we are intentional about leaving a legacy of impact.
-              </p>
-              <p>
-                As you explore our site, we hope you learn more about the work we are doing and how you can support our efforts or become a part of the Sigma Brotherhood.
-              </p>
-            </div>
-          </article>
-          </div>
       </section>
     </>
   );
