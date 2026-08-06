@@ -1,27 +1,37 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-export async function GET(request: NextRequest) {
-  const code = request.nextUrl.searchParams.get("code");
-  const rawNext = request.nextUrl.searchParams.get("next") ?? "/accept-invite";
-  const next =
-    rawNext.startsWith("/") && !rawNext.startsWith("//")
-      ? rawNext
-      : "/accept-invite";
+function resolveSafeNext(rawNext: string, requestUrl: string): string {
+  try {
+    const resolved = new URL(rawNext, requestUrl);
+    const base = new URL(requestUrl);
+    if (resolved.origin === base.origin) {
+      return resolved.pathname + resolved.search;
+    }
+  } catch {
+    // fall through to the safe default below
+  }
+  return "/accept-invite";
+}
 
-  if (!code) {
-    return NextResponse.redirect(
-      new URL("/login?error=invite-expired", request.url)
-    );
+export async function GET(request: NextRequest) {
+  const tokenHash = request.nextUrl.searchParams.get("token_hash");
+  const type = request.nextUrl.searchParams.get("type");
+  const rawNext = request.nextUrl.searchParams.get("next") ?? "/accept-invite";
+  const next = resolveSafeNext(rawNext, request.url);
+
+  if (!tokenHash || type !== "invite") {
+    return NextResponse.redirect(new URL("/login?error=invite-expired", request.url));
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { error } = await supabase.auth.verifyOtp({
+    type: "invite",
+    token_hash: tokenHash,
+  });
 
   if (error) {
-    return NextResponse.redirect(
-      new URL("/login?error=invite-expired", request.url)
-    );
+    return NextResponse.redirect(new URL("/login?error=invite-expired", request.url));
   }
 
   return NextResponse.redirect(new URL(next, request.url));

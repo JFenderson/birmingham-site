@@ -1,5 +1,7 @@
 "use server";
 
+import { headers } from "next/headers";
+
 import { requireRole } from "@/lib/auth/rbac";
 import { provisionMemberInvite } from "@/lib/members/invite-member";
 import { inviteMemberSchema } from "@/lib/validation/schemas";
@@ -16,8 +18,11 @@ export async function inviteMember(
 
   const { chapterId } = await requireRole(INVITE_ROLES);
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  const redirectTo = `${siteUrl}/auth/confirm?next=${encodeURIComponent("/accept-invite")}`;
+  const headerList = await headers();
+  const host = headerList.get("host") ?? "";
+  const isLocal = host.includes("lvh.me") || host.includes("localhost") || host.includes("127.0.0.1");
+  const protocol = isLocal ? "http" : "https";
+  const redirectTo = `${protocol}://${host}/auth/confirm?next=${encodeURIComponent("/accept-invite")}`;
 
   return provisionMemberInvite({
     chapterId,

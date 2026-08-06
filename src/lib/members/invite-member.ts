@@ -36,13 +36,18 @@ export async function provisionMemberInvite(params: {
   });
 
   if (memberError) {
-    // Roll back the orphaned auth user rather than leaving an account with
-    // no chapter membership — same "clean up on partial failure" pattern
-    // as the vault upload's orphaned-Storage-object cleanup.
-    const { error: deleteError } = await admin.auth.admin.deleteUser(userId);
-    if (deleteError) {
-      console.error("[invite] rollback failed, orphaned auth user", { userId, error: deleteError });
+    if (memberError.code === "23505") {
+      // Supabase re-invites a still-pending user rather than erroring on a
+      // second invite attempt, so this insert re-runs against a person
+      // already in this chapter. Never delete the account here — an
+      // officer re-clicking "Invite" (the normal recovery when an email
+      // doesn't arrive) must not be able to destroy the pending account.
+      return { error: "This person has already been invited to this chapter." };
     }
+    console.error("[invite] chapter_members insert failed, leaving account for manual review", {
+      userId,
+      error: memberError,
+    });
     return { error: "Could not complete invite. Please try again." };
   }
 
