@@ -19,6 +19,7 @@ const NAV_ITEMS = [
     ],
   },
   { href: "/photos", label: "Photos" },
+  { href: "/news", label: "News" },
   {
     href: "/community-events",
     label: "Events",
