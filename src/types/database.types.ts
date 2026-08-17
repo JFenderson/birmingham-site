@@ -594,8 +594,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      current_member_chapter_id: { Args: never; Returns: string }
       current_chapter_ids: { Args: never; Returns: string[] }
+      current_member_chapter_id: { Args: never; Returns: string }
       has_role: {
         Args: {
           p_chapter_id: string
@@ -604,10 +604,7 @@ export type Database = {
         Returns: boolean
       }
       is_approved_member: { Args: never; Returns: boolean }
-      is_chapter_admin_for: {
-        Args: { p_chapter_id: string }
-        Returns: boolean
-      }
+      is_chapter_admin_for: { Args: { p_chapter_id: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       log_audit_event: {
         Args: {
