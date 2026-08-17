@@ -1,11 +1,17 @@
 import Link from "next/link";
+import { getCurrentChapter } from "@/lib/tenant/get-chapter";
+import { getPublishedLeaders } from "@/sanity/queries";
 
 const LEADERSHIP = [
   { name: "Bro. Joseph Fenderson", role: "Chapter President" },
   { name: "Tau Sigma Executive Board", role: "Chapter Leadership Team" },
 ];
 
-export default function AboutLeadershipPage() {
+export default async function AboutLeadershipPage() {
+  const { chapterSlug } = await getCurrentChapter();
+  const cmsLeaders = await getPublishedLeaders(chapterSlug);
+  const leaders = cmsLeaders.length > 0 ? cmsLeaders : LEADERSHIP;
+
   return (
     <div className="bg-white px-6 py-16 sm:px-8 lg:px-8">
       <div className="mx-auto max-w-5xl rounded-md border border-zinc-200 bg-white p-8 shadow-sm sm:p-10">
@@ -15,8 +21,11 @@ export default function AboutLeadershipPage() {
         </p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {LEADERSHIP.map((leader) => (
-            <article key={leader.name} className="rounded-md border border-zinc-200 bg-[#f8f9fc] p-4">
+          {leaders.map((leader) => (
+            <article
+              key={"_id" in leader && typeof leader._id === "string" ? leader._id : leader.name}
+              className="rounded-md border border-zinc-200 bg-[#f8f9fc] p-4"
+            >
               <p className="font-semibold text-zinc-900">{leader.name}</p>
               <p className="text-sm text-zinc-600">{leader.role}</p>
             </article>
