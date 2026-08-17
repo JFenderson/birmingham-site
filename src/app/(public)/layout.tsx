@@ -8,7 +8,7 @@ export default async function PublicLayout({
   const chapter = await getCurrentChapter();
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="public-shell flex flex-1 flex-col">
       <PublicHeader chapter={chapter} />
       <main id="main-content" tabIndex={-1} className="flex flex-1 flex-col">
         {children}

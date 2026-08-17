@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -8,7 +8,8 @@ type Mode = "loading" | "needs-enrollment" | "needs-step-up" | "already-verified
 
 export function EnrollForm() {
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
+  const initializedRef = useRef(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [factorId, setFactorId] = useState<string | null>(null);
   const [code, setCode] = useState("");
@@ -17,6 +18,11 @@ export function EnrollForm() {
   const [mode, setMode] = useState<Mode>("loading");
 
   useEffect(() => {
+    if (initializedRef.current) {
+      return;
+    }
+    initializedRef.current = true;
+
     void (async () => {
       const { data } = await supabase.auth.mfa.listFactors();
       const verified = data?.totp?.find((f) => f.status === "verified");
@@ -37,6 +43,15 @@ export function EnrollForm() {
         // needs to step up via a fresh challenge/verify against their
         // existing factor. No new QR code; same factor, same secret.
         setFactorId(verified.id);
+        setMode("needs-step-up");
+        return;
+      }
+
+      const existingUnverified = data?.totp?.find((f) => f.status !== "verified");
+      if (existingUnverified) {
+        // If an enrollment factor already exists, avoid creating a duplicate
+        // factor (which can return 422) and continue with challenge/verify.
+        setFactorId(existingUnverified.id);
         setMode("needs-step-up");
         return;
       }

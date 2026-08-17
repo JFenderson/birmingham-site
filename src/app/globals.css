@@ -5,11 +5,19 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
---font-sans: var(--font-sans);
+  --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-heading);
+  --font-public-body: var(--public-font-body);
+  --font-public-display: var(--public-font-display);
   --color-navy: var(--navy);
   --color-navy-dark: var(--navy-dark);
+  --color-public-blue: var(--public-blue);
+  --color-public-blue-deep: var(--public-blue-deep);
+  --color-public-ink: var(--public-ink);
+  --color-public-surface: var(--public-surface);
+  --color-public-surface-subtle: var(--public-surface-subtle);
+  --color-public-border: var(--public-border);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -48,6 +56,7 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --breakpoint-public-nav: 64rem;
 }
 
 :root {
@@ -87,6 +96,42 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Public-site design tokens. These stay separate from portal tokens so
+     the authenticated workspace retains its existing visual contract. */
+  --public-font-body: var(--font-sans);
+  --public-font-display: var(--font-heading);
+  --public-blue: #0047ab;
+  --public-blue-deep: #003b8e;
+  --public-ink: #102a43;
+  --public-muted: #52657a;
+  --public-surface: #ffffff;
+  --public-surface-subtle: #f4f8ff;
+  --public-surface-strong: #e8f0ff;
+  --public-border: #d8e2f0;
+  --public-focus: #1d70d6;
+  --public-shadow: 0 12px 30px rgb(16 42 67 / 12%);
+  --public-content-max: 80rem;
+  --public-gutter: 1rem;
+  --public-space-1: 0.5rem;
+  --public-space-2: 1rem;
+  --public-space-3: 1.5rem;
+  --public-space-4: 2rem;
+  --public-space-5: 3rem;
+  --public-announcement-height: 2.5rem;
+  --public-navigation-height: 4.75rem;
+}
+
+@media (min-width: 40rem) {
+  :root {
+    --public-gutter: 1.5rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --public-gutter: 2rem;
+  }
 }
 
 .dark {
@@ -139,5 +184,10 @@
   }
   ::selection {
     @apply bg-navy/20 text-navy;
+  }
+
+  .public-shell :focus-visible {
+    outline: 3px solid var(--public-focus);
+    outline-offset: 3px;
   }
 }

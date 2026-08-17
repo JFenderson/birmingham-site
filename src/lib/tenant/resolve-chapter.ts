@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
-import { loadChapterSlugMap, ROOT_SLUG } from "./constants";
+import { loadChapterSlugMap } from "./constants";
+import { resolveTenant } from "./resolve-tenant";
 import type { TenantContext } from "@/types/domain";
 
 export const TENANT_ID_HEADER = "x-chapter-id";
@@ -14,47 +15,11 @@ export function resolveTenantFromRequest(
   host: string | null,
   searchParams: URLSearchParams
 ): TenantContext | null {
-  const rootDomain = process.env.ROOT_DOMAIN ?? "";
-  const slugMap = loadChapterSlugMap();
-  const hostname = (host ?? "").split(":")[0]?.toLowerCase() ?? "";
-
-  // The ?__tenant= override is allowed outside production, and on Vercel's
-  // shared *.vercel.app domain even in a production build — that shared
-  // domain can't carry real subdomains (miles.birmingham-site.vercel.app
-  // isn't provisionable without owning the vercel.app zone), so it's the
-  // only way to exercise non-root tenants there. It's still scoped to this
-  // one shared testing domain, not any arbitrary production host.
-  const overrideAllowed =
-    process.env.NODE_ENV !== "production" || hostname.endsWith(".vercel.app");
-
-  if (overrideAllowed) {
-    const override = searchParams.get("__tenant");
-    if (override) {
-      const chapterId = slugMap[override];
-      if (chapterId) return { chapterId, chapterSlug: override };
-    }
-  }
-
-  if (!hostname) return null;
-
-  let slug: string;
-  if (!rootDomain) {
-    // No ROOT_DOMAIN configured (e.g. Vercel preview *.vercel.app) — fall
-    // back to the root tenant rather than guessing at a subdomain.
-    slug = ROOT_SLUG;
-  } else if (hostname === rootDomain || hostname === `www.${rootDomain}`) {
-    slug = ROOT_SLUG;
-  } else if (hostname.endsWith(`.${rootDomain}`)) {
-    slug = hostname.slice(0, hostname.length - rootDomain.length - 1);
-  } else {
-    // Unrecognized host (e.g. a Vercel preview URL) — default to root.
-    slug = ROOT_SLUG;
-  }
-
-  const chapterId = slugMap[slug];
-  if (!chapterId) return null;
-
-  return { chapterId, chapterSlug: slug };
+  return resolveTenant(host, searchParams, {
+    nodeEnv: process.env.NODE_ENV,
+    rootDomain: process.env.ROOT_DOMAIN ?? "",
+    slugMap: loadChapterSlugMap(),
+  });
 }
 
 /**

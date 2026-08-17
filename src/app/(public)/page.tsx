@@ -1,110 +1,166 @@
 import Link from "next/link";
-import { ArrowRight, GraduationCap, HeartHandshake, Users } from "lucide-react";
+import { GraduationCap, HeartHandshake, Users } from "lucide-react";
+import { CollegiateHome } from "@/components/collegiate/collegiate-home";
+import { ContentCta } from "@/components/public/content-cta";
+import { Hero } from "@/components/public/hero";
+import { ImpactCard } from "@/components/public/impact-card";
+import { SectionHeading } from "@/components/public/section-heading";
 import { getCurrentChapter } from "@/lib/tenant/get-chapter";
 
-const PILLARS = [
+const PRINCIPLES = [
   {
     icon: Users,
     title: "Brotherhood",
-    body: "A lifelong community of men committed to fellowship, support, and uplifting one another through every season of life.",
+    description: "A lifelong community of men committed to fellowship, support, and uplifting one another through every season of life.",
   },
   {
     icon: GraduationCap,
     title: "Scholarship",
-    body: "A tradition of academic excellence, leadership, and disciplined growth that strengthens our members and our community.",
+    description: "A tradition of academic excellence, leadership, and disciplined growth that strengthens our members and our community.",
   },
   {
     icon: HeartHandshake,
     title: "Service",
-    body: "A mission rooted in service, impact, and giving back through meaningful programs and outreach across Birmingham.",
+    description: "A mission rooted in service, impact, and giving back through meaningful programs and outreach across Birmingham.",
+  },
+];
+
+const INITIATIVES = [
+  {
+    title: "BHM Blue and White Weekend",
+    description: "A signature chapter gathering that brings fellowship, legacy, and service together in Birmingham.",
+  },
+  {
+    title: "Shoes for Kids",
+    description: "Annual outreach that helps students begin the school year with confidence and support.",
+  },
+  {
+    title: "Toys for Kids",
+    description: "Holiday service that partners with local families and organizations to share joy and resources.",
   },
 ];
 
 export default async function Home() {
   const chapter = await getCurrentChapter();
 
+  if (chapter.siteType === "collegiate") {
+    return <CollegiateHome chapter={chapter} />;
+  }
+
   return (
     <>
-      <section className="relative isolate flex min-h-[75vh] items-center justify-center overflow-hidden bg-slate-900 px-6 py-24 text-white sm:px-8 lg:px-12">
-        <div
-          className="absolute inset-0 bg-[url('https://lh3.googleusercontent.com/sitesv/AG8ngQV3ez2rl1IdOOrj46RkLfDFJx3vTG_7w51vD_7mn9UNWX_LDDdP03xd9koxCqPxlXnXIPAMcEfgeBZx7YBrvDvhjb-66p4UwXNQ2HcSGYeJOEUuGH8Bcg0JGQyTL7DQ4f73SWWbPedQDELnLMhulH8q8YBpBeBrOwTfPlFhkSxcLdrPfeMGR0LIHykh9Kw=w16383')] bg-cover bg-center"
-          aria-hidden
-        />
-        <div className="absolute inset-0 bg-black/55" aria-hidden />
-        <div className="relative mx-auto w-full max-w-5xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.35em] text-white/80">
-            Phi Beta Sigma Fraternity, Inc.
-          </p>
-          <h1 className="mt-6 text-4xl font-black uppercase tracking-[0.2em] text-white sm:text-5xl lg:text-6xl">
-            Culture For Service
-          </h1>
-          <p className="mx-auto mt-5 max-w-3xl text-base leading-8 text-slate-200 sm:text-lg">
-            Service For Humanity. Welcome to the official website of the {chapter.name} of Phi Beta Sigma Fraternity, Inc.
-          </p>
+      <Hero
+        eyebrow="Birmingham Sigmas · Phi Beta Sigma Fraternity, Inc."
+        title={chapter.name}
+        description="Serving Birmingham and Jefferson County through brotherhood, scholarship, and service for humanity."
+        primaryAction={{ href: "/about", label: "Discover our chapter" }}
+        secondaryAction={{ href: "/contact", label: "Connect with us" }}
+      />
+
+      <section className="bg-[var(--public-surface)] py-16 sm:py-20">
+        <div className="mx-auto max-w-[var(--public-content-max)] px-[var(--public-gutter)]">
+          <SectionHeading
+            align="center"
+            eyebrow="Our foundation"
+            title="Built on the principles that move our community forward"
+            description="Tau Sigma brings members, neighbors, and partners together around the ideals that have guided Phi Beta Sigma for generations."
+          />
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {PRINCIPLES.map(({ icon: Icon, title, description }) => (
+              <ImpactCard key={title} title={title} description={description} icon={<Icon className="h-5 w-5" />} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[var(--public-surface-subtle)] py-16 sm:py-20">
+        <div className="mx-auto grid max-w-[var(--public-content-max)] gap-10 px-[var(--public-gutter)] lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)] lg:items-center">
+          <SectionHeading
+            eyebrow="Our story"
+            title="A Birmingham chapter with a commitment to the next generation"
+            description="Tau Sigma proudly serves the Birmingham area while supporting collegiate chapters at Miles College, UAB, Talladega College, and Jacksonville State University. Our work honors chapter legacy and creates practical opportunities for the communities we call home."
+          />
           <Link
             href="/about"
-            className="mt-10 inline-flex items-center gap-1 rounded-full border border-white/40 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/15"
+            className="rounded-2xl border border-[var(--public-border)] bg-[var(--public-surface)] p-7 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-[var(--public-shadow)] motion-reduce:transform-none"
           >
-            Explore Site
-            <ArrowRight className="h-4 w-4" />
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[var(--public-blue)]">Explore Tau Sigma</p>
+            <p className="mt-3 text-xl font-bold text-[var(--public-ink)]">Learn about our history, leadership, and programs.</p>
+            <p className="mt-3 text-sm leading-7 text-[var(--public-muted)]">See how the chapter carries its service-centered legacy into Birmingham today.</p>
           </Link>
         </div>
       </section>
 
-      <section id="principles" className="mx-auto max-w-7xl px-6 py-16 sm:px-8 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-3">
-          {PILLARS.map(({ icon: Icon, title, body }) => (
-            <article key={title} className="rounded-md border border-zinc-200 bg-white px-5 py-6 shadow-sm">
-              <h3 className="flex items-center gap-2 text-xl font-semibold text-[#013594]">
-                <Icon aria-hidden className="h-5 w-5" />
-                {title}
-              </h3>
-              <p className="mt-3 text-sm leading-7 text-zinc-600">{body}</p>
-            </article>
-          ))}
+      <section className="bg-[var(--public-surface)] py-16 sm:py-20">
+        <div className="mx-auto max-w-[var(--public-content-max)] px-[var(--public-gutter)]">
+          <SectionHeading
+            eyebrow="From the president"
+            title="Service-driven leadership, rooted in brotherhood"
+            description="Tau Sigma leadership is committed to thoughtful planning, chapter accountability, member development, and service that reaches beyond our meetings."
+          />
+          <div className="mt-8 flex flex-col gap-5 rounded-2xl border border-[var(--public-border)] bg-[var(--public-surface-subtle)] p-7 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xl font-bold text-[var(--public-ink)]">Bro. Joseph Fenderson</p>
+              <p className="mt-1 text-sm font-semibold text-[var(--public-blue)]">Chapter President</p>
+            </div>
+            <Link href="/photos" className="text-sm font-bold text-[var(--public-blue)] transition-colors hover:text-[var(--public-blue-deep)]">
+              View chapter moments
+            </Link>
+          </div>
         </div>
       </section>
 
-      <section className="bg-[#f8f9fc] px-6 py-16 sm:px-8 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <h2 className="text-center text-3xl font-bold text-[#013594] sm:text-4xl">Explore Tau Sigma</h2>
-          <p className="mx-auto mt-4 max-w-3xl text-center text-[15px] leading-8 text-zinc-600">
-            Dive deeper into our chapter history, photo gallery, community programs, and ways to connect.
-          </p>
-
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <Link
-              href="/about"
-              className="rounded-md border border-zinc-200 bg-white p-5 shadow-sm transition-transform hover:-translate-y-0.5"
-            >
-              <p className="text-lg font-semibold text-[#013594]">About</p>
-              <p className="mt-2 text-sm leading-7 text-zinc-600">Learn our legacy, mission, and chapter leadership.</p>
-            </Link>
-
-            <Link
-              href="/photos"
-              className="rounded-md border border-zinc-200 bg-white p-5 shadow-sm transition-transform hover:-translate-y-0.5"
-            >
-              <p className="text-lg font-semibold text-[#013594]">Photos</p>
-              <p className="mt-2 text-sm leading-7 text-zinc-600">View moments from service and brotherhood events.</p>
-            </Link>
-
-            <Link
-              href="/community-events"
-              className="rounded-md border border-zinc-200 bg-white p-5 shadow-sm transition-transform hover:-translate-y-0.5"
-            >
-              <p className="text-lg font-semibold text-[#013594]">Community Events</p>
-              <p className="mt-2 text-sm leading-7 text-zinc-600">See our flagship initiatives and community impact.</p>
-            </Link>
-
-            <Link
-              href="/contact"
-              className="rounded-md border border-zinc-200 bg-white p-5 shadow-sm transition-transform hover:-translate-y-0.5"
-            >
-              <p className="text-lg font-semibold text-[#013594]">Contact</p>
-              <p className="mt-2 text-sm leading-7 text-zinc-600">Reach out for questions, support, or partnership.</p>
-            </Link>
+      <section className="bg-[var(--public-surface-subtle)] py-16 sm:py-20">
+        <div className="mx-auto max-w-[var(--public-content-max)] px-[var(--public-gutter)]">
+          <SectionHeading
+            align="center"
+            eyebrow="Community impact"
+            title="Service that meets Birmingham where it is"
+            description="Our signature initiatives create moments of support, celebration, and opportunity for students, families, and neighbors throughout the year."
+          />
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {INITIATIVES.map((initiative) => (
+              <ImpactCard
+                key={initiative.title}
+                {...initiative}
+                link={{ href: "/community-events", label: "Explore the initiative" }}
+              />
+            ))}
           </div>
+        </div>
+      </section>
+
+      <section className="bg-[var(--public-surface)] py-16 sm:py-20">
+        <div className="mx-auto max-w-[var(--public-content-max)] px-[var(--public-gutter)]">
+          <SectionHeading
+            align="center"
+            eyebrow="Stay connected"
+            title="Latest chapter news and upcoming community events"
+            description="Follow along as the chapter shares announcements, service opportunities, and ways to take part in Birmingham."
+          />
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            <ImpactCard
+              title="Chapter news"
+              description="Read the latest updates, announcements, and stories from Tau Sigma."
+              link={{ href: "/news", label: "Read chapter news" }}
+            />
+            <ImpactCard
+              title="Community events"
+              description="Find signature programs and year-round service commitments across Birmingham."
+              link={{ href: "/community-events", label: "View community events" }}
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[var(--public-surface-subtle)] py-16 sm:py-20">
+        <div className="mx-auto max-w-[var(--public-content-max)] px-[var(--public-gutter)]">
+          <ContentCta
+            title="Partner with Tau Sigma"
+            description="Connect with the chapter for community partnerships, service opportunities, and chapter information."
+            action={{ href: "/contact", label: "Contact the chapter" }}
+            secondaryAction={{ href: "/about", label: "About Tau Sigma" }}
+          />
         </div>
       </section>
     </>

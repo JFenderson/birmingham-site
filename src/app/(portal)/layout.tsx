@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth/session";
 import { requireRole, PermissionError, MfaRequiredError } from "@/lib/auth/rbac";
 
 const ALL_ROLES = [
@@ -21,7 +22,8 @@ export default async function PortalLayout({
       redirect("/security/mfa");
     }
     if (err instanceof PermissionError) {
-      redirect("/login");
+      const session = await getSession();
+      redirect(session ? "/security/access" : "/login");
     }
     throw err;
   }

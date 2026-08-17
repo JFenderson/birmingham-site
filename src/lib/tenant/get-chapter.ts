@@ -1,12 +1,24 @@
 import { cache } from "react";
 import { getTenantContext } from "./resolve-chapter";
+import {
+  createRootSiteFallback,
+  createSiteContext,
+  type SiteContext,
+  type SiteType,
+} from "./site-context";
 import { createClient } from "@/lib/supabase/server";
 
-export interface CurrentChapter {
-  chapterId: string;
+export interface CurrentChapter extends SiteContext {
   chapterSlug: string;
-  name: string;
-  type: "graduate" | "collegiate";
+  type: SiteType;
+}
+
+function withLegacyAliases(context: SiteContext): CurrentChapter {
+  return {
+    ...context,
+    chapterSlug: context.slug,
+    type: context.siteType,
+  };
 }
 
 /**
@@ -19,14 +31,18 @@ export const getCurrentChapter = cache(async (): Promise<CurrentChapter> => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("chapters")
-    .select("name, type")
+    .select("id, slug, name, type")
     .eq("id", chapterId)
+    .eq("slug", chapterSlug)
     .maybeSingle();
 
-  return {
-    chapterId,
-    chapterSlug,
-    name: data?.name ?? chapterSlug,
-    type: (data?.type as "graduate" | "collegiate" | undefined) ?? "collegiate",
-  };
+  const context =
+    createSiteContext({ chapterId, chapterSlug }, data) ??
+    createRootSiteFallback({ chapterId, chapterSlug });
+
+  if (!context) {
+    throw new Error("The resolved chapter is not configured for public access.");
+  }
+
+  return withLegacyAliases(context);
 });

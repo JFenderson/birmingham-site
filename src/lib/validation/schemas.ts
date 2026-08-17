@@ -123,3 +123,29 @@ export const inviteMemberSchema = z.object({
   email: z.string().trim().email(),
 });
 export type InviteMemberInput = z.infer<typeof inviteMemberSchema>;
+
+export const memberIdSchema = z.string().uuid();
+
+export const membershipStatusSchema = z.enum([
+  "pending",
+  "approved",
+  "suspended",
+]);
+export type MembershipStatusInput = z.infer<typeof membershipStatusSchema>;
+
+export const memberRoleSchema = z.enum([
+  "member",
+  "chapter_admin",
+  "super_admin",
+]);
+export type MemberRoleInput = z.infer<typeof memberRoleSchema>;
+
+export const memberStatusUpdateSchema = z.object({
+  memberId: memberIdSchema,
+  status: membershipStatusSchema,
+});
+
+export const memberRoleAssignmentSchema = z.object({
+  memberId: memberIdSchema,
+  role: memberRoleSchema,
+});

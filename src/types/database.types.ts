@@ -362,30 +362,60 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           avatar_url: string | null
+          chapter_id: string | null
           created_at: string
           full_name: string
           id: string
+          membership_status: Database["public"]["Enums"]["membership_status"]
           phone: string | null
+          role: Database["public"]["Enums"]["access_role"]
           updated_at: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
+          chapter_id?: string | null
           created_at?: string
           full_name: string
           id: string
+          membership_status?: Database["public"]["Enums"]["membership_status"]
           phone?: string | null
+          role?: Database["public"]["Enums"]["access_role"]
           updated_at?: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
+          chapter_id?: string | null
           created_at?: string
           full_name?: string
           id?: string
+          membership_status?: Database["public"]["Enums"]["membership_status"]
           phone?: string | null
+          role?: Database["public"]["Enums"]["access_role"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       prospective_member_notes: {
         Row: {
@@ -564,6 +594,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      current_member_chapter_id: { Args: never; Returns: string }
       current_chapter_ids: { Args: never; Returns: string[] }
       has_role: {
         Args: {
@@ -572,6 +603,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_approved_member: { Args: never; Returns: boolean }
+      is_chapter_admin_for: {
+        Args: { p_chapter_id: string }
+        Returns: boolean
+      }
+      is_super_admin: { Args: never; Returns: boolean }
       log_audit_event: {
         Args: {
           p_action: string
@@ -588,12 +625,14 @@ export type Database = {
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
+      access_role: "member" | "chapter_admin" | "super_admin"
       member_role:
         | "Member"
         | "Treasurer"
         | "Secretary"
         | "Intake Director"
         | "Admin"
+      membership_status: "pending" | "approved" | "suspended"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -724,6 +763,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      access_role: ["member", "chapter_admin", "super_admin"],
       member_role: [
         "Member",
         "Treasurer",
@@ -731,6 +771,7 @@ export const Constants = {
         "Intake Director",
         "Admin",
       ],
+      membership_status: ["pending", "approved", "suspended"],
     },
   },
 } as const

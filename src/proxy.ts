@@ -14,16 +14,16 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.searchParams
   );
 
-  const requestHeaders = new Headers(request.headers);
-  if (tenant) {
-    requestHeaders.set(TENANT_ID_HEADER, tenant.chapterId);
-    requestHeaders.set(TENANT_SLUG_HEADER, tenant.chapterSlug);
-  } else {
-    // No resolvable tenant for this host — strip any client-supplied
-    // values for these headers so nothing downstream trusts stale data.
-    requestHeaders.delete(TENANT_ID_HEADER);
-    requestHeaders.delete(TENANT_SLUG_HEADER);
+  if (!tenant) {
+    return new NextResponse("Not Found", {
+      status: 404,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
   }
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(TENANT_ID_HEADER, tenant.chapterId);
+  requestHeaders.set(TENANT_SLUG_HEADER, tenant.chapterSlug);
 
   let response = NextResponse.next({ request: { headers: requestHeaders } });
 
