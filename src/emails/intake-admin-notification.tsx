@@ -21,7 +21,7 @@ export function IntakeAdminNotificationEmail({
           </Heading>
           <Text>
             {applicantName} submitted a {formTypeLabel.toLowerCase()} form for{" "}
-            {chapterName}.
+            {chapterName || "the chapter"}.
           </Text>
           <Text>Reply to {applicantEmail} to follow up.</Text>
         </Container>

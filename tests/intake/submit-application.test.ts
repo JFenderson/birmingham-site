@@ -92,6 +92,9 @@ test("interest notification content includes the human-readable form type for ap
   );
   assert.match(adminContent.subject, /Membership Interest/i);
   assert.match(adminContent.summary, /Membership Interest/i);
+  assert.match(applicantContent.text, /submission was received/i);
+  assert.match(adminContent.text, /Jordan Miles/i);
+  assert.doesNotMatch(applicantContent.text, /[\r\n]{3,}/);
 });
 
 test("submitApplication persists the normalized form type and passes the readable label to notifications", async (context) => {
@@ -238,6 +241,79 @@ test("submitApplication succeeds when notifications fail after a successful inse
   assert.equal(result.error, null);
   assert.equal(inserts.length, 1);
   assert.equal(inserts[0]?.form_type, "transfer");
+});
+
+test("submitApplication still attempts notifications when chapter lookup fails after a successful insert", async (context) => {
+  const notificationCalls: Array<Record<string, unknown>> = [];
+
+  context.mock.method(
+    submitApplicationModule.submitApplicationDependencies,
+    "createAdminClient",
+    () =>
+      ({
+        from(table: string) {
+          if (table === "prospective_members") {
+            return {
+              insert() {
+                return Promise.resolve({ error: null });
+              },
+            };
+          }
+
+          if (table === "chapters") {
+            return {
+              select() {
+                return {
+                  eq() {
+                    return {
+                      maybeSingle() {
+                        return Promise.reject(new Error("chapter lookup failed"));
+                      },
+                    };
+                  },
+                };
+              },
+            };
+          }
+
+          throw new Error(`Unexpected table: ${table}`);
+        },
+      }) as never,
+  );
+
+  context.mock.method(
+    submitApplicationModule.submitApplicationDependencies,
+    "sendInterestFormNotifications",
+    (payload: Record<string, unknown>) => {
+      notificationCalls.push(payload);
+      return Promise.resolve({
+        applicantError: null,
+        adminError: null,
+      });
+    },
+  );
+  context.mock.method(console, "error", () => undefined);
+
+  const result = await submitApplicationModule.submitApplication(
+    "chapter-1",
+    {
+      ...commonFields,
+      formType: "reactivation",
+      previousChapterName: "Tau Sigma",
+      yearsInactive: "4",
+    },
+  );
+
+  assert.equal(result.error, null);
+  assert.deepEqual(notificationCalls, [
+    {
+      to: "jmiles@example.com",
+      applicantName: "Jordan Miles",
+      applicantEmail: "jmiles@example.com",
+      chapterName: "",
+      formTypeLabel: "Reactivation",
+    },
+  ]);
 });
 
 test("prospective members migration allows membership_interest and retires the old intake value", () => {

@@ -82,6 +82,8 @@ section_resend() {
    membership interest, transfer, and reactivation form notifications.
    Override EMAIL_FROM only when sending from a different, already-verified
    address.
+   RESEND_API_KEY, EMAIL_FROM, and INTAKE_ADMIN_EMAIL are all server-only
+   variables. Do not expose them with NEXT_PUBLIC_ prefixes.
 
 5. Before domain verification finishes, you can test with Resend's sandbox
    mode, which only delivers to your own account email.

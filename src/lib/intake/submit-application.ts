@@ -43,8 +43,8 @@ export async function submitApplication(
     .insert(buildProspectiveMemberInsert(chapterId, data));
 
   if (!error) {
-    // Best-effort confirmation email — a send failure must never fail the
-    // application submission itself, which has already succeeded above.
+    let chapterName = "";
+
     try {
       const { data: chapter } = await admin
         .from("chapters")
@@ -52,11 +52,22 @@ export async function submitApplication(
         .eq("id", chapterId)
         .maybeSingle();
 
+      chapterName = chapter?.name ?? "";
+    } catch (err) {
+      console.error(
+        `[email] Chapter lookup failed before intake notification send. chapterId=${chapterId}`,
+        err
+      );
+    }
+
+    // Best-effort confirmation email — a send failure must never fail the
+    // application submission itself, which has already succeeded above.
+    try {
       await submitApplicationDependencies.sendInterestFormNotifications({
         to: data.email,
         applicantName: data.fullName,
         applicantEmail: data.email,
-        chapterName: chapter?.name ?? "",
+        chapterName,
         formTypeLabel,
       });
     } catch (err) {

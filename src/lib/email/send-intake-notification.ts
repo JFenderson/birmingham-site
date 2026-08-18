@@ -1,5 +1,9 @@
 import { Resend } from "resend";
-import { EMAIL_FROM } from "./config.ts";
+import {
+  getEmailFrom,
+  getIntakeAdminEmail,
+  getResendApiKey,
+} from "./config.ts";
 import {
   getAdminInterestNotificationContent,
   getApplicantInterestNotificationContent,
@@ -17,23 +21,47 @@ function toError(error: unknown): Error {
   return error instanceof Error ? error : new Error(String(error));
 }
 
+type ApplicantTemplateModule = typeof import("../../emails/intake-received.tsx");
+type AdminTemplateModule = typeof import("../../emails/intake-admin-notification.tsx");
+
+export const interestFormNotificationDependencies = {
+  createResendClient() {
+    return new Resend(getResendApiKey() ?? undefined);
+  },
+  getAdminRecipient() {
+    return getIntakeAdminEmail();
+  },
+  getEmailFrom() {
+    return getEmailFrom();
+  },
+  loadApplicantTemplate: () =>
+    import("../../emails/intake-received.tsx") as Promise<ApplicantTemplateModule>,
+  loadAdminTemplate: () =>
+    import(
+      "../../emails/intake-admin-notification.tsx"
+    ) as Promise<AdminTemplateModule>,
+};
+
 export async function sendInterestFormNotifications(
   params: InterestFormNotificationParams,
 ): Promise<{ applicantError: Error | null; adminError: Error | null }> {
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  const resend = interestFormNotificationDependencies.createResendClient();
   const applicantContent = getApplicantInterestNotificationContent(params);
   const adminContent = getAdminInterestNotificationContent(params);
-  const adminRecipient = process.env.INTAKE_ADMIN_EMAIL?.trim();
+  const adminRecipient = interestFormNotificationDependencies.getAdminRecipient();
+  const from = interestFormNotificationDependencies.getEmailFrom();
 
   let applicantError: Error | null = null;
   let adminError: Error | null = null;
 
   try {
-    const { IntakeReceivedEmail } = await import("../../emails/intake-received.tsx");
+    const { IntakeReceivedEmail } =
+      await interestFormNotificationDependencies.loadApplicantTemplate();
     await resend.emails.send({
-      from: EMAIL_FROM,
+      from,
       to: params.to,
       subject: applicantContent.subject,
+      text: applicantContent.text,
       react: IntakeReceivedEmail({
         applicantName: params.applicantName,
         chapterName: params.chapterName,
@@ -49,13 +77,13 @@ export async function sendInterestFormNotifications(
   }
 
   try {
-    const { IntakeAdminNotificationEmail } = await import(
-      "../../emails/intake-admin-notification.tsx"
-    );
+    const { IntakeAdminNotificationEmail } =
+      await interestFormNotificationDependencies.loadAdminTemplate();
     await resend.emails.send({
-      from: EMAIL_FROM,
+      from,
       to: adminRecipient,
       subject: adminContent.subject,
+      text: adminContent.text,
       react: IntakeAdminNotificationEmail({
         applicantName: params.applicantName,
         applicantEmail: params.applicantEmail,

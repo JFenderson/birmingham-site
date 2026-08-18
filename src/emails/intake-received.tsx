@@ -16,9 +16,11 @@ export function IntakeReceivedEmail({
         <Container style={{ backgroundColor: "#ffffff", padding: "32px", borderRadius: "8px" }}>
           <Heading style={{ color: "#1e3a8a" }}>Submission Received</Heading>
           <Text>
-            Hi {applicantName}, thank you for your {formTypeLabel.toLowerCase()}{" "}
-            submission to {chapterName}. A chapter officer will review it and
-            follow up soon.
+            Hi {applicantName}, your {formTypeLabel.toLowerCase()} submission
+            was received by {chapterName || "the chapter"}.
+          </Text>
+          <Text>
+            A chapter officer will review it and follow up soon.
           </Text>
         </Container>
       </Body>
