@@ -6,6 +6,7 @@ export interface ResolvedTenant {
 interface TenantResolverOptions {
   nodeEnv: string | undefined;
   rootDomain: string;
+  stagingHost?: string;
   slugMap: Readonly<Record<string, string>>;
 }
 
@@ -63,7 +64,12 @@ export function resolveTenant(
   }
 
   const rootDomain = normalizeHostname(options.rootDomain);
+  const stagingHost = normalizeHostname(options.stagingHost ?? null);
   if (options.nodeEnv !== "production" && LOCAL_HOSTS.has(hostname)) {
+    return getConfiguredTenant(ROOT_SLUG, options.slugMap);
+  }
+
+  if (stagingHost && hostname === stagingHost) {
     return getConfiguredTenant(ROOT_SLUG, options.slugMap);
   }
 

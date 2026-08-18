@@ -18,6 +18,7 @@ export function resolveTenantFromRequest(
   return resolveTenant(host, searchParams, {
     nodeEnv: process.env.NODE_ENV,
     rootDomain: process.env.ROOT_DOMAIN ?? "",
+    stagingHost: process.env.STAGING_HOST,
     slugMap: loadChapterSlugMap(),
   });
 }
