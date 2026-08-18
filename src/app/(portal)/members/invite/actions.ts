@@ -24,5 +24,8 @@ export async function inviteMember(
     fullName: parsed.data.fullName,
     email: parsed.data.email,
     redirectTo,
+    ...(parsed.data.membershipNumber
+      ? { membershipNumber: parsed.data.membershipNumber }
+      : {}),
   });
 }

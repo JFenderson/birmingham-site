@@ -1,9 +1,14 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
+function normalizeMembershipNumber(value: string): string {
+  return value.trim().replace(/\s+/g, "").toUpperCase();
+}
+
 export async function provisionMemberInvite(params: {
   chapterId: string;
   fullName: string;
   email: string;
+  membershipNumber?: string;
   redirectTo: string;
 }): Promise<{ error: string | null }> {
   const admin = createAdminClient();
@@ -25,6 +30,41 @@ export async function provisionMemberInvite(params: {
   }
 
   const userId = inviteData.user.id;
+
+  if (params.membershipNumber) {
+    const normalized = normalizeMembershipNumber(params.membershipNumber);
+    const { data: roster, error: rosterError } = await admin
+      .from("root_member_roster")
+      .select("id, chapter_id")
+      .eq("chapter_id", params.chapterId)
+      .eq("membership_number_normalized", normalized)
+      .eq("status", "active")
+      .is("claimed_profile_id", null)
+      .maybeSingle();
+
+    if (rosterError || !roster) {
+      await admin.auth.admin.deleteUser(userId);
+      return { error: "The membership number could not be linked to an active roster record." };
+    }
+
+    const { data: claimed } = await admin
+      .from("root_member_roster")
+      .update({ claimed_profile_id: userId, claimed_at: new Date().toISOString() })
+      .eq("id", roster.id)
+      .is("claimed_profile_id", null)
+      .select("id")
+      .maybeSingle();
+
+    if (!claimed) {
+      await admin.auth.admin.deleteUser(userId);
+      return { error: "That roster record has already been linked." };
+    }
+
+    await admin
+      .from("profiles")
+      .update({ chapter_id: params.chapterId, membership_status: "pending", role: "member" })
+      .eq("id", userId);
+  }
 
   // handle_new_user (00000000000003_profiles.sql) already auto-created the
   // profiles row from raw_user_meta_data.full_name — only chapter_members

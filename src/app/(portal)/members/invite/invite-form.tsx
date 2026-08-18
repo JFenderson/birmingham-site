@@ -54,6 +54,20 @@ export function InviteForm() {
       </div>
 
       <div className="space-y-1">
+        <label htmlFor="membershipNumber" className="text-sm font-medium">
+          Membership Number (optional)
+        </label>
+        <input
+          id="membershipNumber"
+          className="w-full rounded-md border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+          {...register("membershipNumber")}
+        />
+        {errors.membershipNumber && (
+          <p className="text-sm text-red-600">{errors.membershipNumber.message}</p>
+        )}
+      </div>
+
+      <div className="space-y-1">
         <label htmlFor="email" className="text-sm font-medium">
           Email
         </label>
