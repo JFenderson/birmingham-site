@@ -20,7 +20,22 @@ export function SetPasswordForm() {
     setError(null);
 
     const supabase = createClient();
-    const { error: updateError } = await supabase.auth.updateUser({ password });
+    let { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      const refreshed = await supabase.auth.refreshSession();
+      sessionData = refreshed.data;
+    }
+
+    let updateError = sessionData.session
+      ? (await supabase.auth.updateUser({ password })).error
+      : new Error("No authenticated recovery session");
+
+    if (updateError?.status === 401) {
+      const refreshed = await supabase.auth.refreshSession();
+      if (refreshed.data.session) {
+        updateError = (await supabase.auth.updateUser({ password })).error;
+      }
+    }
 
     setPending(false);
     if (updateError) {
