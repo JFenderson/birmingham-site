@@ -25,7 +25,13 @@ export function AuthRecoveryRedirect() {
     });
 
     if (isRecovery) {
-      void supabase.auth.getSession().then(({ data }) => {
+      const accessToken = hash.get("access_token");
+      const refreshToken = hash.get("refresh_token");
+      const sessionPromise = accessToken && refreshToken
+        ? supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+        : supabase.auth.getSession();
+
+      void sessionPromise.then(({ data }) => {
         if (data.session) router.replace("/reset-password");
       });
     }
