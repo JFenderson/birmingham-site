@@ -62,7 +62,7 @@ export function getPublishedPostSummaries(
       defined(publishedAt) &&
       publishedAt <= now() &&
       !(_id in path("drafts.**"))
-    ] | order(publishedAt desc) {
+    ] | order(publishedAt desc, _id asc) {
       _id,
       title,
       "slug": slug.current,
@@ -119,8 +119,9 @@ export function getPublishedEvents(
       _type == "event" &&
       chapterSlug == $chapterSlug &&
       published == true &&
-      (!defined(publishedAt) || publishedAt <= now())
-    ] | order(order asc, publishedAt desc) {
+      (!defined(publishedAt) || publishedAt <= now()) &&
+      !(_id in path("drafts.**"))
+    ] | order(order asc, publishedAt desc, _id asc) {
       _id,
       title,
       description,
@@ -141,8 +142,9 @@ export function getPublishedPrograms(
     `*[
       _type == "program" &&
       chapterSlug == $chapterSlug &&
-      published == true
-    ] | order(order asc, title asc) {
+      published == true &&
+      !(_id in path("drafts.**"))
+    ] | order(order asc, title asc, _id asc) {
       _id,
       title,
       description,
@@ -162,8 +164,9 @@ export function getPublishedLeaders(
     `*[
       _type == "leader" &&
       chapterSlug == $chapterSlug &&
-      published == true
-    ] | order(order asc, name asc) {
+      published == true &&
+      !(_id in path("drafts.**"))
+    ] | order(order asc, name asc, _id asc) {
       _id,
       name,
       role,

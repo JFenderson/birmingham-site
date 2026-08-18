@@ -29,14 +29,16 @@ export default async function NewsPostPage({
 
   if (!post) notFound();
 
+  const coverAlt = post.coverImage?.alt?.trim();
+
   return (
     <div className="bg-[#f8f9fc] px-6 py-16 sm:px-8 lg:px-8">
       <div className="mx-auto max-w-3xl rounded-md border border-zinc-200 bg-white p-8 shadow-sm sm:p-10">
-        {post.coverImage ? (
+        {post.coverImage && coverAlt ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={urlFor(post.coverImage).width(1200).height(480).url()}
-            alt={post.coverImage.alt?.trim() ?? ""}
+            alt={coverAlt}
             className="mb-6 h-64 w-full rounded-md object-cover"
           />
         ) : null}

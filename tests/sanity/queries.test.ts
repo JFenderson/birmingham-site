@@ -39,13 +39,13 @@ function assertPublishedTenantQuery(
   assert.match(call.query, new RegExp(`_type == "${documentType}"`));
   assert.match(call.query, /chapterSlug == \$chapterSlug/);
   assert.match(call.query, /published == true/);
+  assert.match(call.query, /!\(_id in path\("drafts\.\*\*"\)\)/);
   assert.doesNotMatch(call.query, /chapterSlug == "root"/);
   assert.equal(call.params.chapterSlug, "miles");
 }
 
 function assertPublishedPostQuery(call: FetchCall) {
   assertPublishedTenantQuery(call, "post");
-  assert.match(call.query, /!\(_id in path\("drafts\.\*\*"\)\)/);
   assert.match(call.query, /defined\(publishedAt\)/);
   assert.match(call.query, /publishedAt <= now\(\)/);
   assert.doesNotMatch(call.query, /pt::text\(body\)/);
@@ -53,7 +53,6 @@ function assertPublishedPostQuery(call: FetchCall) {
 
 function assertPublishedEditorialMediaQuery(call: FetchCall, documentType: "gallery" | "video") {
   assertPublishedTenantQuery(call, documentType);
-  assert.match(call.query, /!\(_id in path\("drafts\.\*\*"\)\)/);
   assert.match(call.query, /defined\(publishedAt\)/);
   assert.match(call.query, /publishedAt <= now\(\)/);
 }
@@ -75,7 +74,7 @@ test("events query returns only the requested tenant's published ordered records
   assert.deepEqual(result, expected);
   assert.equal(calls.length, 1);
   assertPublishedTenantQuery(calls[0]!, "event");
-  assert.match(calls[0]!.query, /order\(order asc/);
+  assert.match(calls[0]!.query, /order\(order asc, publishedAt desc, _id asc\)/);
   assert.match(calls[0]!.query, /publishedAt <= now\(\)/);
 });
 
@@ -95,7 +94,7 @@ test("programs query returns only the requested tenant's published ordered recor
   assert.deepEqual(result, expected);
   assert.equal(calls.length, 1);
   assertPublishedTenantQuery(calls[0]!, "program");
-  assert.match(calls[0]!.query, /order\(order asc/);
+  assert.match(calls[0]!.query, /order\(order asc, title asc, _id asc\)/);
 });
 
 test("leaders query returns only the requested tenant's published ordered records", async () => {
@@ -114,7 +113,7 @@ test("leaders query returns only the requested tenant's published ordered record
   assert.deepEqual(result, expected);
   assert.equal(calls.length, 1);
   assertPublishedTenantQuery(calls[0]!, "leader");
-  assert.match(calls[0]!.query, /order\(order asc/);
+  assert.match(calls[0]!.query, /order\(order asc, name asc, _id asc\)/);
 });
 
 test("post summaries query returns only published tenant posts safe for public listing", async () => {
@@ -135,7 +134,7 @@ test("post summaries query returns only published tenant posts safe for public l
   assert.deepEqual(result, expected);
   assert.equal(calls.length, 1);
   assertPublishedPostQuery(calls[0]!);
-  assert.match(calls[0]!.query, /order\(publishedAt desc/);
+  assert.match(calls[0]!.query, /order\(publishedAt desc, _id asc\)/);
 });
 
 test("post detail query returns one published tenant post by slug", async () => {
