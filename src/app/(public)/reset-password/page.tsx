@@ -10,18 +10,22 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     const supabase = createClient();
     const code = new URLSearchParams(window.location.search).get("code");
+    const tokenHash = new URLSearchParams(window.location.search).get("token_hash");
+    const tokenType = new URLSearchParams(window.location.search).get("type");
     const hash = new URLSearchParams(window.location.hash.slice(1));
     const accessToken = hash.get("access_token");
     const refreshToken = hash.get("refresh_token");
     const sessionPromise = code
       ? supabase.auth.exchangeCodeForSession(code)
+      : tokenHash && tokenType === "recovery"
+        ? supabase.auth.verifyOtp({ type: "recovery", token_hash: tokenHash })
       : accessToken && refreshToken
         ? supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
         : supabase.auth.getSession();
 
     void sessionPromise.then(({ data }) => {
       setReady(Boolean(data.session));
-      if (code || accessToken) window.history.replaceState({}, "", "/reset-password");
+      if (code || tokenHash || accessToken) window.history.replaceState({}, "", "/reset-password");
     });
   }, []);
 

@@ -32,15 +32,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(resetUrl);
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.auth.verifyOtp({
-        type: type === "recovery" ? "recovery" : "invite",
-        token_hash: tokenHash!,
-      });
-
-  if (error) {
-    return NextResponse.redirect(new URL("/login?error=invite-expired", request.url));
+  if (type === "recovery") {
+    const browserUrl = new URL(next, request.url);
+    browserUrl.searchParams.set("token_hash", tokenHash!);
+    browserUrl.searchParams.set("type", type);
+    return NextResponse.redirect(browserUrl);
   }
 
+  const supabase = await createClient();
+  const { error } = await supabase.auth.verifyOtp({ type: "invite", token_hash: tokenHash! });
+  if (error) return NextResponse.redirect(new URL("/login?error=invite-expired", request.url));
   return NextResponse.redirect(new URL(next, request.url));
 }
