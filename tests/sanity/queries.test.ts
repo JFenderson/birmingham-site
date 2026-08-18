@@ -184,7 +184,7 @@ test("gallery query returns only published tenant galleries in deterministic new
   assert.deepEqual(result, expected);
   assert.equal(calls.length, 1);
   assertPublishedEditorialMediaQuery(calls[0]!, "gallery");
-  assert.match(calls[0]!.query, /order\(eventDate desc, publishedAt desc, title asc\)/);
+  assert.match(calls[0]!.query, /order\(eventDate desc, publishedAt desc, title asc, _id asc\)/);
 });
 
 test("video query returns only published tenant videos in deterministic newest-publication order", async () => {
@@ -206,7 +206,7 @@ test("video query returns only published tenant videos in deterministic newest-p
   assert.deepEqual(result, expected);
   assert.equal(calls.length, 1);
   assertPublishedEditorialMediaQuery(calls[0]!, "video");
-  assert.match(calls[0]!.query, /order\(publishedAt desc, title asc\)/);
+  assert.match(calls[0]!.query, /order\(publishedAt desc, title asc, _id asc\)/);
 });
 
 test("content queries return an empty list when Sanity is unavailable", async (context) => {

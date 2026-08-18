@@ -187,7 +187,7 @@ export function getPublishedGalleries(
       defined(publishedAt) &&
       publishedAt <= now() &&
       !(_id in path("drafts.**"))
-    ] | order(eventDate desc, publishedAt desc, title asc) {
+    ] | order(eventDate desc, publishedAt desc, title asc, _id asc) {
       _id,
       title,
       "slug": slug.current,
@@ -222,7 +222,7 @@ export function getPublishedVideos(
       defined(publishedAt) &&
       publishedAt <= now() &&
       !(_id in path("drafts.**"))
-    ] | order(publishedAt desc, title asc) {
+    ] | order(publishedAt desc, title asc, _id asc) {
       _id,
       title,
       provider,
