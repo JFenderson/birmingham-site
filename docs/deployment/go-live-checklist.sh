@@ -76,13 +76,17 @@ section_resend() {
 
 3. Once verified, generate RESEND_API_KEY from the API Keys page.
 
-4. EMAIL_FROM is optional — defaults to notifications@birminghamsigmas.org.
-   Only set it if sending from a different, already-verified address.
+4. EMAIL_FROM defaults to notifications@mail.birminghamsigmas.org, which
+   should match the verified mail.birminghamsigmas.org sending subdomain.
+   Set INTAKE_ADMIN_EMAIL to the brother/officer address that should receive
+   membership interest, transfer, and reactivation form notifications.
+   Override EMAIL_FROM only when sending from a different, already-verified
+   address.
 
 5. Before domain verification finishes, you can test with Resend's sandbox
    mode, which only delivers to your own account email.
 
-Once done, add RESEND_API_KEY (and optionally EMAIL_FROM) to .env.local.
+Once done, add RESEND_API_KEY, EMAIL_FROM, and INTAKE_ADMIN_EMAIL to .env.local.
 EOF
 }
 
