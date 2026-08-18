@@ -18,7 +18,31 @@ export type InterestFormNotificationParams = {
 };
 
 function toError(error: unknown): Error {
-  return error instanceof Error ? error : new Error(String(error));
+  if (error instanceof Error) {
+    return error;
+  }
+
+  if (
+    error &&
+    typeof error === "object" &&
+    "message" in error &&
+    typeof (error as { message?: unknown }).message === "string"
+  ) {
+    return new Error((error as { message: string }).message);
+  }
+
+  return new Error(String(error));
+}
+
+function throwIfResendError(result: unknown): void {
+  if (
+    result &&
+    typeof result === "object" &&
+    "error" in result &&
+    (result as { error?: unknown }).error
+  ) {
+    throw toError((result as { error: unknown }).error);
+  }
 }
 
 type ApplicantTemplateModule = typeof import("../../emails/intake-received.tsx");
@@ -57,7 +81,7 @@ export async function sendInterestFormNotifications(
   try {
     const { IntakeReceivedEmail } =
       await interestFormNotificationDependencies.loadApplicantTemplate();
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from,
       to: params.to,
       subject: applicantContent.subject,
@@ -68,6 +92,7 @@ export async function sendInterestFormNotifications(
         formTypeLabel: params.formTypeLabel,
       }),
     });
+    throwIfResendError(result);
   } catch (error) {
     applicantError = toError(error);
   }
@@ -79,7 +104,7 @@ export async function sendInterestFormNotifications(
   try {
     const { IntakeAdminNotificationEmail } =
       await interestFormNotificationDependencies.loadAdminTemplate();
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from,
       to: adminRecipient,
       subject: adminContent.subject,
@@ -91,6 +116,7 @@ export async function sendInterestFormNotifications(
         formTypeLabel: params.formTypeLabel,
       }),
     });
+    throwIfResendError(result);
   } catch (error) {
     adminError = toError(error);
   }

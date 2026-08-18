@@ -72,3 +72,67 @@ test("sendInterestFormNotifications attempts applicant and admin delivery even w
   assert.equal(typeof sendCalls[0]?.text, "string");
   assert.equal(typeof sendCalls[1]?.text, "string");
 });
+
+test("sendInterestFormNotifications treats a resolved Resend error as applicant failure and still delivers the admin notification", async (context) => {
+  const sendCalls: Array<Record<string, unknown>> = [];
+
+  context.mock.method(
+    intakeNotificationModule.interestFormNotificationDependencies,
+    "createResendClient",
+    () =>
+      ({
+        emails: {
+          send(payload: Record<string, unknown>) {
+            sendCalls.push(payload);
+
+            if (sendCalls.length === 1) {
+              return Promise.resolve({
+                data: null,
+                error: { message: "Applicant rejected by Resend" },
+              });
+            }
+
+            return Promise.resolve({ data: { id: "email_456" }, error: null });
+          },
+        },
+      }) as never,
+  );
+  context.mock.method(
+    intakeNotificationModule.interestFormNotificationDependencies,
+    "getAdminRecipient",
+    () => "admin@birminghamsigmas.org",
+  );
+  context.mock.method(
+    intakeNotificationModule.interestFormNotificationDependencies,
+    "loadApplicantTemplate",
+    () =>
+      Promise.resolve({
+        IntakeReceivedEmail: ({ applicantName }: { applicantName: string }) =>
+          applicantName,
+      }),
+  );
+  context.mock.method(
+    intakeNotificationModule.interestFormNotificationDependencies,
+    "loadAdminTemplate",
+    () =>
+      Promise.resolve({
+        IntakeAdminNotificationEmail: ({
+          applicantEmail,
+        }: {
+          applicantEmail: string;
+        }) => applicantEmail,
+      }),
+  );
+
+  const result = await intakeNotificationModule.sendInterestFormNotifications({
+    to: "jmiles@example.com",
+    applicantName: "Jordan Miles",
+    applicantEmail: "jmiles@example.com",
+    chapterName: "Tau Sigma",
+    formTypeLabel: "Membership Interest",
+  });
+
+  assert.equal(sendCalls.length, 2);
+  assert.equal(result.applicantError?.message, "Applicant rejected by Resend");
+  assert.equal(result.adminError, null);
+});
