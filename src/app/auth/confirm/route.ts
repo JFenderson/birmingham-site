@@ -20,16 +20,19 @@ export async function GET(request: NextRequest) {
   const defaultNext = type === "recovery" ? "/reset-password" : "/accept-invite";
   const rawNext = request.nextUrl.searchParams.get("next") ?? defaultNext;
   const next = resolveSafeNext(rawNext, request.url);
+  const code = request.nextUrl.searchParams.get("code");
 
-  if (!tokenHash || (type !== "invite" && type !== "recovery")) {
+  if ((!tokenHash && !code) || (!code && type !== "invite" && type !== "recovery")) {
     return NextResponse.redirect(new URL("/login?error=invite-expired", request.url));
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.verifyOtp({
-    type: type === "recovery" ? "recovery" : "invite",
-    token_hash: tokenHash,
-  });
+  const { error } = code
+    ? await supabase.auth.exchangeCodeForSession(code)
+    : await supabase.auth.verifyOtp({
+        type: type === "recovery" ? "recovery" : "invite",
+        token_hash: tokenHash!,
+      });
 
   if (error) {
     return NextResponse.redirect(new URL("/login?error=invite-expired", request.url));

@@ -93,6 +93,10 @@ function LoginForm() {
         <Link href="/request-access" className="font-semibold text-[var(--public-blue)] hover:underline">
           Request access
         </Link>
+        <span className="mx-2 text-zinc-400">·</span>
+        <Link href="/login/forgot-password" className="font-semibold text-[var(--public-blue)] hover:underline">
+          Forgot password?
+        </Link>
       </p>
     </form>
   );
