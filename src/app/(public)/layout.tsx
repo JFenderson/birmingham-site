@@ -1,6 +1,7 @@
 import { getCurrentChapter } from "@/lib/tenant/get-chapter";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
+import { AuthRecoveryRedirect } from "@/components/auth-recovery-redirect";
 
 export default async function PublicLayout({
   children,
@@ -9,6 +10,7 @@ export default async function PublicLayout({
 
   return (
     <div className="public-shell flex flex-1 flex-col">
+      <AuthRecoveryRedirect />
       <PublicHeader chapter={chapter} />
       <main id="main-content" tabIndex={-1} className="flex flex-1 flex-col">
         {children}
