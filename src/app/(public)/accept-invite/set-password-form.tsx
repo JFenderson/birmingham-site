@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { updatePassword } from "./set-password-action";
 
 export function SetPasswordForm() {
   const router = useRouter();
@@ -19,28 +19,11 @@ export function SetPasswordForm() {
     setPending(true);
     setError(null);
 
-    const supabase = createClient();
-    const refreshed = await supabase.auth.refreshSession();
-    let sessionData = refreshed.data;
-    if (sessionData.session) {
-      await supabase.auth.setSession(sessionData.session);
-    }
-
-    let updateError = sessionData.session
-      ? (await supabase.auth.updateUser({ password })).error
-      : new Error("No authenticated recovery session");
-
-    if (updateError && "status" in updateError && updateError.status === 401) {
-      const refreshed = await supabase.auth.refreshSession();
-      if (refreshed.data.session) {
-        await supabase.auth.setSession(refreshed.data.session);
-        updateError = (await supabase.auth.updateUser({ password })).error;
-      }
-    }
+    const result = await updatePassword(password);
 
     setPending(false);
-    if (updateError) {
-      setError("Could not set your password. Please try again.");
+    if (result.error) {
+      setError(result.error);
       return;
     }
 
