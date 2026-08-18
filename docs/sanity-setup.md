@@ -14,12 +14,16 @@ Sanity is the content editor for chapter news. Once connected, authorized editor
    NEXT_PUBLIC_SANITY_DATASET=production
    ```
 
-   If you want matching server-side aliases for local development or tests, you can also set:
+   `NEXT_PUBLIC_SANITY_DATASET` is the value used by the browser and the embedded Studio, so set it explicitly to the dataset you want `/studio` and client-side Sanity code to read.
+
+   If you want matching server-side aliases for local development or tests, set the server values to the same dataset:
 
    ```env
    SANITY_PROJECT_ID=your-project-id
    SANITY_DATASET=production
    ```
+
+   Keep `SANITY_DATASET` aligned with `NEXT_PUBLIC_SANITY_DATASET` so server-side reads and browser/Studio reads point at the same dataset.
 
    `/studio` requires `NEXT_PUBLIC_SANITY_PROJECT_ID`. The app no longer uses a fallback project ID.
 
@@ -48,8 +52,8 @@ When a collegiate chapter is configured in `CHAPTER_SLUG_MAP`, create its posts 
 
 ## Troubleshooting
 
-- `Dataset "production" not found`: the dataset name does not exist in the Sanity project. Create it or make `SANITY_DATASET` match the actual dataset.
+- `Dataset "production" not found`: the dataset name does not exist in the Sanity project. Create it, then make `NEXT_PUBLIC_SANITY_DATASET` match that dataset and keep `SANITY_DATASET` aligned with it.
 - `/studio` says `NEXT_PUBLIC_SANITY_PROJECT_ID` is required: add the public project ID to `.env.local` and restart dev mode. The embedded Studio cannot load from a server-only variable alone.
-- Public fetches fail because Sanity is not configured: set `NEXT_PUBLIC_SANITY_PROJECT_ID` or `SANITY_PROJECT_ID`, then restart dev mode.
+- Public fetches fail because Sanity is not configured: set `NEXT_PUBLIC_SANITY_PROJECT_ID` or `SANITY_PROJECT_ID`, then restart dev mode. For dataset mismatches, make sure `NEXT_PUBLIC_SANITY_DATASET` is set for browser/Studio usage and that `SANITY_DATASET` uses the same value for server-side reads.
 - Studio loads but publishing is denied: add your Sanity account as a project member with editor permission.
 - A post is published but does not appear: check its chapter slug, confirm it is published rather than a draft, and refresh after the CDN cache window.
