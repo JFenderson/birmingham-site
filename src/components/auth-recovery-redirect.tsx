@@ -14,9 +14,7 @@ export function AuthRecoveryRedirect() {
 
     const supabase = createClient();
     const hash = new URLSearchParams(window.location.hash.slice(1));
-    if (hash.get("type") === "recovery") {
-      router.replace("/reset-password");
-    }
+    const isRecovery = hash.get("type") === "recovery";
 
     const {
       data: { subscription },
@@ -25,6 +23,12 @@ export function AuthRecoveryRedirect() {
         router.replace("/reset-password");
       }
     });
+
+    if (isRecovery) {
+      void supabase.auth.getSession().then(({ data }) => {
+        if (data.session) router.replace("/reset-password");
+      });
+    }
 
     return () => subscription.unsubscribe();
   }, [pathname, router]);
