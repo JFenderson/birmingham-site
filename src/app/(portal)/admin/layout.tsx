@@ -10,6 +10,10 @@ function redirectForAuthorizationError(error: AuthorizationError): never {
     redirect("/login");
   }
 
+  if (error.code === "MFA_REQUIRED") {
+    redirect("/security/mfa");
+  }
+
   redirect("/security/access");
 }
 

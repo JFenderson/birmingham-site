@@ -21,7 +21,8 @@ export type AuthorizationErrorCode =
   | "PROFILE_NOT_FOUND"
   | "MEMBERSHIP_NOT_APPROVED"
   | "CHAPTER_SCOPE_MISMATCH"
-  | "INSUFFICIENT_ROLE";
+  | "INSUFFICIENT_ROLE"
+  | "MFA_REQUIRED";
 
 export class AuthorizationError extends Error {
   constructor(
@@ -93,13 +94,16 @@ export async function requireApprovedMember(): Promise<MemberContext> {
 export async function requireChapterAdmin(): Promise<MemberContext> {
   const member = await requireApprovedMember();
 
-  if (member.role === "super_admin") return member;
-
-  if (member.role !== "chapter_admin") {
+  if (member.role !== "chapter_admin" && member.role !== "super_admin") {
     throw new AuthorizationError(
       "INSUFFICIENT_ROLE",
       "Chapter administrator access is required."
     );
+  }
+
+  const { data: aal } = await member.supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal?.currentLevel !== "aal2") {
+    throw new AuthorizationError("MFA_REQUIRED", "Multi-factor authentication is required.");
   }
 
   return member;
@@ -114,6 +118,11 @@ export async function requireSuperAdmin(): Promise<MemberContext> {
       "INSUFFICIENT_ROLE",
       "Super administrator access is required."
     );
+  }
+
+  const { data: aal } = await member.supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal?.currentLevel !== "aal2") {
+    throw new AuthorizationError("MFA_REQUIRED", "Multi-factor authentication is required.");
   }
 
   return member;
