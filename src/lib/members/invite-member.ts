@@ -35,7 +35,7 @@ export async function provisionMemberInvite(params: {
     const normalized = normalizeMembershipNumber(params.membershipNumber);
     const { data: roster, error: rosterError } = await admin
       .from("root_member_roster")
-      .select("id, chapter_id")
+      .select("id")
       .eq("chapter_id", params.chapterId)
       .eq("membership_number_normalized", normalized)
       .eq("status", "active")
@@ -47,23 +47,20 @@ export async function provisionMemberInvite(params: {
       return { error: "The membership number could not be linked to an active roster record." };
     }
 
-    const { data: claimed } = await admin
-      .from("root_member_roster")
-      .update({ claimed_profile_id: userId, claimed_at: new Date().toISOString() })
-      .eq("id", roster.id)
-      .is("claimed_profile_id", null)
-      .select("id")
-      .maybeSingle();
+    const { data: claimed, error: claimError } = await admin.rpc(
+      "claim_root_member_access_request",
+      {
+        p_roster_id: roster.id,
+        p_profile_id: userId,
+        p_chapter_id: params.chapterId,
+        p_full_name: params.fullName,
+      },
+    );
 
-    if (!claimed) {
+    if (claimError || claimed !== true) {
       await admin.auth.admin.deleteUser(userId);
       return { error: "That roster record has already been linked." };
     }
-
-    await admin
-      .from("profiles")
-      .update({ chapter_id: params.chapterId, membership_status: "pending", role: "member" })
-      .eq("id", userId);
   }
 
   // handle_new_user (00000000000003_profiles.sql) already auto-created the
