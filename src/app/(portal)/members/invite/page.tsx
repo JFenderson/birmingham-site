@@ -1,15 +1,13 @@
 import { redirect } from "next/navigation";
-import { requireRole, PermissionError, MfaRequiredError } from "@/lib/auth/rbac";
+import { AuthorizationError, requireChapterAdmin } from "@/lib/auth/authorization";
 import { InviteForm } from "./invite-form";
-
-const INVITE_ROLES = ["Admin", "Secretary", "Intake Director"] as const;
 
 export default async function InviteMemberPage() {
   try {
-    await requireRole(INVITE_ROLES);
+    await requireChapterAdmin();
   } catch (err) {
-    if (err instanceof MfaRequiredError) redirect("/security/mfa");
-    if (err instanceof PermissionError) redirect("/dashboard");
+    if (err instanceof AuthorizationError && err.code === "UNAUTHENTICATED") redirect("/login");
+    if (err instanceof AuthorizationError) redirect("/security/access");
     throw err;
   }
 
