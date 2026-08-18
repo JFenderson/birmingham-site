@@ -1,5 +1,14 @@
 import { sanityClient } from "./client.ts";
-import type { SanityImageSource } from "@sanity/image-url";
+import type {
+  SanityGallerySummary,
+  SanityImageWithAlt,
+  SanityVideoSummary,
+} from "./media.ts";
+import {
+  fetchPublishedCollection,
+  fetchPublishedDocument,
+  type SanityQueryClient,
+} from "./query-helpers.ts";
 
 export interface SanityEvent {
   _id: string;
@@ -23,10 +32,6 @@ export interface SanityLeader {
   order: number;
 }
 
-export type SanityImageWithAlt = SanityImageSource & {
-  alt?: string | null;
-};
-
 export interface SanityPostSummary {
   _id: string;
   title: string;
@@ -45,29 +50,11 @@ export interface SanityPostDetail {
   body: unknown;
 }
 
-interface SanityQueryClient {
-  fetch<T>(query: string, params: Record<string, unknown>): Promise<T>;
-}
-
-async function fetchPublishedContent<T>(
-  query: string,
-  chapterSlug: string,
-  contentType: string,
-  client: SanityQueryClient,
-): Promise<T[]> {
-  try {
-    return await client.fetch<T[]>(query, { chapterSlug });
-  } catch (error) {
-    console.error(`[sanity] failed to fetch published ${contentType}`, error);
-    return [];
-  }
-}
-
 export function getPublishedPostSummaries(
   chapterSlug: string,
   client: SanityQueryClient = sanityClient,
 ): Promise<SanityPostSummary[]> {
-  return fetchPublishedContent<SanityPostSummary>(
+  return fetchPublishedCollection<SanityPostSummary>(
     `*[
       _type == "post" &&
       chapterSlug == $chapterSlug &&
@@ -97,40 +84,37 @@ export async function getPublishedPostBySlug(
   slug: string,
   client: SanityQueryClient = sanityClient,
 ): Promise<SanityPostDetail | null> {
-  try {
-    return await client.fetch<SanityPostDetail | null>(
-      `*[
-        _type == "post" &&
-        chapterSlug == $chapterSlug &&
-        slug.current == $slug &&
-        published == true &&
-        defined(publishedAt) &&
-        publishedAt <= now() &&
-        !(_id in path("drafts.**"))
-      ][0] {
-        _id,
-        title,
-        "slug": slug.current,
-        publishedAt,
-        coverImage {
-          ...,
-          alt
-        },
-        body
-      }`,
-      { chapterSlug, slug },
-    );
-  } catch (error) {
-    console.error("[sanity] failed to fetch published post", error);
-    return null;
-  }
+  return fetchPublishedDocument<SanityPostDetail>(
+    `*[
+      _type == "post" &&
+      chapterSlug == $chapterSlug &&
+      slug.current == $slug &&
+      published == true &&
+      defined(publishedAt) &&
+      publishedAt <= now() &&
+      !(_id in path("drafts.**"))
+    ][0] {
+      _id,
+      title,
+      "slug": slug.current,
+      publishedAt,
+      coverImage {
+        ...,
+        alt
+      },
+      body
+    }`,
+    { chapterSlug, slug },
+    "post",
+    client,
+  );
 }
 
 export function getPublishedEvents(
   chapterSlug: string,
   client: SanityQueryClient = sanityClient,
 ): Promise<SanityEvent[]> {
-  return fetchPublishedContent<SanityEvent>(
+  return fetchPublishedCollection<SanityEvent>(
     `*[
       _type == "event" &&
       chapterSlug == $chapterSlug &&
@@ -153,7 +137,7 @@ export function getPublishedPrograms(
   chapterSlug: string,
   client: SanityQueryClient = sanityClient,
 ): Promise<SanityProgram[]> {
-  return fetchPublishedContent<SanityProgram>(
+  return fetchPublishedCollection<SanityProgram>(
     `*[
       _type == "program" &&
       chapterSlug == $chapterSlug &&
@@ -174,7 +158,7 @@ export function getPublishedLeaders(
   chapterSlug: string,
   client: SanityQueryClient = sanityClient,
 ): Promise<SanityLeader[]> {
-  return fetchPublishedContent<SanityLeader>(
+  return fetchPublishedCollection<SanityLeader>(
     `*[
       _type == "leader" &&
       chapterSlug == $chapterSlug &&
@@ -187,6 +171,71 @@ export function getPublishedLeaders(
     }`,
     chapterSlug,
     "leaders",
+    client,
+  );
+}
+
+export function getPublishedGalleries(
+  chapterSlug: string,
+  client: SanityQueryClient = sanityClient,
+): Promise<SanityGallerySummary[]> {
+  return fetchPublishedCollection<SanityGallerySummary>(
+    `*[
+      _type == "gallery" &&
+      chapterSlug == $chapterSlug &&
+      published == true &&
+      defined(publishedAt) &&
+      publishedAt <= now() &&
+      !(_id in path("drafts.**"))
+    ] | order(eventDate desc, publishedAt desc, title asc) {
+      _id,
+      title,
+      "slug": slug.current,
+      eventDate,
+      publishedAt,
+      description,
+      coverImage {
+        ...,
+        alt
+      },
+      photos[] {
+        ...,
+        alt,
+        caption
+      }
+    }`,
+    chapterSlug,
+    "galleries",
+    client,
+  );
+}
+
+export function getPublishedVideos(
+  chapterSlug: string,
+  client: SanityQueryClient = sanityClient,
+): Promise<SanityVideoSummary[]> {
+  return fetchPublishedCollection<SanityVideoSummary>(
+    `*[
+      _type == "video" &&
+      chapterSlug == $chapterSlug &&
+      published == true &&
+      defined(publishedAt) &&
+      publishedAt <= now() &&
+      !(_id in path("drafts.**"))
+    ] | order(publishedAt desc, title asc) {
+      _id,
+      title,
+      provider,
+      url,
+      publishedAt,
+      description,
+      thumbnail {
+        ...,
+        alt
+      }
+    }`,
+    chapterSlug,
+    "videos",
     client,
   );
 }
