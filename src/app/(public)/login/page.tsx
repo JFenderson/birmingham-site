@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { resolveSafeLoginRedirect } from "@/lib/security/redirects";
 import { loginSchema, type LoginInput } from "@/lib/validation/schemas";
@@ -87,6 +88,12 @@ function LoginForm() {
       >
         {isSubmitting ? "Signing in…" : "Sign in"}
       </button>
+      <p className="text-center text-sm text-zinc-600">
+        Need member access?{" "}
+        <Link href="/request-access" className="font-semibold text-[var(--public-blue)] hover:underline">
+          Request access
+        </Link>
+      </p>
     </form>
   );
 }

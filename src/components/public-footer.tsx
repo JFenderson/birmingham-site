@@ -39,7 +39,6 @@ export function PublicFooter({ chapter }: { chapter: CurrentChapter }) {
                 ...group,
                 links: [
                   ...group.links,
-                  { href: "/request-access", label: "Request Member Access" },
                   { href: "/login", label: "Member Login" },
                 ],
               }

@@ -32,14 +32,8 @@ export default async function ContactPage() {
           {showMemberLinks ? (
             <section className="rounded-md border border-zinc-200 p-5">
               <h2 className="text-lg font-semibold text-zinc-900">Member Access</h2>
-              <p className="mt-2 text-sm text-zinc-600">Current Tau Sigma members can request access or log in to internal tools.</p>
+              <p className="mt-2 text-sm text-zinc-600">Current Tau Sigma members can sign in to internal tools.</p>
               <div className="mt-4 flex flex-wrap gap-3">
-                <Link
-                  href="/request-access"
-                  className="inline-flex rounded-full bg-[#0047AB] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#003b8e]"
-                >
-                  Request Access
-                </Link>
                 <Link
                   href="/login"
                   className="inline-flex rounded-full border border-[#0047AB] px-4 py-2 text-sm font-semibold text-[#0047AB] transition-colors hover:bg-[#0047AB] hover:text-white"

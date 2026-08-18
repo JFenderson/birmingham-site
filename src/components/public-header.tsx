@@ -165,12 +165,6 @@ export function PublicHeader({ chapter }: { chapter: CurrentChapter }) {
           {showMemberLinks ? (
             <>
               <Link
-                href="/request-access"
-                className="hidden items-center rounded-full border border-[var(--public-blue)] px-3.5 py-2 text-sm font-semibold text-[var(--public-blue)] transition-colors hover:bg-[var(--public-blue)] hover:text-white xl:inline-flex"
-              >
-                Request Access
-              </Link>
-              <Link
                 href="/login"
                 className="inline-flex items-center rounded-full bg-[var(--public-blue)] px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--public-blue-deep)] sm:px-4"
               >
@@ -231,13 +225,6 @@ export function PublicHeader({ chapter }: { chapter: CurrentChapter }) {
             ))}
             {showMemberLinks ? (
               <div className="mt-3 grid gap-2 border-t border-[var(--public-border)] pt-4">
-                <Link
-                  href="/request-access"
-                  className="block rounded-lg px-3 py-2.5 text-sm font-semibold text-[var(--public-blue)] transition-colors hover:bg-[var(--public-surface-subtle)]"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Request Access
-                </Link>
                 <Link
                   href="/login"
                   className="block rounded-lg bg-[var(--public-blue)] px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--public-blue-deep)]"

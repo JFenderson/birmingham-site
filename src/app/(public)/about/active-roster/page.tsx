@@ -27,9 +27,6 @@ export default async function AboutActiveRosterPage() {
           </Link>
           {showMemberLinks ? (
             <>
-              <Link href="/request-access" className="inline-flex rounded-full border border-[#0047AB] px-4 py-2 text-sm font-semibold text-[#0047AB] hover:bg-[#0047AB] hover:text-white">
-                Request Access
-              </Link>
               <Link href="/login" className="inline-flex rounded-full border border-[#0047AB] px-4 py-2 text-sm font-semibold text-[#0047AB] hover:bg-[#0047AB] hover:text-white">
                 Brother Login
               </Link>
