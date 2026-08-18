@@ -1,4 +1,7 @@
 import { redirect } from "next/navigation";
+import { PortalCard } from "@/components/portal/portal-card";
+import { PortalPageHeader } from "@/components/portal/portal-page-header";
+import { PortalStatusBadge } from "@/components/portal/portal-status-badge";
 import {
   AuthorizationError,
   requireApprovedMember,
@@ -40,26 +43,30 @@ export default async function AccountPage() {
   ] as const;
 
   return (
-    <section className="mx-auto w-full max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Account</h1>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-          Your current member profile and chapter access details.
-        </p>
-      </div>
+    <section className="mx-auto w-full max-w-4xl space-y-8">
+      <PortalPageHeader
+        eyebrow="Member Profile"
+        title="Account"
+        description="Your current member profile, chapter access, and contact details are collected here for quick reference."
+        badge={<PortalStatusBadge variant="success">Approved member</PortalStatusBadge>}
+      />
 
-      <dl className="divide-y divide-zinc-200 overflow-hidden rounded-md border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-950">
+      <PortalCard className="overflow-hidden rounded-[2rem] p-0" variant="elevated">
+        <dl className="divide-y divide-zinc-200 dark:divide-zinc-800">
         {accountDetails.map(([label, value]) => (
-          <div key={label} className="grid gap-1 px-5 py-4 sm:grid-cols-3 sm:gap-4">
+          <div key={label} className="grid gap-1 px-5 py-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:gap-4 sm:px-6">
             <dt className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{label}</dt>
-            <dd className="text-sm text-zinc-900 dark:text-zinc-100 sm:col-span-2">{value}</dd>
+            <dd className="text-sm text-zinc-900 dark:text-zinc-100">{value}</dd>
           </div>
         ))}
-      </dl>
+        </dl>
+      </PortalCard>
 
-      <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-        Contact a chapter administrator if any account details or access information need to be corrected.
-      </p>
+      <PortalCard className="rounded-[2rem] p-5 sm:p-6" variant="subtle">
+        <p className="text-sm leading-7 text-zinc-600 dark:text-zinc-400">
+          Contact a chapter administrator if any account details or access information need to be corrected.
+        </p>
+      </PortalCard>
     </section>
   );
 }

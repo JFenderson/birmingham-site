@@ -26,23 +26,23 @@ export function NoteForm({ prospectiveMemberId }: { prospectiveMemberId: string 
   }
 
   return (
-    <form onSubmit={(e) => void handleSubmit(e)} className="mt-4 space-y-2">
+    <form onSubmit={(e) => void handleSubmit(e)} className="mt-4 space-y-3">
       <textarea
-        rows={3}
+        rows={4}
         value={note}
         onChange={(e) => setNote(e.target.value)}
         placeholder="Add an internal note…"
-        className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        className="w-full rounded-[1.5rem] border border-zinc-300 bg-white px-4 py-3 text-sm dark:border-zinc-700 dark:bg-zinc-900"
       />
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <button
           type="submit"
           disabled={pending || !note.trim()}
-          className="rounded-md bg-navy px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy-dark disabled:opacity-50"
+          className="min-h-11 rounded-full bg-navy px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-dark disabled:opacity-50"
         >
           {pending ? "Saving…" : "Add Note"}
         </button>
-        {error && <span className="text-sm text-red-600">{error}</span>}
+        {error ? <span className="text-sm text-red-600">{error}</span> : null}
       </div>
     </form>
   );

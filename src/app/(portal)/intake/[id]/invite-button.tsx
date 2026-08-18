@@ -28,7 +28,7 @@ export function InviteButton({
 
   if (state.sent) {
     return (
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="rounded-[1.5rem] border border-emerald-200 bg-emerald-50/90 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
         Invite sent to {email}.
       </p>
     );
@@ -40,7 +40,7 @@ export function InviteButton({
         type="button"
         onClick={() => void handleInvite()}
         disabled={state.pending}
-        className="rounded-md bg-navy px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy-dark disabled:opacity-50"
+        className="min-h-11 rounded-full bg-navy px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-dark disabled:opacity-50"
       >
         {state.pending ? "Sending…" : "Invite to Portal"}
       </button>

@@ -1,4 +1,9 @@
 import Link from "next/link";
+import { ShieldCheck } from "lucide-react";
+import { PortalCard } from "@/components/portal/portal-card";
+import { PortalEmptyState } from "@/components/portal/portal-empty-state";
+import { PortalPageHeader } from "@/components/portal/portal-page-header";
+import { PortalStatusBadge } from "@/components/portal/portal-status-badge";
 
 import { requireChapterAdmin } from "@/lib/auth/authorization";
 import type {
@@ -37,7 +42,7 @@ export default async function AdminMembersPage() {
   if (admin.role !== "super_admin") {
     if (!admin.chapterId) {
       return (
-        <section className="rounded-md border border-red-200 bg-red-50 p-5 text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+        <section className="rounded-[2rem] border border-red-200 bg-red-50 p-5 text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
           <h2 className="font-semibold">Chapter unavailable</h2>
           <p className="mt-1 text-sm">
             Your administrator profile is not assigned to a chapter.
@@ -55,7 +60,7 @@ export default async function AdminMembersPage() {
     return (
       <section
         role="alert"
-        className="rounded-md border border-red-200 bg-red-50 p-5 text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200"
+        className="rounded-[2rem] border border-red-200 bg-red-50 p-5 text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200"
       >
         <h2 className="font-semibold">Members could not be loaded</h2>
         <p className="mt-1 text-sm">Refresh the page to try again.</p>
@@ -69,33 +74,34 @@ export default async function AdminMembersPage() {
   >;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold">Member management</h2>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            {admin.role === "super_admin"
-              ? "Review and manage member access across all chapters."
-              : "Review and manage member access for your current chapter."}
-          </p>
-        </div>
-        <Link
-          href="/members/invite"
-          className="inline-flex w-fit rounded-md bg-navy px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy-dark"
-        >
-          Invite a member
-        </Link>
-      </div>
+    <div className="space-y-8">
+      <PortalPageHeader
+        eyebrow="Administration"
+        title="Member management"
+        description={
+          admin.role === "super_admin"
+            ? "Review and manage member access across all chapters."
+            : "Review and manage member access for your current chapter."
+        }
+        badge={<PortalStatusBadge variant="info">{members?.length ?? 0} members</PortalStatusBadge>}
+        action={
+          <Link
+            href="/members/invite"
+            className="inline-flex min-h-11 w-fit items-center justify-center rounded-full bg-navy px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-dark"
+          >
+            Invite a member
+          </Link>
+        }
+      />
 
       {!members || members.length === 0 ? (
-        <section className="rounded-md border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-700">
-          <h3 className="font-semibold">No members found</h3>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Invited and registered members will appear here.
-          </p>
-        </section>
+        <PortalEmptyState
+          icon={ShieldCheck}
+          title="No members found"
+          description="Invited and registered members will appear here."
+        />
       ) : (
-        <div className="overflow-x-auto rounded-md border border-zinc-200 dark:border-zinc-800">
+        <PortalCard className="overflow-x-auto rounded-[2rem] p-0">
           <table className="w-full text-left text-sm">
             <caption className="sr-only">
               Members available to the current administrator
@@ -165,7 +171,7 @@ export default async function AdminMembersPage() {
               })}
             </tbody>
           </table>
-        </div>
+        </PortalCard>
       )}
     </div>
   );

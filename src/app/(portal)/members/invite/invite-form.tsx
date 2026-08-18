@@ -31,21 +31,21 @@ export function InviteForm() {
 
   if (result.sent) {
     return (
-      <p className="rounded-md border border-zinc-200 p-4 text-sm dark:border-zinc-800">
+      <p className="rounded-[1.75rem] border border-emerald-200 bg-emerald-50/90 p-5 text-sm text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
         Invite sent. They&apos;ll receive an email with a link to set their password.
       </p>
     );
   }
 
   return (
-    <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="space-y-4">
-      <div className="space-y-1">
+    <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="space-y-5">
+      <div className="space-y-2">
         <label htmlFor="fullName" className="text-sm font-medium">
           Full Name
         </label>
         <input
           id="fullName"
-          className="w-full rounded-md border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+          className="min-h-12 w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900"
           {...register("fullName")}
         />
         {errors.fullName && (
@@ -53,13 +53,13 @@ export function InviteForm() {
         )}
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-2">
         <label htmlFor="membershipNumber" className="text-sm font-medium">
           Membership Number (optional)
         </label>
         <input
           id="membershipNumber"
-          className="w-full rounded-md border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+          className="min-h-12 w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900"
           {...register("membershipNumber")}
         />
         {errors.membershipNumber && (
@@ -67,14 +67,14 @@ export function InviteForm() {
         )}
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-2">
         <label htmlFor="email" className="text-sm font-medium">
           Email
         </label>
         <input
           id="email"
           type="email"
-          className="w-full rounded-md border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+          className="min-h-12 w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900"
           {...register("email")}
         />
         {errors.email && (
@@ -82,12 +82,16 @@ export function InviteForm() {
         )}
       </div>
 
-      {result.error && <p className="text-sm text-red-600">{result.error}</p>}
+      {result.error ? (
+        <p className="rounded-2xl border border-rose-200 bg-rose-50/90 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
+          {result.error}
+        </p>
+      ) : null}
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-md bg-navy px-4 py-2 font-semibold text-white transition-colors hover:bg-navy-dark disabled:opacity-50"
+        className="min-h-12 w-full rounded-full bg-navy px-4 py-3 font-semibold text-white transition-colors hover:bg-navy-dark disabled:opacity-50"
       >
         {isSubmitting ? "Sending…" : "Send Invite"}
       </button>

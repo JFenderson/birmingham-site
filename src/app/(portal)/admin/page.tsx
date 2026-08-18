@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { ArrowRight, Settings2 } from "lucide-react";
+import { PortalCard } from "@/components/portal/portal-card";
+import { PortalPageHeader } from "@/components/portal/portal-page-header";
+import { PortalStatusBadge } from "@/components/portal/portal-status-badge";
 
 const adminAreas = [
   {
@@ -39,37 +43,50 @@ const adminAreas = [
 
 export default function AdminPage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold">Administration overview</h2>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-          Use the available tools below to manage chapter operations. Public content is managed in Sanity Studio.
-        </p>
-      </div>
+    <div className="space-y-8">
+      <PortalPageHeader
+        eyebrow="Chapter Tools"
+        title="Administration overview"
+        description="Use the chapter management tools below to oversee member access, event planning, and content operations without changing the underlying admin workflows."
+        badge={<PortalStatusBadge variant="info">{adminAreas.length} work areas</PortalStatusBadge>}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {adminAreas.map((area) => (
-          <article
+          <PortalCard
             key={area.title}
-            className="flex min-h-48 flex-col rounded-md border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
+            as="article"
+            variant="elevated"
+            className="flex min-h-56 flex-col gap-4 rounded-[2rem] p-5 sm:p-6"
           >
-            <h3 className="text-lg font-semibold">{area.title}</h3>
-            <p className="mt-2 flex-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-lg font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+                {area.title}
+              </h3>
+              {"href" in area ? (
+                <PortalStatusBadge variant="info">Available</PortalStatusBadge>
+              ) : (
+                <PortalStatusBadge variant="neutral">Planned</PortalStatusBadge>
+              )}
+            </div>
+            <p className="flex-1 text-sm leading-7 text-zinc-600 dark:text-zinc-400">
               {area.description}
             </p>
             {"href" in area ? (
               <Link
                 href={area.href}
-                className="mt-5 inline-flex w-fit rounded-md bg-navy px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy-dark"
+                className="inline-flex min-h-11 w-fit items-center gap-2 rounded-full bg-navy px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy-dark"
               >
                 {area.action}
+                <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
             ) : (
-              <span className="mt-5 w-fit rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-semibold text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+                <Settings2 className="size-4" aria-hidden="true" />
                 Planned
               </span>
             )}
-          </article>
+          </PortalCard>
         ))}
       </div>
     </div>

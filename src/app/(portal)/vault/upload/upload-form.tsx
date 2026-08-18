@@ -97,13 +97,13 @@ export function UploadForm({
   }
 
   return (
-    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Category</label>
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Category</label>
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="w-full rounded-md border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+          className="min-h-12 w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900"
         >
           {categories.map((c) => (
             <option key={c} value={c}>
@@ -113,30 +113,36 @@ export function UploadForm({
         </select>
       </div>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Title</label>
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Title</label>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full rounded-md border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+          className="min-h-12 w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900"
         />
       </div>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium">File</label>
-        <input
-          type="file"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          className="w-full text-sm"
-        />
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">File</label>
+        <div className="rounded-[1.5rem] border border-dashed border-zinc-300 bg-zinc-50/80 px-4 py-4 dark:border-zinc-700 dark:bg-zinc-950/50">
+          <input
+            type="file"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            className="w-full text-sm"
+          />
+        </div>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error ? (
+        <p className="rounded-2xl border border-rose-200 bg-rose-50/90 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
+          {error}
+        </p>
+      ) : null}
 
       <button
         type="submit"
         disabled={pending || !file}
-        className="w-full rounded-md bg-navy px-4 py-2 font-semibold text-white transition-colors hover:bg-navy-dark disabled:opacity-50"
+        className="min-h-12 w-full rounded-full bg-navy px-4 py-3 font-semibold text-white transition-colors hover:bg-navy-dark disabled:opacity-50"
       >
         {pending ? "Uploading…" : "Upload"}
       </button>

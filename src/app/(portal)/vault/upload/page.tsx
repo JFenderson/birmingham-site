@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import { PortalCard } from "@/components/portal/portal-card";
+import { PortalPageHeader } from "@/components/portal/portal-page-header";
 import { requireRole, PermissionError, MfaRequiredError } from "@/lib/auth/rbac";
 import { UploadForm } from "./upload-form";
 
@@ -14,9 +16,15 @@ export default async function VaultUploadPage() {
   }
 
   return (
-    <div className="max-w-lg space-y-6">
-      <h1 className="text-2xl font-semibold">Upload Document</h1>
-      <UploadForm role={role} chapterId={chapterId} />
+    <div className="mx-auto w-full max-w-4xl space-y-8">
+      <PortalPageHeader
+        eyebrow="Document Vault"
+        title="Upload Document"
+        description="Add chapter files to the vault using the current upload and storage rules, with a more comfortable mobile form layout."
+      />
+      <PortalCard className="rounded-[2rem] p-5 sm:p-6" variant="elevated">
+        <UploadForm role={role} chapterId={chapterId} />
+      </PortalCard>
     </div>
   );
 }

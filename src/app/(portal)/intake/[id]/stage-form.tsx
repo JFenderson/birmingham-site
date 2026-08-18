@@ -42,11 +42,11 @@ export function StageForm({
   }
 
   return (
-    <form onSubmit={(e) => void handleSubmit(e)} className="mt-3 flex items-center gap-3">
+    <form onSubmit={(e) => void handleSubmit(e)} className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
       <select
         value={stage}
         onChange={(e) => setStage(e.target.value)}
-        className="rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        className="min-h-11 w-full rounded-2xl border border-zinc-300 bg-white px-4 py-2.5 text-sm dark:border-zinc-700 dark:bg-zinc-900 sm:max-w-xs"
       >
         {options.map((opt) => (
           <option key={opt} value={opt}>
@@ -57,11 +57,11 @@ export function StageForm({
       <button
         type="submit"
         disabled={pending || stage === currentStage}
-        className="rounded-md bg-navy px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy-dark disabled:opacity-50"
+        className="min-h-11 rounded-full bg-navy px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-dark disabled:opacity-50"
       >
         {pending ? "Saving…" : "Update Stage"}
       </button>
-      {error && <span className="text-sm text-red-600">{error}</span>}
+      {error ? <span className="text-sm text-red-600">{error}</span> : null}
     </form>
   );
 }

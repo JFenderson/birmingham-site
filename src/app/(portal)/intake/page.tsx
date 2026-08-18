@@ -1,5 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ClipboardList } from "lucide-react";
+import { PortalCard } from "@/components/portal/portal-card";
+import { PortalEmptyState } from "@/components/portal/portal-empty-state";
+import { PortalPageHeader } from "@/components/portal/portal-page-header";
+import { PortalStatusBadge } from "@/components/portal/portal-status-badge";
 import { requireRole, PermissionError, MfaRequiredError } from "@/lib/auth/rbac";
 import { getInterestFormTypeLabel } from "@/lib/validation/schemas";
 
@@ -35,18 +40,53 @@ export default async function IntakePage() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Intake Pipeline</h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Applications submitted through the public /join form.
-        </p>
-      </div>
+    <div className="space-y-8">
+      <PortalPageHeader
+        eyebrow="Applicant Review"
+        title="Intake Pipeline"
+        description="Monitor the public join pipeline, review applicant details, and keep the intake process moving across mobile and desktop."
+        badge={
+          <PortalStatusBadge variant={applicants && applicants.length > 0 ? "warning" : "neutral"}>
+            {applicants && applicants.length > 0 ? `${applicants.length} applicants` : "No applicants"}
+          </PortalStatusBadge>
+        }
+      />
 
       {!applicants || applicants.length === 0 ? (
-        <p className="text-sm text-zinc-500">No applications yet.</p>
+        <PortalEmptyState
+          icon={ClipboardList}
+          title="No applications yet"
+          description="Applications submitted through the public join flow will appear here for review."
+        />
       ) : (
-        <div className="overflow-x-auto rounded-md border border-zinc-200 dark:border-zinc-800">
+        <div className="space-y-4">
+          <div className="grid gap-3 md:hidden">
+            {applicants.map((a) => (
+              <PortalCard key={a.id} as="article" className="space-y-4 rounded-[2rem] p-5">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <PortalStatusBadge variant="info">
+                      {getInterestFormTypeLabel(a.form_type)}
+                    </PortalStatusBadge>
+                    <PortalStatusBadge variant="warning">
+                      {STAGE_LABELS[a.pipeline_stage] ?? a.pipeline_stage}
+                    </PortalStatusBadge>
+                  </div>
+                  <div>
+                    <Link href={`/intake/${a.id}`} className="text-lg font-semibold text-zinc-950 hover:text-navy dark:text-zinc-50 dark:hover:text-blue-300">
+                      {a.full_name}
+                    </Link>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400">{a.email}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Submitted {new Date(a.created_at).toLocaleDateString()}
+                </p>
+              </PortalCard>
+            ))}
+          </div>
+
+          <PortalCard className="hidden overflow-x-auto rounded-[2rem] p-0 md:block">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-zinc-200 bg-zinc-50 text-xs uppercase text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900">
               <tr>
@@ -81,6 +121,7 @@ export default async function IntakePage() {
               ))}
             </tbody>
           </table>
+          </PortalCard>
         </div>
       )}
     </div>
