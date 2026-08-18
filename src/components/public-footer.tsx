@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight, CalendarDays, Mail } from "lucide-react";
+import { ROOT_SLUG } from "@/lib/tenant/constants";
 import type { CurrentChapter } from "@/lib/tenant/get-chapter";
 
 const AFFILIATES = [
@@ -25,12 +26,27 @@ const NAVIGATION_GROUPS = [
       { href: "/community-events", label: "Community Events" },
       { href: "/photos", label: "Chapter Photos" },
       { href: "/contact", label: "Contact Us" },
-      { href: "/login", label: "Member Login" },
     ],
   },
 ];
 
 export function PublicFooter({ chapter }: { chapter: CurrentChapter }) {
+  const navigationGroups =
+    chapter.chapterSlug === ROOT_SLUG
+      ? NAVIGATION_GROUPS.map((group) =>
+          group.title === "Get involved"
+            ? {
+                ...group,
+                links: [
+                  ...group.links,
+                  { href: "/request-access", label: "Request Member Access" },
+                  { href: "/login", label: "Member Login" },
+                ],
+              }
+            : group,
+        )
+      : NAVIGATION_GROUPS;
+
   return (
     <footer id="contact" className="bg-[#071b3a] text-white">
       <div className="mx-auto grid max-w-[var(--public-content-max)] gap-10 px-[var(--public-gutter)] py-12 text-sm lg:grid-cols-[1.3fr_0.75fr_0.9fr_1fr] lg:py-16">
@@ -48,7 +64,7 @@ export function PublicFooter({ chapter }: { chapter: CurrentChapter }) {
           </p>
         </div>
 
-        {NAVIGATION_GROUPS.map((group) => (
+        {navigationGroups.map((group) => (
           <div key={group.title}>
             <p className="text-sm font-bold uppercase tracking-[0.16em] text-white">{group.title}</p>
             <ul className="mt-4 space-y-3 text-blue-100/80">

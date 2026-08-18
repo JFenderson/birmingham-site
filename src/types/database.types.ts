@@ -684,6 +684,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      claim_root_member_access_request: {
+        Args: {
+          p_chapter_id: string
+          p_full_name: string
+          p_profile_id: string
+          p_roster_id: string
+        }
+        Returns: boolean
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
     }

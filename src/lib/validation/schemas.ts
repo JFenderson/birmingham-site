@@ -12,6 +12,21 @@ export const loginSchema = z.object({
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
+const plainPublicText = z
+  .string()
+  .trim()
+  .refine((value) => !/[<>]/.test(value), {
+    message: "Please remove angle brackets from this field.",
+  });
+
+export const requestAccessSchema = z.object({
+  membershipNumber: plainPublicText.min(1).max(64),
+  lastName: plainPublicText.min(1).max(120),
+  fullName: plainPublicText.min(1).max(200),
+  email: z.string().trim().email().max(254).toLowerCase(),
+});
+export type RequestAccessInput = z.infer<typeof requestAccessSchema>;
+
 export const profileUpdateSchema = z.object({
   fullName: z.string().trim().min(1).max(200),
   phone: z

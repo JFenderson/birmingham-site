@@ -1,11 +1,16 @@
 import Link from "next/link";
+import { ROOT_SLUG } from "@/lib/tenant/constants";
+import { getCurrentChapter } from "@/lib/tenant/get-chapter";
 
 const ROSTER_NOTES = [
   "Active roster details are available to members through the secure portal.",
   "If you are a member, sign in to view complete chapter records.",
 ];
 
-export default function AboutActiveRosterPage() {
+export default async function AboutActiveRosterPage() {
+  const chapter = await getCurrentChapter();
+  const showMemberLinks = chapter.chapterSlug === ROOT_SLUG;
+
   return (
     <div className="bg-white px-6 py-16 sm:px-8 lg:px-8">
       <div className="mx-auto max-w-4xl rounded-md border border-zinc-200 bg-white p-8 shadow-sm sm:p-10">
@@ -16,13 +21,20 @@ export default function AboutActiveRosterPage() {
           ))}
         </ul>
 
-        <div className="mt-8 flex gap-3">
+        <div className="mt-8 flex flex-wrap gap-3">
           <Link href="/about" className="inline-flex rounded-full bg-[#0047AB] px-4 py-2 text-sm font-semibold text-white hover:bg-[#003b8e]">
             Back to About
           </Link>
-          <Link href="/login" className="inline-flex rounded-full border border-[#0047AB] px-4 py-2 text-sm font-semibold text-[#0047AB] hover:bg-[#0047AB] hover:text-white">
-            Brother Login
-          </Link>
+          {showMemberLinks ? (
+            <>
+              <Link href="/request-access" className="inline-flex rounded-full border border-[#0047AB] px-4 py-2 text-sm font-semibold text-[#0047AB] hover:bg-[#0047AB] hover:text-white">
+                Request Access
+              </Link>
+              <Link href="/login" className="inline-flex rounded-full border border-[#0047AB] px-4 py-2 text-sm font-semibold text-[#0047AB] hover:bg-[#0047AB] hover:text-white">
+                Brother Login
+              </Link>
+            </>
+          ) : null}
         </div>
       </div>
     </div>
