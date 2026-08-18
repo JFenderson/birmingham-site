@@ -8,7 +8,16 @@ export default function ResetPasswordPage() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    void createClient().auth.getSession().then(({ data }) => setReady(Boolean(data.session)));
+    const supabase = createClient();
+    const code = new URLSearchParams(window.location.search).get("code");
+    const sessionPromise = code
+      ? supabase.auth.exchangeCodeForSession(code)
+      : supabase.auth.getSession();
+
+    void sessionPromise.then(({ data }) => {
+      setReady(Boolean(data.session));
+      if (code) window.history.replaceState({}, "", "/reset-password");
+    });
   }, []);
 
   return (

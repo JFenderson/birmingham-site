@@ -26,10 +26,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/login?error=invite-expired", request.url));
   }
 
+  if (code) {
+    const resetUrl = new URL("/reset-password", request.url);
+    resetUrl.searchParams.set("code", code);
+    return NextResponse.redirect(resetUrl);
+  }
+
   const supabase = await createClient();
-  const { error } = code
-    ? await supabase.auth.exchangeCodeForSession(code)
-    : await supabase.auth.verifyOtp({
+  const { error } = await supabase.auth.verifyOtp({
         type: type === "recovery" ? "recovery" : "invite",
         token_hash: tokenHash!,
       });
