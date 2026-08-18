@@ -15,15 +15,21 @@ const adminAreas = [
   },
   {
     title: "Content",
-    description: "Manage member-facing and public chapter content.",
+    description: "Manage public chapter content, programs, leadership, and events in Sanity Studio.",
+    href: "/studio",
+    action: "Open Sanity Studio",
   },
   {
     title: "News",
-    description: "Publish chapter announcements and news updates.",
+    description: "Publish chapter announcements and news updates without changing code.",
+    href: "/studio/desk/post",
+    action: "Manage news",
   },
   {
     title: "Photos",
-    description: "Organize chapter photo galleries and media.",
+    description: "Manage chapter media and cover images from the Sanity workspace.",
+    href: "/studio",
+    action: "Open media workspace",
   },
   {
     title: "Settings",
@@ -37,7 +43,7 @@ export default function AdminPage() {
       <div>
         <h2 className="text-2xl font-semibold">Administration overview</h2>
         <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-          Use the available tools below to manage chapter operations. Areas marked planned are not available yet.
+          Use the available tools below to manage chapter operations. Public content is managed in Sanity Studio.
         </p>
       </div>
 
