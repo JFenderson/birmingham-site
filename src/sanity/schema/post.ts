@@ -33,6 +33,13 @@ export const post = defineType({
       "Optional hero image for the news listing and article page.",
     ),
     defineField({
+      name: "excerpt",
+      type: "text",
+      rows: 3,
+      description: "Required short summary shown on public news listing cards.",
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
       name: "body",
       type: "array",
       description: "Main article content shown on the public news page.",

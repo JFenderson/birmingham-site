@@ -1,45 +1,18 @@
 import Link from "next/link";
 import { sanityClient } from "@/sanity/client";
 import { getCurrentChapter } from "@/lib/tenant/get-chapter";
+import { getPublishedPostSummaries } from "@/sanity/queries";
 import { createImageUrlBuilder } from "@sanity/image-url";
 import type { SanityImageSource } from "@sanity/image-url";
-
-interface PostSummary {
-  _id: string;
-  title: string;
-  slug: string;
-  publishedAt: string | null;
-  coverImage: SanityImageSource | null;
-  excerpt: string | null;
-}
 
 const builder = createImageUrlBuilder(sanityClient);
 function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
 
-async function getPosts(chapterSlug: string): Promise<PostSummary[]> {
-  try {
-    return await sanityClient.fetch(
-      `*[_type == "post" && chapterSlug == $chapterSlug] | order(publishedAt desc) {
-        _id,
-        title,
-        "slug": slug.current,
-        publishedAt,
-        coverImage,
-        "excerpt": array::join(string::split(pt::text(body), "")[0..200], "")
-      }`,
-      { chapterSlug }
-    );
-  } catch (err) {
-    console.error("[news] failed to fetch posts", err);
-    return [];
-  }
-}
-
 export default async function NewsPage() {
   const { chapterSlug } = await getCurrentChapter();
-  const posts = await getPosts(chapterSlug);
+  const posts = await getPublishedPostSummaries(chapterSlug);
 
   return (
     <div className="bg-[#f8f9fc] px-6 py-16 sm:px-8 lg:px-8">
@@ -60,7 +33,7 @@ export default async function NewsPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={urlFor(post.coverImage).width(800).height(320).url()}
-                    alt=""
+                    alt={post.coverImage.alt?.trim() ?? ""}
                     className="mb-4 h-40 w-full rounded-md object-cover"
                   />
                 ) : null}

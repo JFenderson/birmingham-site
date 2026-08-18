@@ -37,7 +37,8 @@ export const video = defineType({
     createAccessibleImageField(
       "thumbnail",
       "Thumbnail",
-      "Optional preview image shown before someone opens the video.",
+      "Required preview image shown before someone opens the video.",
+      { required: true },
     ),
     defineField({
       name: "description",

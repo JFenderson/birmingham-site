@@ -2,34 +2,13 @@ import { notFound } from "next/navigation";
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
 import { sanityClient } from "@/sanity/client";
 import { getCurrentChapter } from "@/lib/tenant/get-chapter";
+import { getPublishedPostBySlug } from "@/sanity/queries";
 import { createImageUrlBuilder } from "@sanity/image-url";
 import type { SanityImageSource } from "@sanity/image-url";
-
-interface PostDetail {
-  _id: string;
-  title: string;
-  publishedAt: string | null;
-  coverImage: SanityImageSource | null;
-  body: unknown;
-}
 
 const builder = createImageUrlBuilder(sanityClient);
 function urlFor(source: SanityImageSource) {
   return builder.image(source);
-}
-
-async function getPost(chapterSlug: string, slug: string): Promise<PostDetail | null> {
-  try {
-    return await sanityClient.fetch(
-      `*[_type == "post" && chapterSlug == $chapterSlug && slug.current == $slug][0] {
-        _id, title, publishedAt, coverImage, body
-      }`,
-      { chapterSlug, slug }
-    );
-  } catch (err) {
-    console.error("[news] failed to fetch post", err);
-    return null;
-  }
 }
 
 const portableTextComponents: PortableTextComponents = {
@@ -46,7 +25,7 @@ export default async function NewsPostPage({
 }) {
   const { slug } = await params;
   const { chapterSlug } = await getCurrentChapter();
-  const post = await getPost(chapterSlug, slug);
+  const post = await getPublishedPostBySlug(chapterSlug, slug);
 
   if (!post) notFound();
 
@@ -57,7 +36,7 @@ export default async function NewsPostPage({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={urlFor(post.coverImage).width(1200).height(480).url()}
-            alt=""
+            alt={post.coverImage.alt?.trim() ?? ""}
             className="mb-6 h-64 w-full rounded-md object-cover"
           />
         ) : null}
