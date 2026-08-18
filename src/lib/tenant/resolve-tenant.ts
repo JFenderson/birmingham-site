@@ -6,7 +6,7 @@ export interface ResolvedTenant {
 interface TenantResolverOptions {
   nodeEnv: string | undefined;
   rootDomain: string;
-  stagingHost?: string;
+  stagingHost?: string | undefined;
   slugMap: Readonly<Record<string, string>>;
 }
 
