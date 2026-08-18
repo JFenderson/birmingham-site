@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireRole, PermissionError, MfaRequiredError } from "@/lib/auth/rbac";
+import { getInterestFormTypeLabel } from "@/lib/validation/schemas";
 
 const STAGE_LABELS: Record<string, string> = {
   submitted: "Submitted",
@@ -67,7 +68,9 @@ export default async function IntakePage() {
                     </Link>
                     <div className="text-xs text-zinc-500">{a.email}</div>
                   </td>
-                  <td className="px-4 py-2 capitalize">{a.form_type}</td>
+                  <td className="px-4 py-2">
+                    {getInterestFormTypeLabel(a.form_type)}
+                  </td>
                   <td className="px-4 py-2">
                     {STAGE_LABELS[a.pipeline_stage] ?? a.pipeline_stage}
                   </td>

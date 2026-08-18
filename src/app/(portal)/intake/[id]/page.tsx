@@ -3,6 +3,7 @@ import { requireRole, PermissionError, MfaRequiredError } from "@/lib/auth/rbac"
 import { StageForm } from "./stage-form";
 import { NoteForm } from "./note-form";
 import { InviteButton } from "./invite-button";
+import { getInterestFormTypeLabel } from "@/lib/validation/schemas";
 
 const STAGE_OPTIONS = [
   "submitted",
@@ -69,7 +70,7 @@ export default async function IntakeDetailPage({
           {applicant.phone ? ` · ${applicant.phone}` : ""}
         </p>
         <p className="mt-1 text-sm capitalize text-zinc-500">
-          {applicant.form_type} application · submitted{" "}
+          {getInterestFormTypeLabel(applicant.form_type)} application · submitted{" "}
           {new Date(applicant.created_at).toLocaleDateString()}
         </p>
       </div>
