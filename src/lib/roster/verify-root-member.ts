@@ -56,6 +56,7 @@ export async function verifyRootRosterMember(
     .eq("last_name_normalized", lastName)
     .eq("chapters.slug", ROOT_SLUG)
     .eq("status", "active")
+    .is("claimed_profile_id", null)
     .maybeSingle();
 
   if (error) {

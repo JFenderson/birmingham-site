@@ -14,7 +14,7 @@ create table public.root_member_roster (
   roster_email text,
   status text not null default 'active'
     check (status in ('active','inactive','transferred','deceased','unknown')),
-  claimed_profile_id uuid references public.profiles(id) on delete set null,
+  claimed_profile_id uuid references public.profiles(id) on delete restrict,
   claimed_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),

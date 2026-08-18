@@ -33,6 +33,10 @@ function createRosterClient(
       capture.eqs.push([column, value]);
       return query;
     },
+    is(column: string, value: unknown) {
+      capture.eqs.push([`${column} IS`, value]);
+      return query;
+    },
     maybeSingle() {
       return resolve(capture);
     },
@@ -81,6 +85,7 @@ test("verifyRootRosterMember normalizes membership number and last name before m
     ["last_name_normalized", "mcdaniel"],
     ["chapters.slug", "root"],
     ["status", "active"],
+    ["claimed_profile_id IS", null],
   ]);
 });
 
@@ -188,6 +193,7 @@ test("root member roster migration creates a root-only table with RLS and claim 
   assert.match(migration, /unique \(membership_number_normalized\)/i);
   assert.match(migration, /chapter_id uuid not null references public\.chapters\(id\)/i);
   assert.match(migration, /claimed_profile_id uuid references public\.profiles\(id\)/i);
+  assert.match(migration, /claimed_profile_id uuid references public\.profiles\(id\)\s+on delete restrict/i);
   assert.match(migration, /alter table public\.root_member_roster enable row level security/i);
   assert.match(migration, /create policy "root_member_roster_admin_read"/i);
   assert.match(migration, /create policy "root_member_roster_admin_update_claim"/i);
