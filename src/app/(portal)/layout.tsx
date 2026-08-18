@@ -1,5 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { PortalHeader } from "@/components/portal/portal-header";
+import { PortalMobileNav } from "@/components/portal/portal-mobile-nav";
+import { PortalSidebar } from "@/components/portal/portal-sidebar";
 import { getSession } from "@/lib/auth/session";
 import { requireRole, PermissionError, MfaRequiredError } from "@/lib/auth/rbac";
 
@@ -29,38 +31,15 @@ export default async function PortalLayout({
   }
 
   return (
-    <div className="flex flex-1 flex-col">
-      <nav className="flex items-center gap-4 border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
-        <Link href="/dashboard" className="font-semibold">
-          Dashboard
-        </Link>
-        <Link href="/events" className="text-sm text-zinc-600 dark:text-zinc-400">
-          Events
-        </Link>
-        <Link href="/vault" className="text-sm text-zinc-600 dark:text-zinc-400">
-          Vault
-        </Link>
-        <Link href="/pay" className="text-sm text-zinc-600 dark:text-zinc-400">
-          Pay
-        </Link>
-        {(role === "Intake Director" || role === "Admin") && (
-          <Link href="/intake" className="text-sm text-zinc-600 dark:text-zinc-400">
-            Intake
-          </Link>
-        )}
-        {(role === "Admin" || role === "Secretary" || role === "Intake Director") && (
-          <Link href="/members/invite" className="text-sm text-zinc-600 dark:text-zinc-400">
-            Invite
-          </Link>
-        )}
-        {role === "Admin" && (
-          <Link href="/admin" className="text-sm text-zinc-600 dark:text-zinc-400">
-            Admin
-          </Link>
-        )}
-        <span className="ml-auto text-sm text-zinc-500">{role}</span>
-      </nav>
-      <main className="flex-1 px-6 py-8">{children}</main>
+    <div className="flex min-h-screen flex-1 bg-zinc-100/70 dark:bg-zinc-950">
+      <PortalSidebar role={role} />
+      <div className="flex min-h-screen flex-1 flex-col">
+        <PortalHeader role={role} />
+        <main className="flex-1 px-4 pb-24 pt-6 sm:px-6 lg:px-10 lg:pb-10 lg:pt-8">
+          {children}
+        </main>
+        <PortalMobileNav role={role} />
+      </div>
     </div>
   );
 }
