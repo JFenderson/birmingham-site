@@ -26,7 +26,7 @@ export function PortalEmptyState({
       {...props}
     >
       <div className="flex size-12 items-center justify-center rounded-2xl bg-navy/8 text-navy dark:bg-blue-400/10 dark:text-blue-300">
-        <Icon className="size-5" aria-hidden="true" />
+        <Icon className="size-5" aria-hidden={true} />
       </div>
       <div className="space-y-2">
         <h2 className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">

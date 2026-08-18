@@ -4,7 +4,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { PortalEmptyState } from "@/components/portal/portal-empty-state";
-import { PortalStatusBadge } from "@/components/portal/portal-status-badge";
+import { PortalStatusBadge, type PortalStatusBadgeProps } from "@/components/portal/portal-status-badge";
 
 test("portal status badge maps each variant to an exposed semantic marker", () => {
   const variants = [
@@ -16,9 +16,11 @@ test("portal status badge maps each variant to an exposed semantic marker", () =
   ] as const;
 
   for (const { variant, expected } of variants) {
-    const markup = renderToStaticMarkup(
-      createElement(PortalStatusBadge, { variant }, "Status"),
-    );
+    const badge = PortalStatusBadge({
+      variant,
+      children: "Status",
+    } satisfies PortalStatusBadgeProps);
+    const markup = renderToStaticMarkup(badge);
 
     assert.match(markup, new RegExp(`data-variant="${expected}"`));
     assert.match(markup, /Status/);
