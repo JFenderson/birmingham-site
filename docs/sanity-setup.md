@@ -1,59 +1,62 @@
 # Sanity CMS setup
 
-Sanity is the content editor for chapter news. Once connected, authorized editors can create and publish posts in the Studio; the `/news` pages fetch published content at runtime, so adding a new post does not require a code change.
+Sanity is the public editorial CMS for chapter news, community events, photo galleries, and public video links. Once connected, authorized editors can use the embedded Studio at `/studio`, and the public routes update from published Sanity content without code changes:
+
+- `/news` for posts
+- `/community-events` for chapter events
+- `/photos` for full gallery pages
+- `/media` for gallery highlights plus videos
+
+Use Sanity only for public-facing editorial content and public image assets. Keep private member documents and protected chapter files in the Supabase-backed member vault, not in Sanity.
 
 ## One-time setup
 
 1. Create or open a Sanity project at [sanity.io/manage](https://www.sanity.io/manage).
 2. In that project, create a dataset named `production`.
-3. Open the Sanity project’s **Members** settings and add each editor who should be able to publish content. Grant at least editor-level access.
-4. Copy the project ID and dataset into `.env.local`:
+3. Open the project’s **Members** settings and add each editor who should be able to work in `/studio`. Grant at least editor-level access.
+4. Copy the Sanity values into `.env.local`:
 
    ```env
    NEXT_PUBLIC_SANITY_PROJECT_ID=your-project-id
    NEXT_PUBLIC_SANITY_DATASET=production
-   ```
-
-   `NEXT_PUBLIC_SANITY_DATASET` is the value used by the browser and the embedded Studio, so set it explicitly to the dataset you want `/studio` and client-side Sanity code to read.
-
-   If you want matching server-side aliases for local development or tests, set the server values to the same dataset:
-
-   ```env
    SANITY_PROJECT_ID=your-project-id
    SANITY_DATASET=production
    ```
 
-   Keep `SANITY_DATASET` aligned with `NEXT_PUBLIC_SANITY_DATASET` so server-side reads and browser/Studio reads point at the same dataset.
+   `NEXT_PUBLIC_SANITY_PROJECT_ID` is required for `/studio` because the Studio loads in the browser.
 
-   `/studio` requires `NEXT_PUBLIC_SANITY_PROJECT_ID`. The app no longer uses a fallback project ID.
+   `NEXT_PUBLIC_SANITY_DATASET` is the browser-facing dataset used by `/studio` and other client-side Sanity tooling.
 
-5. Restart the dev server after changing environment variables.
-6. Open `http://localhost:3000/studio` and sign in with a Sanity account that has access to the project.
+   `SANITY_PROJECT_ID` and `SANITY_DATASET` keep server-side reads aligned with the browser configuration. Keep the dataset values the same unless you are intentionally testing a different non-public dataset.
 
-The Studio is already embedded in the Next.js app. No Sanity CLI deployment is required for local use.
+5. If this repo needs chapter-specific editorial options beyond `root`, make sure `CHAPTER_SLUG_MAP` is present and up to date in `.env.local`. The Studio reads that map to build the chapter selector list for posts, events, galleries, and videos.
+6. Restart the dev server after any environment change.
+7. Open `http://localhost:3000/studio` and sign in with a Sanity account that has access to the configured project.
 
-## Publishing a news post
+The Studio is already embedded in the Next.js app. No separate Sanity Studio deployment is required for local use.
+
+## First publish smoke test
 
 1. Open `/studio`.
-2. Choose **Post**.
-3. Enter a title and generate a slug.
-4. Set **Chapter** to `root` for the main Birmingham Sigmas site.
-5. Add a publication date, cover image, and body content.
-6. Click **Publish**.
-7. Open `/news` and confirm the post appears.
+2. Create a simple `Post`.
+3. Add a title, slug, chapter, excerpt, and body content.
+4. Turn on `Publicly visible`.
+5. Set `Publication date` to now or a past date.
+6. Publish the document.
+7. Open `/news` and confirm the post appears on the correct chapter site.
 
-For a first end-to-end smoke test, publish a simple welcome post in the `production` dataset and confirm it appears on `/news` for the correct chapter.
+If that works, the same project and dataset are ready for the rest of the editorial document types.
 
-Only published documents appear through the public Sanity API. Drafts remain available in Studio and are not shown to visitors.
+## Editorial guide
 
-## Collegiate posts
-
-When a collegiate chapter is configured in `CHAPTER_SLUG_MAP`, create its posts with the matching chapter slug, such as `miles`. The existing News query filters posts by the active tenant’s chapter slug.
+For the full editor workflow, use `docs/sanity-editor-guide.md`. It covers the first-time checklist, chapter selection, posts, events, galleries, videos, alt text, draft handling, public routes, and troubleshooting.
 
 ## Troubleshooting
 
-- `Dataset "production" not found`: the dataset name does not exist in the Sanity project. Create it, then make `NEXT_PUBLIC_SANITY_DATASET` match that dataset and keep `SANITY_DATASET` aligned with it.
-- `/studio` says `NEXT_PUBLIC_SANITY_PROJECT_ID` is required: add the public project ID to `.env.local` and restart dev mode. The embedded Studio cannot load from a server-only variable alone.
-- Public fetches fail because Sanity is not configured: set `NEXT_PUBLIC_SANITY_PROJECT_ID` or `SANITY_PROJECT_ID`, then restart dev mode. For dataset mismatches, make sure `NEXT_PUBLIC_SANITY_DATASET` is set for browser/Studio usage and that `SANITY_DATASET` uses the same value for server-side reads.
-- Studio loads but publishing is denied: add your Sanity account as a project member with editor permission.
-- A post is published but does not appear: check its chapter slug, confirm it is published rather than a draft, and refresh after the CDN cache window.
+- `Dataset "production" not found`: create the dataset in Sanity Manage, then make `NEXT_PUBLIC_SANITY_DATASET` and `SANITY_DATASET` match it exactly.
+- `/studio` says `NEXT_PUBLIC_SANITY_PROJECT_ID` is required: add that value to `.env.local` and restart dev mode. A server-only project ID is not enough for the embedded Studio.
+- Public Sanity reads fail because configuration is missing: set `NEXT_PUBLIC_SANITY_PROJECT_ID` or `SANITY_PROJECT_ID`, set the dataset values, and restart the app.
+- `/studio` loads but you cannot publish or edit: add your Sanity account as a project member with editor permission or higher.
+- The chapter dropdown only shows `root`: update `CHAPTER_SLUG_MAP` in `.env.local`, restart the app, and reopen `/studio`.
+- A published item does not appear on the expected page: confirm the correct chapter slug, confirm `Publicly visible` is on, confirm the publication date is not in the future, and allow a short CDN refresh window before rechecking the public route.
+- Images are not rendering publicly: make sure the image has meaningful alt text. Public image rendering intentionally skips blank alt text.
