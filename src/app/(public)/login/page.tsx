@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { resolveSafeLoginRedirect } from "@/lib/security/redirects";
 import { loginSchema, type LoginInput } from "@/lib/validation/schemas";
 
 function LoginForm() {
@@ -30,7 +31,7 @@ function LoginForm() {
       return;
     }
 
-    router.replace(searchParams.get("redirect") ?? "/dashboard");
+    router.replace(resolveSafeLoginRedirect(searchParams.get("redirect")));
     router.refresh();
   }
 

@@ -21,7 +21,7 @@ const validInput = {
 function createHeaders(ip = "203.0.113.10") {
   return new Headers({
     "x-forwarded-for": `${ip}, 10.0.0.1`,
-    host: "staging.birminghamsigmas.org",
+    host: "attacker.example",
   });
 }
 
@@ -222,6 +222,11 @@ test("public request access action is root-only, rate-limited, and returns neutr
       provisionCalls.push(payload);
       return { created: true };
     },
+  );
+  context.mock.method(
+    requestAccessActions.requestAccessActionDependencies,
+    "getTrustedSiteOrigin",
+    () => "https://staging.birminghamsigmas.org",
   );
 
   const accepted = await requestAccessActions.requestMemberAccess(validInput);

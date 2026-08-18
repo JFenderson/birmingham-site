@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { requestRootMemberAccess } from "@/lib/members/request-access";
+import { getTrustedSiteOrigin } from "@/lib/security/redirects";
 import { ROOT_SLUG } from "@/lib/tenant/constants";
 import { getTenantContext } from "@/lib/tenant/resolve-chapter";
 import {
@@ -25,6 +26,7 @@ export const requestAccessActionDependencies = {
   getTenantContext,
   headers,
   requestRootMemberAccess,
+  getTrustedSiteOrigin,
 };
 
 function getClientIp(headerList: Headers): string {
@@ -34,23 +36,6 @@ function getClientIp(headerList: Headers): string {
       ?.split(",")[0]
       ?.trim() || "unknown"
   );
-}
-
-function normalizeHost(host: string | null): string {
-  const value = host?.trim().toLowerCase() ?? "";
-  if (!value || /[,/\\\s]/.test(value)) return "";
-  return value.endsWith(".") ? value.slice(0, -1) : value;
-}
-
-function buildAcceptInviteRedirect(host: string | null): string | null {
-  const normalizedHost = normalizeHost(host);
-  if (!normalizedHost) return null;
-
-  const isLocal =
-    normalizedHost.startsWith("localhost:") ||
-    normalizedHost.startsWith("127.0.0.1:");
-  const protocol = isLocal ? "http" : "https";
-  return `${protocol}://${normalizedHost}/auth/confirm?next=${encodeURIComponent("/accept-invite")}`;
 }
 
 function toRequestAccessInput(input: RequestAccessInput | FormData): unknown {
@@ -94,8 +79,9 @@ export async function requestMemberAccess(
     await requestAccessActionDependencies.getTenantContext();
   if (chapterSlug !== ROOT_SLUG) return NEUTRAL_REQUEST_ACCESS_RESULT;
 
-  const redirectTo = buildAcceptInviteRedirect(headerList.get("host"));
-  if (!redirectTo) return NEUTRAL_REQUEST_ACCESS_RESULT;
+  const siteOrigin = requestAccessActionDependencies.getTrustedSiteOrigin();
+  if (!siteOrigin) return NEUTRAL_REQUEST_ACCESS_RESULT;
+  const redirectTo = `${siteOrigin}/auth/confirm?next=${encodeURIComponent("/accept-invite")}`;
 
   await requestAccessActionDependencies.requestRootMemberAccess({
     chapterId,
