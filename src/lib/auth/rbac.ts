@@ -26,11 +26,27 @@ export async function requireRole(allowed: readonly MemberRole[]) {
     .eq("is_deleted", false)
     .maybeSingle();
 
-  if (!membership || !allowed.includes(membership.role as MemberRole)) {
-    throw new PermissionError("Insufficient role");
+  let role = membership?.role as MemberRole | undefined;
+
+  if (!role) {
+    const { data: profile } = await session.supabase
+      .from("profiles")
+      .select("chapter_id, membership_status, role")
+      .eq("id", session.user.id)
+      .maybeSingle();
+
+    if (
+      profile?.membership_status === "approved" &&
+      (profile.role === "member" || profile.role === "chapter_admin" || profile.role === "super_admin") &&
+      (profile.role === "super_admin" || profile.chapter_id === chapterId)
+    ) {
+      role = profile.role === "member" ? "Member" : "Admin";
+    }
   }
 
-  const role = membership.role as MemberRole;
+  if (!role || !allowed.includes(role)) {
+    throw new PermissionError("Insufficient role");
+  }
 
   if (MFA_REQUIRED_ROLES.includes(role)) {
     const { data: aal } =
