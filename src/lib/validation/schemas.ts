@@ -30,6 +30,23 @@ const intakeCommonFields = {
   message: z.string().trim().max(2000).optional().or(z.literal("")),
 };
 
+export const interestFormTypeSchema = z.enum([
+  "membership_interest",
+  "transfer",
+  "reactivation",
+]);
+export type InterestFormType = z.infer<typeof interestFormTypeSchema>;
+
+export const INTEREST_FORM_TYPE_LABELS: Record<InterestFormType, string> = {
+  membership_interest: "Membership Interest",
+  transfer: "Transfer",
+  reactivation: "Reactivation",
+};
+
+export function getInterestFormTypeLabel(formType: InterestFormType): string {
+  return INTEREST_FORM_TYPE_LABELS[formType];
+}
+
 /**
  * Public intake/reactivation/transfer submission. Server-side, this is the
  * only validation an applicant's payload receives before insert — RLS grants
@@ -38,7 +55,7 @@ const intakeCommonFields = {
  */
 export const intakeFormSchema = z.discriminatedUnion("formType", [
   z.object({
-    formType: z.literal("intake"),
+    formType: z.literal("membership_interest"),
     ...intakeCommonFields,
     schoolName: z.string().trim().min(1).max(200),
     major: z.string().trim().max(200).optional().or(z.literal("")),

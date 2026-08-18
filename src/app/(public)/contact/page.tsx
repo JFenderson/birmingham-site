@@ -12,12 +12,15 @@ export default function ContactPage() {
         <div className="mt-8 grid gap-6 sm:grid-cols-2">
           <section className="rounded-md border border-zinc-200 p-5">
             <h2 className="text-lg font-semibold text-zinc-900">General Inquiries</h2>
-            <p className="mt-2 text-sm text-zinc-600">Use our membership and chapter forms to send us a message.</p>
+            <p className="mt-2 text-sm text-zinc-600">
+              Use our membership interest, transfer, and reactivation forms to
+              send us a message.
+            </p>
             <Link
               href="/join"
               className="mt-4 inline-flex rounded-full bg-[#0047AB] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#003b8e]"
             >
-              Start Here
+              Membership Interest Form
             </Link>
           </section>
 

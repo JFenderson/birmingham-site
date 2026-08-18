@@ -3,27 +3,31 @@
 import { useState } from "react";
 import { useForm, type FieldValues, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { intakeFormSchema } from "@/lib/validation/schemas";
+import {
+  getInterestFormTypeLabel,
+  intakeFormSchema,
+  type InterestFormType,
+} from "@/lib/validation/schemas";
 import { submitIntakeForm } from "./actions";
 
-const [intakeSchema, reactivationSchema, transferSchema] = intakeFormSchema.options;
+const [membershipInterestSchema, reactivationSchema, transferSchema] = intakeFormSchema.options;
 
-type FormType = "intake" | "reactivation" | "transfer";
+type FormType = InterestFormType;
 
 const FORM_TYPE_LABELS: Record<FormType, string> = {
-  intake: "New Member Intake",
-  reactivation: "Reactivation",
-  transfer: "Transfer",
+  membership_interest: getInterestFormTypeLabel("membership_interest"),
+  reactivation: getInterestFormTypeLabel("reactivation"),
+  transfer: getInterestFormTypeLabel("transfer"),
 };
 
 const SCHEMAS = {
-  intake: intakeSchema,
+  membership_interest: membershipInterestSchema,
   reactivation: reactivationSchema,
   transfer: transferSchema,
 } as const;
 
 export function JoinForm() {
-  const [formType, setFormType] = useState<FormType>("intake");
+  const [formType, setFormType] = useState<FormType>("membership_interest");
 
   return (
     <div className="mx-auto max-w-xl">
@@ -86,9 +90,9 @@ function JoinFormFields({ formType }: { formType: FormType }) {
   if (submitted) {
     return (
       <div className="rounded-2xl border border-zinc-200 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="font-serif text-2xl italic text-navy">Application Received</h2>
+        <h2 className="font-serif text-2xl italic text-navy">Submission Received</h2>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          Thank you — a chapter officer will follow up with you soon.
+          Thank you. A chapter officer will follow up with you soon.
         </p>
       </div>
     );
@@ -113,7 +117,7 @@ function JoinFormFields({ formType }: { formType: FormType }) {
         <input type="tel" className="w-full rounded-md border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900" {...register("phone")} />
       </Field>
 
-      {formType === "intake" && (
+      {formType === "membership_interest" && (
         <>
           <Field
             label="School Name"
@@ -156,7 +160,7 @@ function JoinFormFields({ formType }: { formType: FormType }) {
         disabled={isSubmitting}
         className="w-full rounded-md bg-navy px-4 py-2 font-semibold text-white transition-colors hover:bg-navy-dark disabled:opacity-50"
       >
-        {isSubmitting ? "Submitting…" : "Submit Application"}
+        {isSubmitting ? "Submitting..." : "Submit Form"}
       </button>
     </form>
   );

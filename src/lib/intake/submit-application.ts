@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { IntakeFormInput } from "@/lib/validation/schemas";
+import { getInterestFormTypeLabel } from "@/lib/validation/schemas";
 import { sendIntakeReceivedEmail } from "@/lib/email/send-intake-notification";
 
 /**
@@ -15,6 +16,7 @@ export async function submitApplication(
   data: IntakeFormInput
 ): Promise<{ error: string | null }> {
   const admin = createAdminClient();
+  const formTypeLabel = getInterestFormTypeLabel(data.formType);
   const { error } = await admin.from("prospective_members").insert({
     chapter_id: chapterId,
     full_name: data.fullName,
@@ -38,6 +40,7 @@ export async function submitApplication(
         to: data.email,
         applicantName: data.fullName,
         chapterName: chapter?.name ?? "",
+        formTypeLabel,
       });
     } catch (err) {
       // Email is best-effort — the application itself already succeeded.
@@ -48,5 +51,5 @@ export async function submitApplication(
     }
   }
 
-  return { error: error ? "Something went wrong submitting your application." : null };
+  return { error: error ? "Something went wrong submitting your form." : null };
 }
