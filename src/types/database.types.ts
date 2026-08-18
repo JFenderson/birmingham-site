@@ -471,7 +471,7 @@ export type Database = {
           chapter_id: string
           created_at: string
           email: string
-          form_type: string
+          form_type: "membership_interest" | "transfer" | "reactivation"
           full_name: string
           id: string
           is_deleted: boolean
@@ -485,7 +485,7 @@ export type Database = {
           chapter_id: string
           created_at?: string
           email: string
-          form_type: string
+          form_type: "membership_interest" | "transfer" | "reactivation"
           full_name: string
           id?: string
           is_deleted?: boolean
@@ -499,7 +499,7 @@ export type Database = {
           chapter_id?: string
           created_at?: string
           email?: string
-          form_type?: string
+          form_type?: "membership_interest" | "transfer" | "reactivation"
           full_name?: string
           id?: string
           is_deleted?: boolean
@@ -520,6 +520,72 @@ export type Database = {
           {
             foreignKeyName: "prospective_members_reviewed_by_fkey"
             columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      root_member_roster: {
+        Row: {
+          chapter_id: string
+          claimed_at: string | null
+          claimed_profile_id: string | null
+          created_at: string
+          first_name: string
+          id: string
+          last_name: string
+          last_name_normalized: string
+          membership_number: string
+          membership_number_normalized: string
+          middle_name: string | null
+          roster_email: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          chapter_id: string
+          claimed_at?: string | null
+          claimed_profile_id?: string | null
+          created_at?: string
+          first_name: string
+          id?: string
+          last_name: string
+          last_name_normalized: string
+          membership_number: string
+          membership_number_normalized: string
+          middle_name?: string | null
+          roster_email?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          chapter_id?: string
+          claimed_at?: string | null
+          claimed_profile_id?: string | null
+          created_at?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          last_name_normalized?: string
+          membership_number?: string
+          membership_number_normalized?: string
+          middle_name?: string | null
+          roster_email?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "root_member_roster_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "root_member_roster_claimed_profile_id_fkey"
+            columns: ["claimed_profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
