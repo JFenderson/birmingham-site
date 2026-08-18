@@ -20,10 +20,10 @@ export function SetPasswordForm() {
     setError(null);
 
     const supabase = createClient();
-    let { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
-      const refreshed = await supabase.auth.refreshSession();
-      sessionData = refreshed.data;
+    const refreshed = await supabase.auth.refreshSession();
+    let sessionData = refreshed.data;
+    if (sessionData.session) {
+      await supabase.auth.setSession(sessionData.session);
     }
 
     let updateError = sessionData.session
@@ -33,6 +33,7 @@ export function SetPasswordForm() {
     if (updateError && "status" in updateError && updateError.status === 401) {
       const refreshed = await supabase.auth.refreshSession();
       if (refreshed.data.session) {
+        await supabase.auth.setSession(refreshed.data.session);
         updateError = (await supabase.auth.updateUser({ password })).error;
       }
     }
