@@ -46,7 +46,7 @@ The legacy `chapter_members` officer roles remain available for existing officer
 
 ## Email
 
-Resend is used for interest-form receipts and administrator notifications. Supabase Auth remains responsible for account invitations, password setup, email verification, sessions, and recovery. Resend credentials are server-only environment variables. Sending domain, SPF, DKIM, DMARC, sender, reply-to, delivery logging, and Vercel configuration are documented separately.
+Resend is already provisioned at the account level, with `birminghamsigmas.org` connected through `mail.birminghamsigmas.org`. Implementation should reuse that verified Resend setup rather than redesigning domain authentication. The remaining work is to choose the application sender address under the verified domain, add the server-only API key and sender configuration to local/Vercel environments, create the interest-form receipt and administrator notification templates, and handle delivery errors. Supabase Auth remains responsible for account invitations, password setup, email verification, sessions, and recovery.
 
 ## Security and testing
 
