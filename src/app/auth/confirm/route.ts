@@ -17,16 +17,17 @@ function resolveSafeNext(rawNext: string, requestUrl: string): string {
 export async function GET(request: NextRequest) {
   const tokenHash = request.nextUrl.searchParams.get("token_hash");
   const type = request.nextUrl.searchParams.get("type");
-  const rawNext = request.nextUrl.searchParams.get("next") ?? "/accept-invite";
+  const defaultNext = type === "recovery" ? "/reset-password" : "/accept-invite";
+  const rawNext = request.nextUrl.searchParams.get("next") ?? defaultNext;
   const next = resolveSafeNext(rawNext, request.url);
 
-  if (!tokenHash || type !== "invite") {
+  if (!tokenHash || (type !== "invite" && type !== "recovery")) {
     return NextResponse.redirect(new URL("/login?error=invite-expired", request.url));
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.verifyOtp({
-    type: "invite",
+    type: type === "recovery" ? "recovery" : "invite",
     token_hash: tokenHash,
   });
 
