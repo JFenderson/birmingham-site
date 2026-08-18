@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import test from "node:test";
+import vm from "node:vm";
+
+import ts from "typescript";
 
 import {
   getSanityClientConfig,
@@ -70,4 +75,44 @@ test("studio config rejects missing public project ID instead of using a fallbac
       }),
     /NEXT_PUBLIC_SANITY_PROJECT_ID/,
   );
+});
+
+test("studio config resolves from browser-inlined public environment variables", () => {
+  const require = createRequire(import.meta.url);
+  const source = readFileSync(
+    new URL("../../src/sanity/config.ts", import.meta.url),
+    "utf8",
+  );
+  const transformedSource = source
+    .replaceAll(
+      "process.env.NEXT_PUBLIC_SANITY_PROJECT_ID",
+      JSON.stringify("bundled-project"),
+    )
+    .replaceAll(
+      "process.env.NEXT_PUBLIC_SANITY_DATASET",
+      JSON.stringify("bundled-dataset"),
+    );
+  const { outputText } = ts.transpileModule(transformedSource, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2020,
+    },
+  });
+  const bundledModule = { exports: {} };
+
+  vm.runInNewContext(outputText, {
+    exports: bundledModule.exports,
+    module: bundledModule,
+    process: { env: {} },
+    require,
+  });
+
+  const config = (
+    bundledModule.exports as {
+      getSanityStudioConfig: typeof getSanityStudioConfig;
+    }
+  ).getSanityStudioConfig();
+
+  assert.equal(config.projectId, "bundled-project");
+  assert.equal(config.dataset, "bundled-dataset");
 });

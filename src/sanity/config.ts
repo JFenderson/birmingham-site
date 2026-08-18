@@ -41,8 +41,11 @@ export function getSanityClientConfig(env: SanityEnv = process.env) {
   };
 }
 
-export function getSanityStudioConfig(env: SanityEnv = process.env) {
-  const projectId = env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+export function getSanityStudioConfig(env?: SanityEnv) {
+  const projectId =
+    env === undefined
+      ? process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+      : env.NEXT_PUBLIC_SANITY_PROJECT_ID;
 
   if (!projectId) {
     throw new Error(
@@ -52,6 +55,9 @@ export function getSanityStudioConfig(env: SanityEnv = process.env) {
 
   return {
     projectId,
-    dataset: resolveDataset(env),
+    dataset:
+      env === undefined
+        ? (process.env.NEXT_PUBLIC_SANITY_DATASET ?? SANITY_DEFAULT_DATASET)
+        : (env.NEXT_PUBLIC_SANITY_DATASET ?? SANITY_DEFAULT_DATASET),
   };
 }
