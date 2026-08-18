@@ -24,7 +24,7 @@ const portalStatusBadgeVariants = cva(
   },
 );
 
-interface PortalStatusBadgeProps
+export interface PortalStatusBadgeProps
   extends React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof portalStatusBadgeVariants> {
   children: ReactNode;
