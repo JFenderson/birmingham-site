@@ -12,6 +12,15 @@ function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
 
+function hasImageAsset(source: SanityImageSource | null | undefined): source is SanityImageSource & {
+  asset: { _ref?: string; _id?: string };
+} {
+  if (!source || typeof source !== "object" || !("asset" in source)) return false;
+
+  const asset = source.asset;
+  return Boolean(asset && typeof asset === "object" && ("_ref" in asset || "_id" in asset));
+}
+
 export default async function AboutPastPresidentsPage() {
   const { chapterSlug } = await getCurrentChapter();
   const presidents = await getPublishedPastPresidents(chapterSlug);
@@ -37,7 +46,7 @@ export default async function AboutPastPresidentsPage() {
                   key={president._id}
                   className="rounded-md border border-zinc-200 bg-[#f8f9fc] p-4"
                 >
-                  {president.portrait && portraitAlt ? (
+                  {hasImageAsset(president.portrait) && portraitAlt ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={urlFor(president.portrait).width(480).height(480).url()}
