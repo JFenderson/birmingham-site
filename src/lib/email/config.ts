@@ -24,4 +24,8 @@ export function getSigmaBetaAdminEmail() {
   return readEnv("SIGMA_BETA_ADMIN_EMAIL");
 }
 
+export function getFoundationAdminEmail() {
+  return readEnv("FOUNDATION_ADMIN_EMAIL");
+}
+
 export const EMAIL_FROM = getEmailFrom();
