@@ -9,7 +9,7 @@ import { ROOT_SLUG } from "@/lib/tenant/constants";
 import type { CurrentChapter } from "@/lib/tenant/get-chapter";
 import { getChapterMark, getPublicBranding } from "@/lib/tenant/site-context";
 
-const NAV_ITEMS = [
+export const NAV_ITEMS = [
   { href: "/", label: "Home" },
   {
     href: "/about",
@@ -19,6 +19,8 @@ const NAV_ITEMS = [
       { href: "/about/leadership", label: "Leadership" },
       { href: "/about/past-presidents", label: "Past Presidents" },
       { href: "/about/active-roster", label: "Active Roster" },
+      { href: "/sigma-beta-club", label: "Sigma Beta Club" },
+      { href: "/foundation", label: "Foundation" },
     ],
   },
   { href: "/photos", label: "Photos" },

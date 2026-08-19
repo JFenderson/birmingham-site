@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   FoundationBoardSection,
   FoundationDonationSection,
@@ -16,6 +17,12 @@ import {
   getFoundationProjects,
   getFoundationSettings,
 } from "@/sanity/queries";
+
+export const metadata: Metadata = {
+  title: "Tau Sigma Charity Foundation",
+  description:
+    "Learn about the Tau Sigma Charity Foundation's mission, community projects, events, board, and how to donate or request information.",
+};
 
 export default async function FoundationPage() {
   const chapter = await getCurrentChapter();

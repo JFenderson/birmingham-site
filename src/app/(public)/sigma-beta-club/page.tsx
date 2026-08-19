@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   SigmaBetaAdvisorsSection,
   SigmaBetaDirectorContactSection,
@@ -10,6 +11,12 @@ import { SigmaBetaInterestForm } from "@/components/public/sigma-beta-interest-f
 import { SectionHeading } from "@/components/public/section-heading";
 import { getCurrentChapter } from "@/lib/tenant/get-chapter";
 import { getSigmaBetaEvents, getSigmaBetaSettings } from "@/sanity/queries";
+
+export const metadata: Metadata = {
+  title: "Sigma Beta Club",
+  description:
+    "Learn about the Sigma Beta Club mentoring program, upcoming events, and how to get involved with the chapter's youth initiative.",
+};
 
 export default async function SigmaBetaClubPage() {
   const chapter = await getCurrentChapter();
