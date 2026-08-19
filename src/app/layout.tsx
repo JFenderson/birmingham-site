@@ -14,11 +14,11 @@ const plusJakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "Birmingham Sigmas | Tau Sigma Graduate Chapter",
+    default: "Birmingham Sigmas | Phi Beta Sigma Fraternity, Inc.",
     template: "%s | Birmingham Sigmas",
   },
   description:
-    "Tau Sigma Graduate Chapter of Phi Beta Sigma Fraternity, Inc. serving Birmingham and Jefferson County.",
+    "Birmingham Sigmas of Phi Beta Sigma Fraternity, Inc. serving Birmingham and Jefferson County.",
 };
 
 export default function RootLayout({

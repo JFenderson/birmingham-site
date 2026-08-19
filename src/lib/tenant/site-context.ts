@@ -7,6 +7,12 @@ export interface SiteBranding {
   accentColor: string;
 }
 
+export interface PublicBranding {
+  logoUrl: string | null;
+  logoAlt: string;
+  text: string;
+}
+
 export interface SiteContext {
   chapterId: string;
   slug: string;
@@ -33,6 +39,9 @@ export const DEFAULT_SITE_BRANDING: Readonly<SiteBranding> = Object.freeze({
   secondaryColor: "#FFFFFF",
   accentColor: "#003B8E",
 });
+
+const ROOT_PUBLIC_NAME = "Birmingham Sigmas";
+const ROOT_PUBLIC_LOGO_URL = "/branding/tau-sigma.png";
 
 export function getChapterMark(
   chapter: Pick<SiteContext, "name" | "siteType">,
@@ -72,10 +81,12 @@ export function createSiteContext(
     return null;
   }
 
+  const isRootChapter = tenant.chapterSlug === "root" && chapter.type === "graduate";
+
   return {
     chapterId: chapter.id,
     slug: chapter.slug,
-    name: chapter.name.trim(),
+    name: isRootChapter ? ROOT_PUBLIC_NAME : chapter.name.trim(),
     siteType: chapter.type,
     branding: DEFAULT_SITE_BRANDING,
   };
@@ -89,8 +100,26 @@ export function createRootSiteFallback(
   return {
     chapterId: tenant.chapterId,
     slug: "root",
-    name: "Birmingham Sigmas",
+    name: ROOT_PUBLIC_NAME,
     siteType: "graduate",
     branding: DEFAULT_SITE_BRANDING,
+  };
+}
+
+export function getPublicBranding(
+  chapter: Pick<SiteContext, "slug" | "name" | "branding">,
+): PublicBranding {
+  if (chapter.slug === "root") {
+    return {
+      logoUrl: ROOT_PUBLIC_LOGO_URL,
+      logoAlt: "Tau Sigma logo",
+      text: ROOT_PUBLIC_NAME,
+    };
+  }
+
+  return {
+    logoUrl: chapter.branding.logoUrl,
+    logoAlt: `${chapter.name} logo`,
+    text: chapter.name,
   };
 }

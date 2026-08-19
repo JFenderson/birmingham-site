@@ -106,11 +106,68 @@ test("chapter options include root and configured collegiate slugs in a readable
   ]);
 });
 
-test("schema registry includes the gallery and video document types", () => {
+test("schema registry includes the gallery, video, homepage settings, and past president document types", () => {
   const schemaNames = sanitySchemaTypes.map((schema) => schema.name);
 
   assert.ok(schemaNames.includes("gallery"));
   assert.ok(schemaNames.includes("video"));
+  assert.ok(schemaNames.includes("siteSettings"));
+  assert.ok(schemaNames.includes("pastPresident"));
+});
+
+test("homepage settings use shared chapter, publication, and public image validators", () => {
+  const settingsSchema = schemaType("siteSettings");
+  const chapterSlug = schemaField(settingsSchema, "chapterSlug");
+  const published = schemaField(settingsSchema, "published");
+  const hero = schemaField(settingsSchema, "hero");
+  const heroImage = schemaField(hero, "image");
+  const featuredPresident = schemaField(settingsSchema, "featuredPresident");
+  const featuredPresidentImage = schemaField(featuredPresident, "image");
+
+  assert.equal(validationFor(chapterSlug).requiredCalls, 1);
+  assert.equal(validationFor(published).requiredCalls, 1);
+  assert.notEqual(
+    validationFor(heroImage).customValidators[0]!({ asset: { _ref: "image-ref" }, alt: "" }, {}),
+    true,
+  );
+  assert.equal(
+    validationFor(featuredPresidentImage).customValidators[0]!({
+      asset: { _ref: "image-ref" },
+      alt: "Chapter president addressing the room",
+    }, {}),
+    true,
+  );
+});
+
+test("leader schema supports portraits, bios, and current executive designation", () => {
+  const leaderSchema = schemaType("leader");
+  const portrait = schemaField(leaderSchema, "portrait");
+  const bio = schemaField(leaderSchema, "bio");
+  const designation = schemaField(leaderSchema, "designation");
+
+  assert.equal(portrait.type, "image");
+  assert.equal(bio.type, "text");
+  assert.equal(designation.type, "string");
+  assert.notEqual(
+    validationFor(portrait).customValidators[0]!({ asset: { _ref: "image-ref" }, alt: "   " }, {}),
+    true,
+  );
+  assert.equal(validationFor(designation).requiredCalls, 1);
+});
+
+test("past president schema uses shared chapter, publication, and image validators", () => {
+  const pastPresidentSchema = schemaType("pastPresident");
+  const chapterSlug = schemaField(pastPresidentSchema, "chapterSlug");
+  const published = schemaField(pastPresidentSchema, "published");
+  const portrait = schemaField(pastPresidentSchema, "portrait");
+
+  assert.equal(validationFor(chapterSlug).requiredCalls, 1);
+  assert.equal(validationFor(published).requiredCalls, 1);
+  assert.equal(portrait.type, "image");
+  assert.notEqual(
+    validationFor(portrait).customValidators[0]!({ asset: { _ref: "image-ref" }, alt: "" }, {}),
+    true,
+  );
 });
 
 test("post schema requires editor-written excerpts for public news cards", () => {

@@ -1,5 +1,9 @@
 import { defineField, defineType } from "sanity";
-import { createChapterSlugField, createPublishedField } from "./shared.ts";
+import {
+  createAccessibleImageField,
+  createChapterSlugField,
+  createPublishedField,
+} from "./shared.ts";
 
 export const leader = defineType({
   name: "leader",
@@ -17,6 +21,32 @@ export const leader = defineType({
       type: "string",
       description: "Public office or responsibility shown with the leader's name.",
       validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: "designation",
+      title: "Leadership designation",
+      type: "string",
+      description: "Choose whether this profile belongs on the current executive leadership list or board list.",
+      initialValue: "currentExecutive",
+      options: {
+        list: [
+          { title: "Current executive leader", value: "currentExecutive" },
+          { title: "Board member", value: "board" },
+        ],
+        layout: "radio",
+      },
+      validation: (rule) => rule.required(),
+    }),
+    createAccessibleImageField(
+      "portrait",
+      "Portrait",
+      "Optional public portrait for this leader. Add alt text whenever an image is uploaded.",
+    ),
+    defineField({
+      name: "bio",
+      type: "text",
+      rows: 4,
+      description: "Optional short public bio or leadership summary.",
     }),
     createChapterSlugField("leader profile"),
     defineField({

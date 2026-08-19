@@ -6,6 +6,7 @@ import {
   DEFAULT_SITE_BRANDING,
   createRootSiteFallback,
   createSiteContext,
+  getPublicBranding,
 } from "../../src/lib/tenant/site-context.ts";
 
 const tenant = {
@@ -83,5 +84,45 @@ test("uses the resolved collegiate chapter identity instead of the Tau Sigma mar
   assert.equal(
     getChapterMark?.({ name: "Birmingham Sigmas", siteType: "graduate" }),
     "ΤΣ",
+  );
+});
+
+test("root public branding uses the Birmingham Sigmas name and supplied local logo", () => {
+  const rootContext =
+    createSiteContext(
+      {
+        chapterId: "00000000-0000-0000-0000-000000000001",
+        chapterSlug: "root",
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000001",
+        slug: "root",
+        name: "TS Tau Sigma Graduate Chapter",
+        type: "graduate",
+      },
+    ) ??
+    assert.fail("Expected root site context.");
+
+  assert.equal(rootContext.name, "Birmingham Sigmas");
+  assert.deepEqual(getPublicBranding(rootContext), {
+    logoUrl: "/branding/tau-sigma.png",
+    logoAlt: "Tau Sigma logo",
+    text: "Birmingham Sigmas",
+  });
+  const collegiateContext = {
+    chapterId: tenant.chapterId,
+      slug: "miles",
+      name: "Alpha Rho Chapter",
+      siteType: "collegiate",
+      branding: { ...DEFAULT_SITE_BRANDING, logoUrl: "/alpha-rho.png" },
+  };
+
+  assert.deepEqual(
+    getPublicBranding(collegiateContext),
+    {
+      logoUrl: "/alpha-rho.png",
+      logoAlt: "Alpha Rho Chapter logo",
+      text: "Alpha Rho Chapter",
+    },
   );
 });

@@ -4,9 +4,12 @@ import test from "node:test";
 process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ??= "test-project";
 
 const {
+  getPublishedCurrentExecutiveLeaders,
   getPublishedEvents,
   getPublishedGalleries,
+  getPublishedHomepageSettings,
   getPublishedLeaders,
+  getPublishedPastPresidents,
   getPublishedPostBySlug,
   getPublishedPostSummaries,
   getPublishedPrograms,
@@ -34,7 +37,15 @@ function recordingClient(result: unknown) {
 
 function assertPublishedTenantQuery(
   call: FetchCall,
-  documentType: "event" | "gallery" | "leader" | "post" | "program" | "video",
+  documentType:
+    | "event"
+    | "gallery"
+    | "leader"
+    | "pastPresident"
+    | "post"
+    | "program"
+    | "siteSettings"
+    | "video",
 ) {
   assert.match(call.query, new RegExp(`_type == "${documentType}"`));
   assert.match(call.query, /chapterSlug == \$chapterSlug/);
@@ -114,6 +125,97 @@ test("leaders query returns only the requested tenant's published ordered record
   assert.equal(calls.length, 1);
   assertPublishedTenantQuery(calls[0]!, "leader");
   assert.match(calls[0]!.query, /order\(order asc, name asc, _id asc\)/);
+});
+
+test("current executive leaders query filters published tenant leaders by designation", async () => {
+  const expected = [
+    {
+      _id: "leader-1",
+      name: "Bro. Example",
+      role: "Chapter President",
+      designation: "currentExecutive",
+      portrait: { asset: { _ref: "image-ref" }, alt: "Bro. Example portrait" },
+      bio: "Focused on brotherhood, scholarship, and service.",
+      order: 1,
+    },
+  ];
+  const { calls, client } = recordingClient(expected);
+
+  const result = await getPublishedCurrentExecutiveLeaders("miles", client);
+
+  assert.deepEqual(result, expected);
+  assert.equal(calls.length, 1);
+  assertPublishedTenantQuery(calls[0]!, "leader");
+  assert.match(calls[0]!.query, /designation == "currentExecutive"/);
+  assert.match(calls[0]!.query, /portrait \{/);
+  assert.match(calls[0]!.query, /bio/);
+  assert.match(calls[0]!.query, /order\(order asc, name asc, _id asc\)/);
+});
+
+test("homepage settings query returns one published tenant singleton with editable sections", async () => {
+  const expected = {
+    _id: "site-settings-root",
+    chapterSlug: "miles",
+    hero: {
+      eyebrow: "Birmingham Sigmas",
+      title: "Service in action",
+      description: "A chapter committed to community impact.",
+      primaryAction: { href: "/about", label: "About us" },
+      secondaryAction: { href: "/contact", label: "Contact us" },
+      image: { asset: { _ref: "image-ref" }, alt: "Brothers serving the community" },
+    },
+    communityImpact: {
+      eyebrow: "Community impact",
+      title: "Service that meets Birmingham where it is",
+      description: "Signature initiatives throughout the year.",
+      initiatives: [],
+    },
+    featuredPresident: {
+      eyebrow: "From the president",
+      title: "Service-driven leadership",
+      description: "A note from chapter leadership.",
+      name: "Bro. Example",
+      role: "Chapter President",
+      image: { asset: { _ref: "president-ref" }, alt: "Chapter president portrait" },
+      link: { href: "/photos", label: "View chapter moments" },
+    },
+  };
+  const { calls, client } = recordingClient(expected);
+
+  const result = await getPublishedHomepageSettings("miles", client);
+
+  assert.deepEqual(result, expected);
+  assert.equal(calls.length, 1);
+  assertPublishedTenantQuery(calls[0]!, "siteSettings");
+  assert.match(calls[0]!.query, /defined\(publishedAt\)/);
+  assert.match(calls[0]!.query, /publishedAt <= now\(\)/);
+  assert.match(calls[0]!.query, /\]\[0\]/);
+  assert.match(calls[0]!.query, /featuredPresident/);
+});
+
+test("past presidents query returns published tenant presidents with optional featured portrait", async () => {
+  const expected = [
+    {
+      _id: "past-president-1",
+      name: "Bro. Past President",
+      yearsServed: "2018-2020",
+      order: 1,
+      featured: true,
+      portrait: { asset: { _ref: "portrait-ref" }, alt: "Bro. Past President portrait" },
+      bio: "Led the chapter through major service initiatives.",
+    },
+  ];
+  const { calls, client } = recordingClient(expected);
+
+  const result = await getPublishedPastPresidents("miles", client);
+
+  assert.deepEqual(result, expected);
+  assert.equal(calls.length, 1);
+  assertPublishedTenantQuery(calls[0]!, "pastPresident");
+  assert.match(calls[0]!.query, /defined\(publishedAt\)/);
+  assert.match(calls[0]!.query, /publishedAt <= now\(\)/);
+  assert.match(calls[0]!.query, /order\(order asc, yearsServed desc, name asc, _id asc\)/);
+  assert.match(calls[0]!.query, /portrait \{/);
 });
 
 test("post summaries query returns only published tenant posts safe for public listing", async () => {
@@ -219,8 +321,11 @@ test("content queries return an empty list when Sanity is unavailable", async (c
   assert.deepEqual(await getPublishedEvents("root", client), []);
   assert.deepEqual(await getPublishedPrograms("root", client), []);
   assert.deepEqual(await getPublishedLeaders("root", client), []);
+  assert.deepEqual(await getPublishedCurrentExecutiveLeaders("root", client), []);
+  assert.deepEqual(await getPublishedPastPresidents("root", client), []);
   assert.deepEqual(await getPublishedGalleries("root", client), []);
   assert.deepEqual(await getPublishedVideos("root", client), []);
   assert.deepEqual(await getPublishedPostSummaries("root", client), []);
   assert.equal(await getPublishedPostBySlug("root", "missing-post", client), null);
+  assert.equal(await getPublishedHomepageSettings("root", client), null);
 });

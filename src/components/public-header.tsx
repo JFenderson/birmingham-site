@@ -7,7 +7,7 @@ import { ArrowRight, ChevronDown, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { ROOT_SLUG } from "@/lib/tenant/constants";
 import type { CurrentChapter } from "@/lib/tenant/get-chapter";
-import { getChapterMark } from "@/lib/tenant/site-context";
+import { getChapterMark, getPublicBranding } from "@/lib/tenant/site-context";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home" },
@@ -45,6 +45,7 @@ export function PublicHeader({ chapter }: { chapter: CurrentChapter }) {
       ? `${chapter.name} · Brotherhood, scholarship, and service.`
       : "Serving Birmingham through brotherhood, scholarship, and service.";
   const showMemberLinks = chapter.chapterSlug === ROOT_SLUG;
+  const publicBranding = getPublicBranding(chapter);
 
   const isItemActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -73,10 +74,10 @@ export function PublicHeader({ chapter }: { chapter: CurrentChapter }) {
 
       <div className="mx-auto flex min-h-[var(--public-navigation-height)] max-w-[var(--public-content-max)] items-center justify-between gap-5 px-[var(--public-gutter)] py-3">
         <Link href="/" className="flex min-w-0 items-center gap-3" onClick={() => setMobileOpen(false)}>
-          {chapter.branding.logoUrl ? (
+          {publicBranding.logoUrl ? (
             <Image
-              src={chapter.branding.logoUrl}
-              alt={`${chapter.name} logo`}
+              src={publicBranding.logoUrl}
+              alt={publicBranding.logoAlt}
               width={44}
               height={44}
               unoptimized
@@ -88,7 +89,7 @@ export function PublicHeader({ chapter }: { chapter: CurrentChapter }) {
             </span>
           )}
           <span className="truncate font-[family-name:var(--public-font-display)] text-base font-bold tracking-tight text-[var(--public-ink)] sm:text-lg">
-            {chapter.name}
+            {publicBranding.text}
           </span>
         </Link>
 

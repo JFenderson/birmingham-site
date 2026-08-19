@@ -29,7 +29,59 @@ export interface SanityLeader {
   _id: string;
   name: string;
   role: string;
+  designation?: "currentExecutive" | "board" | null;
   order: number;
+  portrait?: SanityImageWithAlt | null;
+  bio?: string | null;
+}
+
+export interface SanityContentAction {
+  href: string;
+  label: string;
+}
+
+export interface SanityHomepageInitiative {
+  title: string;
+  description: string;
+  link?: SanityContentAction | null;
+  image?: SanityImageWithAlt | null;
+}
+
+export interface SanityHomepageSettings {
+  _id: string;
+  hero?: {
+    eyebrow?: string | null;
+    title?: string | null;
+    description?: string | null;
+    primaryAction?: SanityContentAction | null;
+    secondaryAction?: SanityContentAction | null;
+    image?: SanityImageWithAlt | null;
+  } | null;
+  communityImpact?: {
+    eyebrow?: string | null;
+    title?: string | null;
+    description?: string | null;
+    initiatives?: SanityHomepageInitiative[] | null;
+  } | null;
+  featuredPresident?: {
+    eyebrow?: string | null;
+    title?: string | null;
+    description?: string | null;
+    name?: string | null;
+    role?: string | null;
+    image?: SanityImageWithAlt | null;
+    link?: SanityContentAction | null;
+  } | null;
+}
+
+export interface SanityPastPresident {
+  _id: string;
+  name: string;
+  yearsServed: string;
+  order: number;
+  featured: boolean;
+  portrait: SanityImageWithAlt | null;
+  bio: string | null;
 }
 
 export interface SanityPostSummary {
@@ -170,10 +222,134 @@ export function getPublishedLeaders(
       _id,
       name,
       role,
-      order
+      designation,
+      order,
+      portrait {
+        ...,
+        alt
+      },
+      bio
     }`,
     chapterSlug,
     "leaders",
+    client,
+  );
+}
+
+export function getPublishedCurrentExecutiveLeaders(
+  chapterSlug: string,
+  client: SanityQueryClient = sanityClient,
+): Promise<SanityLeader[]> {
+  return fetchPublishedCollection<SanityLeader>(
+    `*[
+      _type == "leader" &&
+      chapterSlug == $chapterSlug &&
+      designation == "currentExecutive" &&
+      published == true &&
+      !(_id in path("drafts.**"))
+    ] | order(order asc, name asc, _id asc) {
+      _id,
+      name,
+      role,
+      designation,
+      order,
+      portrait {
+        ...,
+        alt
+      },
+      bio
+    }`,
+    chapterSlug,
+    "current executive leaders",
+    client,
+  );
+}
+
+export async function getPublishedHomepageSettings(
+  chapterSlug: string,
+  client: SanityQueryClient = sanityClient,
+): Promise<SanityHomepageSettings | null> {
+  return fetchPublishedDocument<SanityHomepageSettings>(
+    `*[
+      _type == "siteSettings" &&
+      chapterSlug == $chapterSlug &&
+      published == true &&
+      defined(publishedAt) &&
+      publishedAt <= now() &&
+      !(_id in path("drafts.**"))
+    ][0] {
+      _id,
+      chapterSlug,
+      hero {
+        eyebrow,
+        title,
+        description,
+        primaryAction,
+        secondaryAction,
+        image {
+          ...,
+          alt
+        }
+      },
+      communityImpact {
+        eyebrow,
+        title,
+        description,
+        initiatives[] {
+          title,
+          description,
+          link,
+          image {
+            ...,
+            alt
+          }
+        }
+      },
+      featuredPresident {
+        eyebrow,
+        title,
+        description,
+        name,
+        role,
+        image {
+          ...,
+          alt
+        },
+        link
+      }
+    }`,
+    { chapterSlug },
+    "homepage settings",
+    client,
+  );
+}
+
+export function getPublishedPastPresidents(
+  chapterSlug: string,
+  client: SanityQueryClient = sanityClient,
+): Promise<SanityPastPresident[]> {
+  return fetchPublishedCollection<SanityPastPresident>(
+    `*[
+      _type == "pastPresident" &&
+      chapterSlug == $chapterSlug &&
+      published == true &&
+      defined(publishedAt) &&
+      publishedAt <= now() &&
+      !(_id in path("drafts.**"))
+    ] | order(order asc, yearsServed desc, name asc, _id asc) {
+      _id,
+      name,
+      yearsServed,
+      order,
+      featured,
+      portrait {
+        ...,
+        alt
+      },
+      bio
+    }`,
+    chapterSlug,
+    "past presidents",
     client,
   );
 }

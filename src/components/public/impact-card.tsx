@@ -4,10 +4,10 @@ import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-type LocalImageSource = StaticImageData | `/${string}`;
+type ImageSource = StaticImageData | string;
 
 interface ImpactCardImage {
-  src: LocalImageSource;
+  src: ImageSource;
   alt: string;
 }
 
@@ -35,7 +35,14 @@ export function ImpactCard({ title, description, image, icon, link, className }:
     >
       {image ? (
         <div className="relative aspect-[16/9] overflow-hidden bg-[var(--public-surface-strong)]">
-          <Image src={image.src} alt={image.alt} fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw" className="object-cover" />
+          <Image
+            src={image.src}
+            alt={image.alt}
+            fill
+            unoptimized={typeof image.src === "string" && image.src.startsWith("http")}
+            sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
+            className="object-cover"
+          />
         </div>
       ) : null}
       <div className="p-6">

@@ -1,11 +1,16 @@
 import Link from "next/link";
+import { createImageUrlBuilder } from "@sanity/image-url";
+import type { SanityImageSource } from "@sanity/image-url";
 import { GraduationCap, HeartHandshake, Users } from "lucide-react";
 import { CollegiateHome } from "@/components/collegiate/collegiate-home";
 import { ContentCta } from "@/components/public/content-cta";
 import { Hero } from "@/components/public/hero";
 import { ImpactCard } from "@/components/public/impact-card";
 import { SectionHeading } from "@/components/public/section-heading";
+import { getSafeImageAlt, resolveHomepageContent } from "@/lib/public-content";
 import { getCurrentChapter } from "@/lib/tenant/get-chapter";
+import { sanityClient } from "@/sanity/client";
+import { getPublishedHomepageSettings } from "@/sanity/queries";
 
 const PRINCIPLES = [
   {
@@ -25,20 +30,11 @@ const PRINCIPLES = [
   },
 ];
 
-const INITIATIVES = [
-  {
-    title: "BHM Blue and White Weekend",
-    description: "A signature chapter gathering that brings fellowship, legacy, and service together in Birmingham.",
-  },
-  {
-    title: "Shoes for Kids",
-    description: "Annual outreach that helps students begin the school year with confidence and support.",
-  },
-  {
-    title: "Toys for Kids",
-    description: "Holiday service that partners with local families and organizations to share joy and resources.",
-  },
-];
+const builder = createImageUrlBuilder(sanityClient);
+
+function urlFor(source: SanityImageSource) {
+  return builder.image(source);
+}
 
 export default async function Home() {
   const chapter = await getCurrentChapter();
@@ -47,14 +43,27 @@ export default async function Home() {
     return <CollegiateHome chapter={chapter} />;
   }
 
+  const settings = await getPublishedHomepageSettings(chapter.chapterSlug);
+  const content = resolveHomepageContent(chapter.name, settings);
+  const heroImageAlt = getSafeImageAlt(content.hero.image);
+  const featuredPresidentImageAlt = getSafeImageAlt(content.featuredPresident.image);
+  const heroImage =
+    content.hero.image && heroImageAlt
+      ? {
+          src: urlFor(content.hero.image).width(1100).height(825).url(),
+          alt: heroImageAlt,
+        }
+      : null;
+
   return (
     <>
       <Hero
-        eyebrow="Birmingham Sigmas · Phi Beta Sigma Fraternity, Inc."
-        title={chapter.name}
-        description="Serving Birmingham and Jefferson County through brotherhood, scholarship, and service for humanity."
-        primaryAction={{ href: "/about", label: "Discover our chapter" }}
-        secondaryAction={{ href: "/contact", label: "Connect with us" }}
+        eyebrow={content.hero.eyebrow}
+        title={content.hero.title}
+        description={content.hero.description}
+        primaryAction={content.hero.primaryAction}
+        secondaryAction={content.hero.secondaryAction}
+        {...(heroImage ? { image: heroImage } : {})}
       />
 
       <section className="bg-[var(--public-surface)] py-16 sm:py-20">
@@ -94,17 +103,30 @@ export default async function Home() {
       <section className="bg-[var(--public-surface)] py-16 sm:py-20">
         <div className="mx-auto max-w-[var(--public-content-max)] px-[var(--public-gutter)]">
           <SectionHeading
-            eyebrow="From the president"
-            title="Service-driven leadership, rooted in brotherhood"
-            description="Tau Sigma leadership is committed to thoughtful planning, chapter accountability, member development, and service that reaches beyond our meetings."
+            eyebrow={content.featuredPresident.eyebrow}
+            title={content.featuredPresident.title}
+            description={content.featuredPresident.description}
           />
-          <div className="mt-8 flex flex-col gap-5 rounded-2xl border border-[var(--public-border)] bg-[var(--public-surface-subtle)] p-7 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mt-8 flex flex-col gap-6 rounded-2xl border border-[var(--public-border)] bg-[var(--public-surface-subtle)] p-7 sm:flex-row sm:items-center sm:justify-between">
+            {content.featuredPresident.image && featuredPresidentImageAlt ? (
+              <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full border border-[var(--public-border)] bg-[var(--public-surface-strong)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={urlFor(content.featuredPresident.image).width(240).height(240).url()}
+                  alt={featuredPresidentImageAlt}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            ) : null}
             <div>
-              <p className="text-xl font-bold text-[var(--public-ink)]">Bro. Joseph Fenderson</p>
-              <p className="mt-1 text-sm font-semibold text-[var(--public-blue)]">Chapter President</p>
+              <p className="text-xl font-bold text-[var(--public-ink)]">{content.featuredPresident.name}</p>
+              <p className="mt-1 text-sm font-semibold text-[var(--public-blue)]">{content.featuredPresident.role}</p>
             </div>
-            <Link href="/photos" className="text-sm font-bold text-[var(--public-blue)] transition-colors hover:text-[var(--public-blue-deep)]">
-              View chapter moments
+            <Link
+              href={content.featuredPresident.link.href}
+              className="text-sm font-bold text-[var(--public-blue)] transition-colors hover:text-[var(--public-blue-deep)]"
+            >
+              {content.featuredPresident.link.label}
             </Link>
           </div>
         </div>
@@ -114,18 +136,31 @@ export default async function Home() {
         <div className="mx-auto max-w-[var(--public-content-max)] px-[var(--public-gutter)]">
           <SectionHeading
             align="center"
-            eyebrow="Community impact"
-            title="Service that meets Birmingham where it is"
-            description="Our signature initiatives create moments of support, celebration, and opportunity for students, families, and neighbors throughout the year."
+            eyebrow={content.communityImpact.eyebrow}
+            title={content.communityImpact.title}
+            description={content.communityImpact.description}
           />
           <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {INITIATIVES.map((initiative) => (
+            {content.communityImpact.initiatives.map((initiative) => {
+              const initiativeImageAlt = getSafeImageAlt(initiative.image);
+              const initiativeImage =
+                initiative.image && initiativeImageAlt
+                  ? {
+                      src: urlFor(initiative.image).width(800).height(450).url(),
+                      alt: initiativeImageAlt,
+                    }
+                  : null;
+
+              return (
               <ImpactCard
                 key={initiative.title}
-                {...initiative}
-                link={{ href: "/community-events", label: "Explore the initiative" }}
+                title={initiative.title}
+                description={initiative.description}
+                {...(initiativeImage ? { image: initiativeImage } : {})}
+                {...(initiative.link ? { link: initiative.link } : {})}
               />
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
