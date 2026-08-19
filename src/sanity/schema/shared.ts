@@ -175,6 +175,71 @@ export function createContentActionHrefField() {
   });
 }
 
+const UNSAFE_URL_CHARACTERS_PATTERN = new RegExp(
+  "[" +
+    String.fromCharCode(0) +
+    "-" +
+    String.fromCharCode(31) +
+    String.fromCharCode(127) +
+    "\\\\]",
+);
+
+function isSafeExternalActionUrl(value: string): boolean {
+  const href = value.trim();
+
+  if (href.length === 0 || UNSAFE_URL_CHARACTERS_PATTERN.test(href)) return false;
+
+  if (href.startsWith("/")) {
+    return !href.startsWith("//");
+  }
+
+  try {
+    const url = new URL(href);
+
+    return url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * A safe-URL field for destinations that are not part of the approved
+ * external content-action host allowlist (for example donation processors
+ * or third-party event registration forms). Accepts an internal path
+ * beginning with "/" or any HTTPS URL; rejects other schemes,
+ * protocol-relative "//" URLs, and control characters. Does not modify or
+ * extend `isSafeContentActionHref`, which remains scoped to the approved
+ * partner host allowlist.
+ */
+export function createSafeExternalUrlField(
+  name: string,
+  title: string,
+  description: string,
+  options?: { required?: boolean },
+) {
+  const isRequired = options?.required ?? false;
+
+  return defineField({
+    name,
+    title,
+    type: "string",
+    description,
+    validation: (rule) => {
+      const base = isRequired ? rule.required() : rule;
+
+      return base.custom((value) => {
+        if (typeof value !== "string" || value.trim().length === 0) {
+          return isRequired ? `Add a ${title.toLowerCase()}.` : true;
+        }
+
+        return isSafeExternalActionUrl(value)
+          ? true
+          : "Use a safe internal path beginning with / or an HTTPS URL.";
+      });
+    },
+  });
+}
+
 export function createVideoUrlField() {
   return defineField({
     name: "url",
