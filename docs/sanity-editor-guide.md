@@ -8,8 +8,12 @@ Sanity is for public editorial content only:
 - public community events
 - public photo galleries and cover images
 - public video links and thumbnails
+- public Sigma Beta Club program settings, events, and advisors
+- public Tau Sigma Charity Foundation settings, projects, events, and board members
 
-Do not use Sanity for private member files, chapter minutes, financials, or anything that belongs in the Supabase member vault. The member vault is the protected `/vault` workflow inside the authenticated portal. Sanity content is intended for public website routes such as `/news`, `/community-events`, `/photos`, and `/media`.
+Do not use Sanity for private member files, chapter minutes, financials, or anything that belongs in the Supabase member vault. The member vault is the protected `/vault` workflow inside the authenticated portal. Sanity content is intended for public website routes such as `/news`, `/community-events`, `/photos`, `/media`, `/sigma-beta-club`, and `/foundation`.
+
+Sanity never handles payment processing, card data, or Square API calls. The Foundation's `Donation URL` field only stores a link to the chapter's existing approved external or Square donation destination; the actual transaction happens entirely outside this codebase.
 
 ## First-time checklist
 
@@ -26,6 +30,8 @@ Before your first edit, confirm all of the following:
    - events: `/community-events`
    - galleries: `/photos` and `/media`
    - videos: `/media`
+   - Sigma Beta Club settings, events, advisors: `/sigma-beta-club`
+   - Foundation settings, projects, events, board members: `/foundation`
 
 ## Choosing the right chapter
 
@@ -59,6 +65,8 @@ Every public image needs meaningful alt text. This includes:
 - gallery cover images
 - every gallery photo
 - video thumbnails
+- Sigma Beta Club hero images, event images, and advisor portraits
+- Foundation hero images, project images and gallery photos, and board member portraits
 
 Write alt text for someone who cannot see the image. Good alt text describes the important subject, action, or context in plain language.
 
@@ -164,6 +172,125 @@ Notes:
 - Non-YouTube and non-Vimeo links are rejected.
 - Unsafe or unsupported video links will not render as public watch links.
 
+## Creating Sigma Beta Club content
+
+The Sigma Beta Club page at `/sigma-beta-club` is chapter-scoped. It shows a neutral empty state until a `Sigma Beta Club Settings` document is published for that chapter, so publish settings first.
+
+### Sigma Beta Club settings
+
+There is normally one `Sigma Beta Club Settings` document per chapter.
+
+1. Create a `Sigma Beta Club Settings` document in `/studio`.
+2. Choose the correct `Chapter`.
+3. Leave `Publicly visible` off while drafting.
+4. Add the required `Overview`.
+5. Add the required `Mission`.
+6. Upload the required `Hero image` and add alt text.
+7. Fill in `Program director contact`: required `Director name or label`, required `Director email`, and optional `Director phone`.
+8. Optionally add one or more `Advisors`. For each advisor, add the required `Name` and `Role`, an optional `Bio`, and an optional `Portrait` with alt text if you upload one.
+9. Add the required `Interest form introduction` shown above the public interest form.
+10. When ready, turn on `Publicly visible`.
+11. Set `Publication date`.
+12. Publish and verify the result on `/sigma-beta-club`.
+
+### Sigma Beta Club events
+
+1. Create a `Sigma Beta Club Event` in `/studio`.
+2. Add the public `Title`.
+3. Generate or edit the `Slug`.
+4. Add the required `Description`.
+5. Set the required `Event date`.
+6. Add the required `Location`.
+7. Optionally add a `Registration URL`. Use a site path such as `/sigma-beta-club` or an `https://` URL; unsafe or blank values mean no registration link renders.
+8. Upload the required `Event image` and add alt text.
+9. Choose the correct `Chapter`.
+10. Set `Display order`. Lower numbers appear first.
+11. Turn on `Publicly visible` when ready.
+12. Optionally set `Publication date` for a scheduled launch.
+13. Publish and verify the result on `/sigma-beta-club`.
+
+### Sigma Beta Club interest form
+
+The public interest form on `/sigma-beta-club` collects name, email, optional phone, role (student, parent, or guardian), and message. It is rate-limited and validated before it sends anything.
+
+A successful submission never creates a Supabase account, member record, or authentication user. It only sends a confirmation email to the submitter and, if `SIGMA_BETA_ADMIN_EMAIL` is configured, an admin notification email. If that environment variable is not set, the admin notification is silently skipped and the submitter still receives their confirmation.
+
+The form includes a hidden honeypot field. If it is filled in (a bot behavior), the form returns the same neutral success message a real submitter would see, but no confirmation or admin email is sent.
+
+## Creating Tau Sigma Charity Foundation content
+
+The Foundation page at `/foundation` is chapter-scoped the same way. It shows a neutral empty state until a `Tau Sigma Charity Foundation Settings` document is published for that chapter, so publish settings first.
+
+### Foundation settings
+
+There is normally one `Tau Sigma Charity Foundation Settings` document per chapter.
+
+1. Create a `Tau Sigma Charity Foundation Settings` document in `/studio`.
+2. Choose the correct `Chapter`.
+3. Leave `Publicly visible` off while drafting.
+4. Add the required `Nonprofit name`.
+5. Add the required `501(c)(3) statement`.
+6. Add the required `Purpose`.
+7. Add the required `Overview`.
+8. Add the required `Donation URL`. Use a site path such as `/foundation` or the chapter's approved Square or external HTTPS donation link. This is a plain link only; Sanity and this codebase never process payments or card data.
+9. Add the required `Information request introduction` shown above the public information-request form.
+10. Add the required `Contact email`.
+11. Upload the required `Hero image` and add alt text.
+12. When ready, turn on `Publicly visible`.
+13. Set `Publication date`.
+14. Publish and verify the result on `/foundation`, including that the donate button appears and points to the correct destination.
+
+If `Donation URL` is missing, or fails the safe-link check (not an internal `/`-path and not an `https://` URL), the donate button does not render. A text fallback appears instead, so the page never shows a broken or dangerous link.
+
+### Foundation projects
+
+1. Create a `Foundation Project` in `/studio`.
+2. Add the public `Title`.
+3. Add the required `Description`.
+4. Set the required `Project date`.
+5. Add the required `Project type`, such as scholarship or community service.
+6. Upload the required `Project image` and add alt text.
+7. Optionally add `Additional images`. Add alt text for every image you upload; unpublished blank-alt images will block publishing.
+8. Choose the correct `Chapter`.
+9. Set `Display order`. Lower numbers appear first.
+10. Turn on `Publicly visible` when ready.
+11. Optionally set `Publication date`.
+12. Publish and verify the result on `/foundation`.
+
+### Foundation events
+
+1. Create a `Foundation Event` in `/studio`.
+2. Add the public `Title`.
+3. Add the required `Description`.
+4. Set the required `Event date`.
+5. Add the required `Location`.
+6. Optionally add a `Registration URL`. Use a site path such as `/foundation` or an `https://` URL; unsafe or blank values mean no registration link renders.
+7. Choose the correct `Chapter`.
+8. Set `Display order`. Lower numbers appear first.
+9. Turn on `Publicly visible` when ready.
+10. Optionally set `Publication date`.
+11. Publish and verify the result on `/foundation`.
+
+### Foundation board members
+
+1. Create a `Foundation Board Member` in `/studio`.
+2. Add the public `Name`.
+3. Add the public `Role`.
+4. Optionally add a `Bio`.
+5. Upload the required `Portrait` and add alt text.
+6. Choose the correct `Chapter`.
+7. Set `Display order`. Lower numbers appear first.
+8. Turn on `Publicly visible` when ready. This document type does not have a `Publication date` field; publish visibility is controlled by `Publicly visible` alone.
+9. Publish and verify the result on `/foundation`.
+
+### Foundation information-request form
+
+The public information-request form on `/foundation` collects name, email, optional organization, optional phone, and message. It is rate-limited and validated before it sends anything.
+
+A successful submission never creates a Supabase account, member record, or authentication user. It only sends a confirmation email to the submitter and, if `FOUNDATION_ADMIN_EMAIL` is configured, an admin notification email. If that environment variable is not set, the admin notification is silently skipped and the submitter still receives their confirmation.
+
+The form includes a hidden honeypot field. If it is filled in, the form returns the same neutral success message a real submitter would see, but no confirmation or admin email is sent.
+
 ## Publishing checklist
 
 Before you click Publish, confirm:
@@ -174,7 +301,9 @@ Before you click Publish, confirm:
 4. Every public image has meaningful alt text.
 5. Every gallery photo has alt text.
 6. Video provider and URL match.
-7. The content is ready for a public audience.
+7. Donation and registration URLs are internal `/`-paths or `https://` URLs.
+8. For Sigma Beta Club and Foundation settings documents, the required contact fields (director contact, foundation contact email, donation URL) are filled in.
+9. The content is ready for a public audience.
 
 ## After publishing
 
@@ -207,3 +336,24 @@ Check the image alt text. Blank-alt public images are intentionally skipped by t
 
 You are unsure whether a file belongs in Sanity or Supabase:
 Use Sanity for public web content and public image assets. Use the authenticated `/vault` flow for private member files and protected chapter documents.
+
+`/sigma-beta-club` or `/foundation` shows a generic empty state instead of your content:
+This is the intentional chapter-neutral empty state that renders when no `Sigma Beta Club Settings` or `Tau Sigma Charity Foundation Settings` document is published for the current chapter. Publish a settings document for that chapter first; events, advisors, projects, board members, and other secondary content only appear once settings is published.
+
+Missing Sanity environment variables affects these pages too:
+`/sigma-beta-club` and `/foundation` read from the same Sanity project and dataset as the rest of the site. The generic `NEXT_PUBLIC_SANITY_PROJECT_ID` / dataset troubleshooting above applies here as well.
+
+Your chapter has no Sigma Beta Club or Foundation configuration:
+Confirm `CHAPTER_SLUG_MAP` includes the chapter, and confirm a settings document with a matching `Chapter` value has been published. A missing or mismatched chapter slug on the settings document is the most common cause of an unexpected empty state.
+
+You left a Sigma Beta Club or Foundation document as a draft:
+Draft documents (with `Publicly visible` off) never appear on public routes. Turn on `Publicly visible` and publish when the content is ready.
+
+A Sigma Beta Club or Foundation document has a future `Publication date`:
+Public pages only show eligible content after the scheduled publication time has passed. Set the date to now or the past if you want it visible immediately.
+
+The donate button or a registration link is missing:
+This is expected, not a bug, when the URL is blank or fails the safe-link check. Only an internal `/`-path or an `https://` URL renders as a link; anything else is silently omitted along with a text fallback where applicable.
+
+A Sigma Beta Club interest or Foundation information-request submission did not send an admin notification:
+Check whether `SIGMA_BETA_ADMIN_EMAIL` (Sigma Beta Club) or `FOUNDATION_ADMIN_EMAIL` (Foundation) is set. If either is unset, the admin notification is intentionally skipped; the submitter still receives their own confirmation email and no error occurs.
