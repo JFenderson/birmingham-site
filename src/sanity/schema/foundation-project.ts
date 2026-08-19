@@ -1,4 +1,4 @@
-import { defineField, defineType } from "sanity";
+import { defineArrayMember, defineField, defineType } from "sanity";
 import {
   createAccessibleImageField,
   createChapterSlugField,
@@ -48,12 +48,12 @@ export const foundationProject = defineType({
       name: "gallery",
       title: "Additional images",
       type: "array",
-      description: "Optional additional public images for this project. Each requires alt text.",
+      description: "Optional additional public images for this project. Add alt text whenever an image is uploaded.",
       of: [
-        {
-          type: "image",
+        defineArrayMember({
           name: "projectGalleryImage",
           title: "Project image",
+          type: "image",
           options: { hotspot: true },
           fields: [
             defineField({
@@ -61,10 +61,23 @@ export const foundationProject = defineType({
               title: "Alt text",
               type: "string",
               description: "Describe the image for people who cannot see it.",
-              validation: (rule) => rule.required(),
             }),
           ],
-        },
+          validation: (rule) =>
+            rule.custom((value) => {
+              const photo = value as { asset?: { _ref?: string }; alt?: string } | null;
+
+              if (!photo?.asset?._ref) {
+                return "Upload a photo.";
+              }
+
+              if (typeof photo.alt !== "string" || photo.alt.trim().length === 0) {
+                return "Alt text is required for every public image.";
+              }
+
+              return true;
+            }),
+        }),
       ],
     }),
     createChapterSlugField("foundation project"),

@@ -199,6 +199,27 @@ test("foundationProject uses shared chapter and published validators, order, and
   assertAccessibleImage(image);
 });
 
+test("foundationProject gallery images require uploaded assets and nonblank alt text", () => {
+  const schema = schemaType("foundationProject");
+  const gallery = schemaField(schema, "gallery");
+  const galleryImage = arrayMember(gallery, "projectGalleryImage");
+  const rule = validationFor(galleryImage);
+
+  assert.equal(rule.customValidators.length, 1);
+  assert.notEqual(rule.customValidators[0]!(undefined, {}), true);
+  assert.notEqual(
+    rule.customValidators[0]!({ asset: { _ref: "image-ref" }, alt: "" }, {}),
+    true,
+  );
+  assert.equal(
+    rule.customValidators[0]!(
+      { asset: { _ref: "image-ref" }, alt: "Volunteers packing meal kits" },
+      {},
+    ),
+    true,
+  );
+});
+
 test("foundationEvent uses shared chapter and published validators, order, and registration URL", () => {
   assertChapterAndPublished("foundationEvent");
   assertNonnegativeOrder("foundationEvent");
