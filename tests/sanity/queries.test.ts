@@ -8,6 +8,7 @@ const {
   getPublishedEvents,
   getPublishedGalleries,
   getPublishedHomepageSettings,
+  getPublishedLeadershipPageLeaders,
   getPublishedLeaders,
   getPublishedPastPresidents,
   getPublishedPostBySlug,
@@ -152,6 +153,43 @@ test("current executive leaders query filters published tenant leaders by design
   assert.match(calls[0]!.query, /order\(order asc, name asc, _id asc\)/);
 });
 
+test("leadership page leaders query includes current executive and board designations in deterministic order", async () => {
+  const expected = [
+    {
+      _id: "leader-1",
+      name: "Bro. Current Executive",
+      role: "Chapter President",
+      designation: "currentExecutive",
+      portrait: { asset: { _ref: "image-ref" }, alt: "Bro. Current Executive portrait" },
+      bio: "Focused on brotherhood, scholarship, and service.",
+      order: 1,
+    },
+    {
+      _id: "leader-2",
+      name: "Bro. Board Member",
+      role: "Board Member",
+      designation: "board",
+      portrait: { asset: { _ref: "board-ref" }, alt: "Bro. Board Member portrait" },
+      bio: null,
+      order: 1,
+    },
+  ];
+  const { calls, client } = recordingClient(expected);
+
+  const result = await getPublishedLeadershipPageLeaders("miles", client);
+
+  assert.deepEqual(result, expected);
+  assert.equal(calls.length, 1);
+  assertPublishedTenantQuery(calls[0]!, "leader");
+  assert.match(calls[0]!.query, /designation in \["currentExecutive", "board"\]/);
+  assert.match(calls[0]!.query, /portrait \{/);
+  assert.match(calls[0]!.query, /bio/);
+  assert.match(
+    calls[0]!.query,
+    /order\(select\(designation == "currentExecutive" => 0, designation == "board" => 1, 2\) asc, order asc, name asc, _id asc\)/,
+  );
+});
+
 test("homepage settings query returns one published tenant singleton with editable sections", async () => {
   const expected = {
     _id: "site-settings-root",
@@ -189,7 +227,7 @@ test("homepage settings query returns one published tenant singleton with editab
   assertPublishedTenantQuery(calls[0]!, "siteSettings");
   assert.match(calls[0]!.query, /defined\(publishedAt\)/);
   assert.match(calls[0]!.query, /publishedAt <= now\(\)/);
-  assert.match(calls[0]!.query, /\]\[0\]/);
+  assert.match(calls[0]!.query, /\] \| order\(publishedAt desc, _updatedAt desc, _id asc\)\[0\]/);
   assert.match(calls[0]!.query, /featuredPresident/);
 });
 
@@ -322,6 +360,7 @@ test("content queries return an empty list when Sanity is unavailable", async (c
   assert.deepEqual(await getPublishedPrograms("root", client), []);
   assert.deepEqual(await getPublishedLeaders("root", client), []);
   assert.deepEqual(await getPublishedCurrentExecutiveLeaders("root", client), []);
+  assert.deepEqual(await getPublishedLeadershipPageLeaders("root", client), []);
   assert.deepEqual(await getPublishedPastPresidents("root", client), []);
   assert.deepEqual(await getPublishedGalleries("root", client), []);
   assert.deepEqual(await getPublishedVideos("root", client), []);

@@ -2,18 +2,13 @@ import { defineField, defineType } from "sanity";
 import {
   createAccessibleImageField,
   createChapterSlugField,
+  createContentActionHrefField,
   createPublishedAtField,
   createPublishedField,
 } from "./shared.ts";
 
 const linkFields = [
-  defineField({
-    name: "href",
-    title: "Link URL",
-    type: "string",
-    description: "Use a site path such as /about or a full HTTPS URL.",
-    validation: (rule) => rule.required(),
-  }),
+  createContentActionHrefField(),
   defineField({
     name: "label",
     title: "Link label",

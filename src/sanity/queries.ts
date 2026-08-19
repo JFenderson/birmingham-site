@@ -265,6 +265,35 @@ export function getPublishedCurrentExecutiveLeaders(
   );
 }
 
+export function getPublishedLeadershipPageLeaders(
+  chapterSlug: string,
+  client: SanityQueryClient = sanityClient,
+): Promise<SanityLeader[]> {
+  return fetchPublishedCollection<SanityLeader>(
+    `*[
+      _type == "leader" &&
+      chapterSlug == $chapterSlug &&
+      designation in ["currentExecutive", "board"] &&
+      published == true &&
+      !(_id in path("drafts.**"))
+    ] | order(select(designation == "currentExecutive" => 0, designation == "board" => 1, 2) asc, order asc, name asc, _id asc) {
+      _id,
+      name,
+      role,
+      designation,
+      order,
+      portrait {
+        ...,
+        alt
+      },
+      bio
+    }`,
+    chapterSlug,
+    "leadership page leaders",
+    client,
+  );
+}
+
 export async function getPublishedHomepageSettings(
   chapterSlug: string,
   client: SanityQueryClient = sanityClient,
@@ -277,7 +306,7 @@ export async function getPublishedHomepageSettings(
       defined(publishedAt) &&
       publishedAt <= now() &&
       !(_id in path("drafts.**"))
-    ][0] {
+    ] | order(publishedAt desc, _updatedAt desc, _id asc)[0] {
       _id,
       chapterSlug,
       hero {

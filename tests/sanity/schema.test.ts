@@ -121,6 +121,8 @@ test("homepage settings use shared chapter, publication, and public image valida
   const published = schemaField(settingsSchema, "published");
   const hero = schemaField(settingsSchema, "hero");
   const heroImage = schemaField(hero, "image");
+  const primaryAction = schemaField(hero, "primaryAction");
+  const primaryActionHref = schemaField(primaryAction, "href");
   const featuredPresident = schemaField(settingsSchema, "featuredPresident");
   const featuredPresidentImage = schemaField(featuredPresident, "image");
 
@@ -133,10 +135,19 @@ test("homepage settings use shared chapter, publication, and public image valida
   assert.equal(
     validationFor(featuredPresidentImage).customValidators[0]!({
       asset: { _ref: "image-ref" },
-      alt: "Chapter president addressing the room",
-    }, {}),
+    alt: "Chapter president addressing the room",
+  }, {}),
     true,
   );
+
+  const hrefRule = validationFor(primaryActionHref);
+  assert.equal(hrefRule.requiredCalls, 1);
+  assert.equal(hrefRule.customValidators.length, 1);
+  assert.equal(hrefRule.customValidators[0]!("/about?from=home", {}), true);
+  assert.equal(hrefRule.customValidators[0]!("https://phibetasigma1914.org/", {}), true);
+  assert.notEqual(hrefRule.customValidators[0]!("javascript:alert(1)", {}), true);
+  assert.notEqual(hrefRule.customValidators[0]!("mailto:president@example.com", {}), true);
+  assert.notEqual(hrefRule.customValidators[0]!("//evil.example/phish", {}), true);
 });
 
 test("leader schema supports portraits, bios, and current executive designation", () => {

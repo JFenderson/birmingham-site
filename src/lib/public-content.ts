@@ -6,6 +6,7 @@ import type {
   SanityPastPresident,
 } from "../sanity/queries.ts";
 import type { SanityImageWithAlt } from "../sanity/media.ts";
+import { sanitizeContentAction } from "./content-links.ts";
 
 export interface HomepageContent {
   hero: {
@@ -41,6 +42,22 @@ interface EmptyPastPresidentsContent {
 interface PopulatedPastPresidentsContent {
   status: "populated";
   presidents: SanityPastPresident[];
+}
+
+interface LeadershipChapter {
+  chapterName: string;
+  chapterSlug: string;
+}
+
+interface EmptyLeadershipContent {
+  status: "empty";
+  leaders: SanityLeader[];
+  message: string;
+}
+
+interface PopulatedLeadershipContent {
+  status: "populated";
+  leaders: SanityLeader[];
 }
 
 const DEFAULT_INITIATIVES: SanityHomepageInitiative[] = [
@@ -95,16 +112,14 @@ function actionOrFallback(
   value: SanityContentAction | null | undefined,
   fallback: SanityContentAction,
 ): SanityContentAction {
-  if (
-    typeof value?.href === "string" &&
-    value.href.trim().length > 0 &&
-    typeof value.label === "string" &&
-    value.label.trim().length > 0
-  ) {
-    return { href: value.href.trim(), label: value.label.trim() };
-  }
+  return sanitizeContentAction(value) ?? fallback;
+}
 
-  return fallback;
+function initiativeWithSafeLink(initiative: SanityHomepageInitiative): SanityHomepageInitiative {
+  return {
+    ...initiative,
+    link: sanitizeContentAction(initiative.link),
+  };
 }
 
 export function getSafeImageAlt(image: SanityImageWithAlt | null | undefined): string | null {
@@ -162,7 +177,7 @@ export function resolveHomepageContent(
       description: textOrFallback(settings.communityImpact?.description, fallback.communityImpact.description),
       initiatives:
         settings.communityImpact?.initiatives && settings.communityImpact.initiatives.length > 0
-          ? settings.communityImpact.initiatives
+          ? settings.communityImpact.initiatives.map(initiativeWithSafeLink)
           : fallback.communityImpact.initiatives,
     },
     featuredPresident: {
@@ -177,8 +192,32 @@ export function resolveHomepageContent(
   };
 }
 
-export function resolveLeadershipContent(leaders: SanityLeader[]): SanityLeader[] {
-  return leaders.length > 0 ? leaders : DEFAULT_LEADERSHIP;
+export function resolveLeadershipContent(
+  leaders: SanityLeader[],
+  chapter: LeadershipChapter = {
+    chapterName: "Birmingham Sigmas",
+    chapterSlug: "root",
+  },
+): EmptyLeadershipContent | PopulatedLeadershipContent {
+  if (leaders.length > 0) {
+    return {
+      status: "populated",
+      leaders,
+    };
+  }
+
+  if (chapter.chapterSlug === "root") {
+    return {
+      status: "populated",
+      leaders: DEFAULT_LEADERSHIP,
+    };
+  }
+
+  return {
+    status: "empty",
+    leaders: [],
+    message: `${chapter.chapterName} leadership profiles will appear here as they are published.`,
+  };
 }
 
 export function resolvePastPresidentsContent(

@@ -65,6 +65,54 @@ test("homepage content prefers published Sanity settings while preserving safe d
   assert.equal(fallback.communityImpact.initiatives.length, 3);
 });
 
+test("homepage content sanitizes CMS action links while preserving safe internal and approved external links", () => {
+  const settings: SanityHomepageSettings = {
+    _id: "site-settings-root",
+    hero: {
+      title: "CMS Hero Title",
+      primaryAction: { href: "javascript:alert(1)", label: "Unsafe primary" },
+      secondaryAction: { href: "/about?from=home", label: "Safe internal" },
+    },
+    communityImpact: {
+      initiatives: [
+        {
+          title: "Unsafe initiative",
+          description: "This link should be dropped.",
+          link: { href: "//evil.example/phish", label: "Unsafe protocol-relative" },
+        },
+        {
+          title: "Approved external",
+          description: "This link should be preserved.",
+          link: { href: "https://phibetasigma1914.org/", label: "International site" },
+        },
+      ],
+    },
+    featuredPresident: {
+      link: { href: "mailto:president@example.com", label: "Unsafe mailto" },
+    },
+  };
+
+  const content = resolveHomepageContent("Birmingham Sigmas", settings);
+
+  assert.deepEqual(content.hero.primaryAction, {
+    href: "/about",
+    label: "Discover our chapter",
+  });
+  assert.deepEqual(content.hero.secondaryAction, {
+    href: "/about?from=home",
+    label: "Safe internal",
+  });
+  assert.equal(content.communityImpact.initiatives[0]?.link, null);
+  assert.deepEqual(content.communityImpact.initiatives[1]?.link, {
+    href: "https://phibetasigma1914.org/",
+    label: "International site",
+  });
+  assert.deepEqual(content.featuredPresident.link, {
+    href: "/photos",
+    label: "View chapter moments",
+  });
+});
+
 test("leadership content prefers current executive leaders and only exposes safe portrait alts", () => {
   const leaders: SanityLeader[] = [
     {
@@ -87,12 +135,33 @@ test("leadership content prefers current executive leaders and only exposes safe
     },
   ];
 
-  const content = resolveLeadershipContent(leaders);
+  const content = resolveLeadershipContent(leaders, {
+    chapterName: "Birmingham Sigmas",
+    chapterSlug: "root",
+  });
 
-  assert.equal(content[0]?.name, "Bro. Safe Portrait");
-  assert.equal(getSafeImageAlt(content[0]?.portrait), "Brothers serving Birmingham families");
-  assert.equal(getSafeImageAlt(content[1]?.portrait), null);
-  assert.equal(resolveLeadershipContent([])[0]?.name, "Bro. Joseph Fenderson");
+  assert.equal(content.status, "populated");
+  assert.equal(content.leaders[0]?.name, "Bro. Safe Portrait");
+  assert.equal(getSafeImageAlt(content.leaders[0]?.portrait), "Brothers serving Birmingham families");
+  assert.equal(getSafeImageAlt(content.leaders[1]?.portrait), null);
+  const rootFallback = resolveLeadershipContent([], {
+    chapterName: "Birmingham Sigmas",
+    chapterSlug: "root",
+  });
+  assert.equal(rootFallback.status, "populated");
+  assert.equal(rootFallback.leaders[0]?.name, "Bro. Joseph Fenderson");
+});
+
+test("collegiate leadership without published leaders renders an empty state without root fallback identities", () => {
+  const content = resolveLeadershipContent([], {
+    chapterName: "Alpha Rho Chapter",
+    chapterSlug: "miles",
+  });
+
+  assert.equal(content.status, "empty");
+  assert.equal(content.leaders.length, 0);
+  assert.doesNotMatch(content.message, /Joseph Fenderson|Tau Sigma Executive Board/);
+  assert.match(content.message, /Alpha Rho Chapter/);
 });
 
 test("past presidents content prefers published records and keeps the empty fallback", () => {

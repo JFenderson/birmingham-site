@@ -1,4 +1,5 @@
 import { defineField } from "sanity";
+import { isSafeContentActionHref } from "../../lib/content-links.ts";
 
 type ChapterOptionsEnv = {
   CHAPTER_SLUG_MAP?: string | undefined;
@@ -151,6 +152,25 @@ export function createAccessibleImageField(
         }
 
         return true;
+      }),
+  });
+}
+
+export function createContentActionHrefField() {
+  return defineField({
+    name: "href",
+    title: "Link URL",
+    type: "string",
+    description: "Use a site path such as /about or an approved HTTPS URL.",
+    validation: (rule) =>
+      rule.required().custom((value) => {
+        if (typeof value !== "string" || value.trim().length === 0) {
+          return "Add a link URL.";
+        }
+
+        return isSafeContentActionHref(value)
+          ? true
+          : "Use a safe internal path beginning with / or an approved HTTPS URL.";
       }),
   });
 }
