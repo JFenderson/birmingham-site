@@ -182,3 +182,48 @@ export const memberRoleAssignmentSchema = z.object({
   memberId: memberIdSchema,
   role: memberRoleSchema,
 });
+
+/**
+ * Public Sigma Beta Club interest form. `website` is an inline honeypot
+ * field: real visitors never populate it (it is visually hidden), so any
+ * non-empty value fails validation and the Server Action treats it as a bot
+ * submission before doing any work.
+ */
+export const sigmaBetaInterestRoleSchema = z.enum([
+  "student",
+  "parent_guardian",
+  "other",
+]);
+export type SigmaBetaInterestRole = z.infer<typeof sigmaBetaInterestRoleSchema>;
+
+export const sigmaBetaInterestSchema = z.object({
+  name: plainPublicText.min(1).max(200),
+  email: z.string().trim().email().max(254),
+  phone: z.string().trim().max(20).optional().or(z.literal("")),
+  role: sigmaBetaInterestRoleSchema,
+  message: z.string().trim().max(2000).optional().or(z.literal("")),
+  website: z.string().max(0).optional().or(z.literal("")),
+});
+export type SigmaBetaInterestInput = z.infer<typeof sigmaBetaInterestSchema>;
+
+/**
+ * Public Tau Sigma Charity Foundation information-request form. Unlike the
+ * Sigma Beta Club interest form, `message` is required here — the form's
+ * purpose is to let a visitor describe the information they're requesting
+ * (a partnership, a donation question, a project inquiry), so a blank
+ * message would leave the foundation nothing to act on. `website` is the
+ * same inline honeypot convention: real visitors never populate it (it is
+ * visually hidden), so any non-empty value fails validation and the Server
+ * Action treats it as a bot submission before doing any work.
+ */
+export const foundationInformationRequestSchema = z.object({
+  name: plainPublicText.min(1).max(200),
+  email: z.string().trim().email().max(254),
+  organization: z.string().trim().max(200).optional().or(z.literal("")),
+  phone: z.string().trim().max(20).optional().or(z.literal("")),
+  message: plainPublicText.min(1).max(2000),
+  website: z.string().max(0).optional().or(z.literal("")),
+});
+export type FoundationInformationRequestInput = z.infer<
+  typeof foundationInformationRequestSchema
+>;

@@ -22,6 +22,16 @@ const ABOUT_PAGES = [
     title: "Active Roster",
     body: "Find member-access details for current roster information.",
   },
+  {
+    href: "/sigma-beta-club",
+    title: "Sigma Beta Club",
+    body: "Discover our mentoring program for young men, including events and how to get involved.",
+  },
+  {
+    href: "/foundation",
+    title: "Foundation",
+    body: "Learn about the Tau Sigma Charity Foundation, our community projects, and how to support our mission.",
+  },
 ];
 
 export default async function AboutPage() {

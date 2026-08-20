@@ -1,5 +1,5 @@
 import { defineField } from "sanity";
-import { isSafeContentActionHref } from "../../lib/content-links.ts";
+import { isSafeContentActionHref, isSafeExternalUrl } from "../../lib/content-links.ts";
 
 type ChapterOptionsEnv = {
   CHAPTER_SLUG_MAP?: string | undefined;
@@ -172,6 +172,44 @@ export function createContentActionHrefField() {
           ? true
           : "Use a safe internal path beginning with / or an approved HTTPS URL.";
       }),
+  });
+}
+
+/**
+ * A safe-URL field for destinations that are not part of the approved
+ * external content-action host allowlist (for example donation processors
+ * or third-party event registration forms). Accepts an internal path
+ * beginning with "/" or any HTTPS URL; rejects other schemes,
+ * protocol-relative "//" URLs, and control characters. Does not modify or
+ * extend `isSafeContentActionHref`, which remains scoped to the approved
+ * partner host allowlist.
+ */
+export function createSafeExternalUrlField(
+  name: string,
+  title: string,
+  description: string,
+  options?: { required?: boolean },
+) {
+  const isRequired = options?.required ?? false;
+
+  return defineField({
+    name,
+    title,
+    type: "string",
+    description,
+    validation: (rule) => {
+      const base = isRequired ? rule.required() : rule;
+
+      return base.custom((value) => {
+        if (typeof value !== "string" || value.trim().length === 0) {
+          return isRequired ? `Add a ${title.toLowerCase()}.` : true;
+        }
+
+        return isSafeExternalUrl(value)
+          ? true
+          : "Use a safe internal path beginning with / or an HTTPS URL.";
+      });
+    },
   });
 }
 
