@@ -99,14 +99,23 @@ export async function submitSigmaBetaInterest(
 
   const chapter = await sigmaBetaInterestActionDependencies.getCurrentChapter();
 
-  await sigmaBetaInterestActionDependencies.sendSigmaBetaInterestNotification({
-    to: parsed.data.email,
-    submitterName: parsed.data.name,
-    submitterEmail: parsed.data.email,
-    chapterName: chapter.name,
-    roleLabel: SIGMA_BETA_ROLE_LABELS[parsed.data.role],
-    message: parsed.data.message || undefined,
-  });
+  const { submitterError, adminError } =
+    await sigmaBetaInterestActionDependencies.sendSigmaBetaInterestNotification({
+      to: parsed.data.email,
+      submitterName: parsed.data.name,
+      submitterEmail: parsed.data.email,
+      chapterName: chapter.name,
+      roleLabel: SIGMA_BETA_ROLE_LABELS[parsed.data.role],
+      phone: parsed.data.phone || undefined,
+      message: parsed.data.message || undefined,
+    });
+
+  if (submitterError || adminError) {
+    console.error("[sigma-beta-interest] notification failed", {
+      submitterError,
+      adminError,
+    });
+  }
 
   return NEUTRAL_SIGMA_BETA_INTEREST_RESULT;
 }

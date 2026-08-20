@@ -1,18 +1,11 @@
-import { createImageUrlBuilder } from "@sanity/image-url";
-import type { SanityImageSource } from "@sanity/image-url";
-import { sanityClient } from "@/sanity/client";
 import { isSafeExternalUrl } from "@/lib/content-links";
+import { getSanityImageUrl } from "@/sanity/image-url";
 import type {
   SanitySigmaBetaAdvisor,
   SanitySigmaBetaDirectorContact,
   SanitySigmaBetaEvent,
 } from "@/sanity/queries";
 import { SectionHeading } from "./section-heading";
-
-const builder = createImageUrlBuilder(sanityClient);
-function urlFor(source: SanityImageSource) {
-  return builder.image(source);
-}
 
 function getSafeAlt(image: { alt?: string | null } | null | undefined) {
   const alt = image?.alt?.trim();
@@ -55,6 +48,7 @@ interface SigmaBetaHeroProps {
 
 export function SigmaBetaHero({ chapterName, overview, heroImage }: SigmaBetaHeroProps) {
   const heroAlt = getSafeAlt(heroImage);
+  const heroImageUrl = heroImage && heroAlt ? getSanityImageUrl(heroImage, 800, 560) : null;
 
   return (
     <div className="grid gap-10 lg:grid-cols-[3fr_2fr] lg:items-center">
@@ -66,10 +60,10 @@ export function SigmaBetaHero({ chapterName, overview, heroImage }: SigmaBetaHer
           description={overview}
         />
       </div>
-      {heroImage && heroAlt ? (
+      {heroImageUrl && heroAlt ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={urlFor(heroImage as SanityImageSource).width(800).height(560).fit("crop").url()}
+          src={heroImageUrl}
           alt={heroAlt}
           className="w-full rounded-2xl object-cover shadow-[var(--public-shadow)]"
         />
@@ -108,6 +102,7 @@ export function SigmaBetaEventsSection({ events }: SigmaBetaEventsSectionProps) 
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => {
             const imageAlt = getSafeAlt(event.image);
+            const imageUrl = event.image && imageAlt ? getSanityImageUrl(event.image, 640, 360) : null;
             const canRegister =
               typeof event.registrationUrl === "string" &&
               event.registrationUrl.trim().length > 0 &&
@@ -118,10 +113,10 @@ export function SigmaBetaEventsSection({ events }: SigmaBetaEventsSectionProps) 
                 key={event._id}
                 className="overflow-hidden rounded-2xl border border-[var(--public-border)] bg-[var(--public-surface)] shadow-sm"
               >
-                {event.image && imageAlt ? (
+                {imageUrl && imageAlt ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={urlFor(event.image as SanityImageSource).width(640).height(360).fit("crop").url()}
+                    src={imageUrl}
                     alt={imageAlt}
                     className="h-40 w-full object-cover"
                   />
@@ -187,16 +182,18 @@ export function SigmaBetaAdvisorsSection({ advisors }: SigmaBetaAdvisorsSectionP
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {advisors.map((advisor) => {
           const portraitAlt = getSafeAlt(advisor.portrait);
+          const portraitUrl =
+            advisor.portrait && portraitAlt ? getSanityImageUrl(advisor.portrait, 480, 480) : null;
 
           return (
             <article
               key={advisor.name}
               className="overflow-hidden rounded-2xl border border-[var(--public-border)] bg-[var(--public-surface)] shadow-sm"
             >
-              {advisor.portrait && portraitAlt ? (
+              {portraitUrl && portraitAlt ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={urlFor(advisor.portrait as SanityImageSource).width(480).height(480).fit("crop").url()}
+                  src={portraitUrl}
                   alt={portraitAlt}
                   className="h-48 w-full object-cover"
                 />

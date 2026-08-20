@@ -94,14 +94,25 @@ export async function submitFoundationInformationRequest(
 
   const chapter = await foundationInformationRequestActionDependencies.getCurrentChapter();
 
-  await foundationInformationRequestActionDependencies.sendFoundationInformationRequestNotification({
-    to: parsed.data.email,
-    submitterName: parsed.data.name,
-    submitterEmail: parsed.data.email,
-    nonprofitName: chapter.name,
-    organization: parsed.data.organization || undefined,
-    message: parsed.data.message,
-  });
+  const { submitterError, adminError } =
+    await foundationInformationRequestActionDependencies.sendFoundationInformationRequestNotification(
+      {
+        to: parsed.data.email,
+        submitterName: parsed.data.name,
+        submitterEmail: parsed.data.email,
+        nonprofitName: chapter.name,
+        organization: parsed.data.organization || undefined,
+        phone: parsed.data.phone || undefined,
+        message: parsed.data.message,
+      },
+    );
+
+  if (submitterError || adminError) {
+    console.error("[foundation-information-request] notification failed", {
+      submitterError,
+      adminError,
+    });
+  }
 
   return NEUTRAL_FOUNDATION_INFORMATION_REQUEST_RESULT;
 }

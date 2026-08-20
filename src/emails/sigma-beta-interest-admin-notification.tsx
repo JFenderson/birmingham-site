@@ -5,12 +5,14 @@ export function SigmaBetaInterestAdminNotificationEmail({
   submitterEmail,
   chapterName,
   roleLabel,
+  phone,
   message,
 }: {
   submitterName: string;
   submitterEmail: string;
   chapterName: string;
   roleLabel: string;
+  phone?: string | undefined;
   message?: string | undefined;
 }) {
   return (
@@ -23,6 +25,7 @@ export function SigmaBetaInterestAdminNotificationEmail({
             {submitterName} ({roleLabel}) submitted an interest form for the{" "}
             {chapterName || "chapter"} Sigma Beta Club.
           </Text>
+          {phone ? <Text>Phone: {phone}</Text> : null}
           {message ? <Text>Message: {message}</Text> : null}
           <Text>Reply to {submitterEmail} to follow up.</Text>
         </Container>

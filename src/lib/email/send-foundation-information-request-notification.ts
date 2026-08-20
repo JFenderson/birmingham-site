@@ -11,6 +11,7 @@ export type FoundationInformationRequestNotificationParams = {
   submitterEmail: string;
   nonprofitName: string;
   organization?: string | undefined;
+  phone?: string | undefined;
   message: string;
 };
 
@@ -72,6 +73,7 @@ function getAdminContent(params: FoundationInformationRequestNotificationParams)
   const submitterEmail = toPlainTextLine(params.submitterEmail);
   const nonprofitName = toPlainTextLine(params.nonprofitName) || "the foundation";
   const organization = params.organization ? toPlainTextLine(params.organization) : "";
+  const phone = params.phone ? toPlainTextLine(params.phone) : "";
   const message = toPlainTextLine(params.message);
 
   return {
@@ -83,6 +85,7 @@ function getAdminContent(params: FoundationInformationRequestNotificationParams)
       `Name: ${submitterName}`,
       `Email: ${submitterEmail}`,
       ...(organization ? [`Organization: ${organization}`] : []),
+      ...(phone ? [`Phone: ${phone}`] : []),
       "",
       `Message: ${message}`,
       "",
@@ -163,6 +166,7 @@ export async function sendFoundationInformationRequestNotification(
         submitterEmail: params.submitterEmail,
         nonprofitName: params.nonprofitName,
         organization: params.organization,
+        phone: params.phone,
         message: params.message,
       }),
     });

@@ -46,8 +46,9 @@ export function isSafeContentActionHref(value: string): boolean {
  * external content-action host allowlist (for example third-party event
  * registration forms). Accepts an internal path beginning with "/" or any
  * HTTPS URL; rejects other schemes, protocol-relative "//" URLs, and control
- * characters. Mirrors `isSafeExternalActionUrl` in
- * `src/sanity/schema/shared.ts` exactly — keep the two in sync.
+ * characters. Used directly by `createSafeExternalUrlField` in
+ * `src/sanity/schema/shared.ts` and by public content components — the
+ * single source of truth for this check.
  */
 export function isSafeExternalUrl(value: string): boolean {
   const href = value.trim();

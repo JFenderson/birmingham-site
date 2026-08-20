@@ -1,5 +1,5 @@
 import { defineField } from "sanity";
-import { isSafeContentActionHref } from "../../lib/content-links.ts";
+import { isSafeContentActionHref, isSafeExternalUrl } from "../../lib/content-links.ts";
 
 type ChapterOptionsEnv = {
   CHAPTER_SLUG_MAP?: string | undefined;
@@ -175,33 +175,6 @@ export function createContentActionHrefField() {
   });
 }
 
-const UNSAFE_URL_CHARACTERS_PATTERN = new RegExp(
-  "[" +
-    String.fromCharCode(0) +
-    "-" +
-    String.fromCharCode(31) +
-    String.fromCharCode(127) +
-    "\\\\]",
-);
-
-function isSafeExternalActionUrl(value: string): boolean {
-  const href = value.trim();
-
-  if (href.length === 0 || UNSAFE_URL_CHARACTERS_PATTERN.test(href)) return false;
-
-  if (href.startsWith("/")) {
-    return !href.startsWith("//");
-  }
-
-  try {
-    const url = new URL(href);
-
-    return url.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
 /**
  * A safe-URL field for destinations that are not part of the approved
  * external content-action host allowlist (for example donation processors
@@ -232,7 +205,7 @@ export function createSafeExternalUrlField(
           return isRequired ? `Add a ${title.toLowerCase()}.` : true;
         }
 
-        return isSafeExternalActionUrl(value)
+        return isSafeExternalUrl(value)
           ? true
           : "Use a safe internal path beginning with / or an HTTPS URL.";
       });

@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { isSafeExternalUrl } from "../src/lib/content-links.ts";
 import { foundationInformationRequestSchema } from "../src/lib/validation/schemas.ts";
-import { getSafeDonationHref } from "../src/components/public/foundation-content.tsx";
+import { getSafeDonationHref } from "../src/lib/foundation-donation.ts";
 import * as foundationActions from "../src/app/(public)/foundation/actions.ts";
 
 const validInput = {

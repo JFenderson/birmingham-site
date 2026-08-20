@@ -11,6 +11,7 @@ export type SigmaBetaInterestNotificationParams = {
   submitterEmail: string;
   chapterName: string;
   roleLabel: string;
+  phone?: string | undefined;
   message?: string | undefined;
 };
 
@@ -72,6 +73,7 @@ function getAdminContent(params: SigmaBetaInterestNotificationParams) {
   const submitterEmail = toPlainTextLine(params.submitterEmail);
   const chapterName = toPlainTextLine(params.chapterName) || "the chapter";
   const roleLabel = toPlainTextLine(params.roleLabel);
+  const phone = params.phone ? toPlainTextLine(params.phone) : "";
   const message = params.message ? toPlainTextLine(params.message) : "";
 
   return {
@@ -83,6 +85,7 @@ function getAdminContent(params: SigmaBetaInterestNotificationParams) {
       `Name: ${submitterName}`,
       `Role: ${roleLabel}`,
       `Email: ${submitterEmail}`,
+      ...(phone ? [`Phone: ${phone}`] : []),
       ...(message ? ["", `Message: ${message}`] : []),
       "",
       "Follow up with the submitter directly.",
@@ -158,6 +161,7 @@ export async function sendSigmaBetaInterestNotification(
         submitterEmail: params.submitterEmail,
         chapterName: params.chapterName,
         roleLabel: params.roleLabel,
+        phone: params.phone,
         message: params.message,
       }),
     });

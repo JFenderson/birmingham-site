@@ -1,7 +1,6 @@
-import { createImageUrlBuilder } from "@sanity/image-url";
-import type { SanityImageSource } from "@sanity/image-url";
-import { sanityClient } from "@/sanity/client";
 import { isSafeExternalUrl } from "@/lib/content-links";
+import { getSafeDonationHref } from "@/lib/foundation-donation";
+import { getSanityImageUrl } from "@/sanity/image-url";
 import type {
   SanityFoundationBoardMember,
   SanityFoundationEvent,
@@ -10,29 +9,9 @@ import type {
 } from "@/sanity/queries";
 import { SectionHeading } from "./section-heading";
 
-const builder = createImageUrlBuilder(sanityClient);
-function urlFor(source: SanityImageSource) {
-  return builder.image(source);
-}
-
 function getSafeAlt(image: { alt?: string | null } | null | undefined) {
   const alt = image?.alt?.trim();
   return alt ? alt : null;
-}
-
-/**
- * Gates the donation destination behind the same safe-URL check used for
- * other Sanity-managed external links (`isSafeExternalUrl`). Returns null
- * for missing/blank/unsafe values so callers can skip rendering a donate
- * link entirely rather than pointing at an unvetted destination. Donation
- * processing itself always happens on the external destination this URL
- * points to — this component never collects payment details.
- */
-export function getSafeDonationHref(url: string | null | undefined): string | null {
-  if (typeof url !== "string") return null;
-  const trimmed = url.trim();
-  if (!trimmed) return null;
-  return isSafeExternalUrl(trimmed) ? trimmed : null;
 }
 
 function formatDate(value: string) {
@@ -56,8 +35,8 @@ export function FoundationEmptyState({ chapterName }: FoundationEmptyStateProps)
         Foundation details are coming soon.
       </h2>
       <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-[var(--public-muted)]">
-        {chapterName} has not published Tau Sigma Charity Foundation content yet. Check back
-        soon for our nonprofit overview, projects, and ways to get involved.
+        {chapterName} has not published foundation content yet. Check back soon for our
+        nonprofit overview, projects, and ways to get involved.
       </p>
     </div>
   );
@@ -69,24 +48,25 @@ interface FoundationHeroProps {
 
 export function FoundationHero({ settings }: FoundationHeroProps) {
   const heroAlt = getSafeAlt(settings.heroImage);
+  const heroImageUrl = settings.heroImage && heroAlt ? getSanityImageUrl(settings.heroImage, 800, 560) : null;
 
   return (
     <div className="grid gap-10 lg:grid-cols-[3fr_2fr] lg:items-center">
       <div>
         <SectionHeading
           as="h1"
-          eyebrow={settings.nonprofitName}
-          title="Tau Sigma Charity Foundation"
+          eyebrow="Charitable foundation"
+          title={settings.nonprofitName}
           description={settings.overview}
         />
         <p className="mt-4 text-sm font-semibold text-[var(--public-muted)]">
           {settings.taxStatusStatement}
         </p>
       </div>
-      {settings.heroImage && heroAlt ? (
+      {heroImageUrl && heroAlt ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={urlFor(settings.heroImage as SanityImageSource).width(800).height(560).fit("crop").url()}
+          src={heroImageUrl}
           alt={heroAlt}
           className="w-full rounded-2xl object-cover shadow-[var(--public-shadow)]"
         />
@@ -156,16 +136,17 @@ export function FoundationProjectsSection({ projects }: FoundationProjectsSectio
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => {
             const imageAlt = getSafeAlt(project.image);
+            const imageUrl = project.image && imageAlt ? getSanityImageUrl(project.image, 640, 360) : null;
 
             return (
               <article
                 key={project._id}
                 className="overflow-hidden rounded-2xl border border-[var(--public-border)] bg-[var(--public-surface)] shadow-sm"
               >
-                {project.image && imageAlt ? (
+                {imageUrl && imageAlt ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={urlFor(project.image as SanityImageSource).width(640).height(360).fit("crop").url()}
+                    src={imageUrl}
                     alt={imageAlt}
                     className="h-40 w-full object-cover"
                   />
@@ -256,16 +237,18 @@ export function FoundationBoardSection({ boardMembers }: FoundationBoardSectionP
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {boardMembers.map((member) => {
           const portraitAlt = getSafeAlt(member.portrait);
+          const portraitUrl =
+            member.portrait && portraitAlt ? getSanityImageUrl(member.portrait, 480, 480) : null;
 
           return (
             <article
               key={member._id}
               className="overflow-hidden rounded-2xl border border-[var(--public-border)] bg-[var(--public-surface)] shadow-sm"
             >
-              {member.portrait && portraitAlt ? (
+              {portraitUrl && portraitAlt ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={urlFor(member.portrait as SanityImageSource).width(480).height(480).fit("crop").url()}
+                  src={portraitUrl}
                   alt={portraitAlt}
                   className="h-48 w-full object-cover"
                 />

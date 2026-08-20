@@ -5,12 +5,14 @@ export function FoundationInformationRequestAdminNotificationEmail({
   submitterEmail,
   nonprofitName,
   organization,
+  phone,
   message,
 }: {
   submitterName: string;
   submitterEmail: string;
   nonprofitName: string;
   organization?: string | undefined;
+  phone?: string | undefined;
   message: string;
 }) {
   return (
@@ -24,6 +26,7 @@ export function FoundationInformationRequestAdminNotificationEmail({
             {nonprofitName || "the foundation"}.
           </Text>
           {organization ? <Text>Organization: {organization}</Text> : null}
+          {phone ? <Text>Phone: {phone}</Text> : null}
           <Text>Message: {message}</Text>
           <Text>Reply to {submitterEmail} to follow up.</Text>
         </Container>

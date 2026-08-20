@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { NAV_ITEMS } from "../src/components/public-header.tsx";
+import { NAV_ITEMS } from "../src/lib/nav-items.ts";
 
 const PRE_EXISTING_TOP_LEVEL = [
   { href: "/", label: "Home" },
