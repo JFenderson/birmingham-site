@@ -35,9 +35,9 @@ export default async function NewsPage() {
                   {post.coverImage && coverAlt ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={urlFor(post.coverImage).width(800).height(320).url()}
+                      src={urlFor(post.coverImage).width(1200).fit("max").url()}
                       alt={coverAlt}
-                      className="mb-4 h-40 w-full rounded-md object-cover"
+                      className="mb-4 max-h-80 w-full rounded-md object-contain object-center"
                     />
                   ) : null}
                   <h2 className="text-xl font-semibold text-zinc-900">{post.title}</h2>
