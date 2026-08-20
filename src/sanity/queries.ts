@@ -523,7 +523,7 @@ export async function getSigmaBetaSettings(
         email,
         phone
       },
-      advisors[] {
+      "advisors": coalesce(advisors[] {
         name,
         role,
         bio,
@@ -531,7 +531,7 @@ export async function getSigmaBetaSettings(
           ...,
           alt
         }
-      },
+      }, []),
       interestFormIntro
     }`,
     { chapterSlug },
@@ -551,6 +551,7 @@ export function getSigmaBetaEvents(
       published == true &&
       defined(publishedAt) &&
       publishedAt <= now() &&
+      eventDate >= now() &&
       !(_id in path("drafts.**"))
     ] | order(order asc, eventDate asc, _id asc) {
       _id,
@@ -627,10 +628,10 @@ export function getFoundationProjects(
         ...,
         alt
       },
-      gallery[] {
+      "gallery": coalesce(gallery[] {
         ...,
         alt
-      },
+      }, []),
       order
     }`,
     chapterSlug,
@@ -650,6 +651,7 @@ export function getFoundationEvents(
       published == true &&
       defined(publishedAt) &&
       publishedAt <= now() &&
+      date >= now() &&
       !(_id in path("drafts.**"))
     ] | order(order asc, date asc, _id asc) {
       _id,

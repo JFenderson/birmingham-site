@@ -89,6 +89,7 @@ test("sigma beta settings query returns one published tenant singleton", async (
     /\] \| order\(publishedAt desc, _updatedAt desc, _id asc\)\[0\]/,
   );
   assert.match(calls[0]!.query, /advisors/);
+  assert.match(calls[0]!.query, /coalesce\(advisors/);
   assert.match(calls[0]!.query, /directorContact/);
 });
 
@@ -118,6 +119,7 @@ test("sigma beta events query returns only the requested tenant's published orde
   assertFinalOrderTiebreaker(calls[0]!);
   assert.match(calls[0]!.query, /"slug": slug\.current/);
   assert.match(calls[0]!.query, /registrationUrl/);
+  assert.match(calls[0]!.query, /eventDate >= now\(\)/);
 });
 
 test("foundation settings query returns one published tenant singleton", async () => {
@@ -171,7 +173,7 @@ test("foundation projects query returns only the requested tenant's published or
   assertRequiredPublishedAtQuery(calls[0]!);
   assert.match(calls[0]!.query, /order\(order asc, date desc, _id asc\)/);
   assertFinalOrderTiebreaker(calls[0]!);
-  assert.match(calls[0]!.query, /gallery\[\]/);
+  assert.match(calls[0]!.query, /coalesce\(gallery/);
 });
 
 test("foundation events query returns only the requested tenant's published ordered records", async () => {
@@ -197,6 +199,7 @@ test("foundation events query returns only the requested tenant's published orde
   assert.match(calls[0]!.query, /order\(order asc, date asc, _id asc\)/);
   assertFinalOrderTiebreaker(calls[0]!);
   assert.match(calls[0]!.query, /registrationUrl/);
+  assert.match(calls[0]!.query, /date >= now\(\)/);
 });
 
 test("foundation board members query returns only the requested tenant's published ordered records without a publishedAt gate", async () => {
