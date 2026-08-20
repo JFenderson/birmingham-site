@@ -8,8 +8,6 @@ export const NAV_ITEMS = [
       { href: "/about/leadership", label: "Leadership" },
       { href: "/about/past-presidents", label: "Past Presidents" },
       { href: "/about/active-roster", label: "Active Roster" },
-      { href: "/sigma-beta-club", label: "Sigma Beta Club" },
-      { href: "/foundation", label: "Foundation" },
     ],
   },
   { href: "/photos", label: "Photos" },
@@ -24,5 +22,7 @@ export const NAV_ITEMS = [
       { href: "/community-events/scholarship", label: "Scholarship" },
     ],
   },
+  { href: "/sigma-beta-club", label: "Sigma Beta Club" },
+  { href: "/foundation", label: "Foundation" },
   { href: "/contact", label: "Contact" },
 ];
