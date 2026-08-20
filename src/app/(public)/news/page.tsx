@@ -1,14 +1,6 @@
 import Link from "next/link";
-import { sanityClient } from "@/sanity/client";
 import { getCurrentChapter } from "@/lib/tenant/get-chapter";
 import { getPublishedPostSummaries } from "@/sanity/queries";
-import { createImageUrlBuilder } from "@sanity/image-url";
-import type { SanityImageSource } from "@sanity/image-url";
-
-const builder = createImageUrlBuilder(sanityClient);
-function urlFor(source: SanityImageSource) {
-  return builder.image(source);
-}
 
 export default async function NewsPage() {
   const { chapterSlug } = await getCurrentChapter();
@@ -24,22 +16,12 @@ export default async function NewsPage() {
         ) : (
           <div className="mt-8 space-y-6">
             {posts.map((post) => {
-              const coverAlt = post.coverImage?.alt?.trim();
-
               return (
                 <Link
                   key={post._id}
                   href={`/news/${post.slug}`}
                   className="block rounded-md border border-zinc-200 bg-white p-6 shadow-sm transition-colors hover:border-[#0047AB]"
                 >
-                  {post.coverImage && coverAlt ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={urlFor(post.coverImage).width(1200).fit("max").url()}
-                      alt={coverAlt}
-                      className="mb-4 max-h-80 w-full rounded-md object-contain object-center"
-                    />
-                  ) : null}
                   <h2 className="text-xl font-semibold text-zinc-900">{post.title}</h2>
                   {post.publishedAt ? (
                     <p className="mt-1 text-xs text-zinc-500">
