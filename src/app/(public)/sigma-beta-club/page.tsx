@@ -6,6 +6,7 @@ import {
   SigmaBetaEventsSection,
   SigmaBetaHero,
   SigmaBetaMission,
+  SigmaBetaProgramsSection,
 } from "@/components/public/sigma-beta-club-content";
 import { SigmaBetaInterestForm } from "@/components/public/sigma-beta-interest-form";
 import { SectionHeading } from "@/components/public/section-heading";
@@ -46,6 +47,12 @@ export default async function SigmaBetaClubPage() {
       <section className="bg-[var(--public-surface)] py-16 sm:py-20">
         <div className="mx-auto max-w-[var(--public-content-max)] px-[var(--public-gutter)]">
           <SigmaBetaMission mission={settings.mission} />
+        </div>
+      </section>
+
+      <section className="bg-[var(--public-surface-subtle)] py-16 sm:py-20">
+        <div className="mx-auto max-w-[var(--public-content-max)] px-[var(--public-gutter)]">
+          <SigmaBetaProgramsSection />
         </div>
       </section>
 

@@ -82,6 +82,115 @@ export function SigmaBetaMission({ mission }: SigmaBetaMissionProps) {
   );
 }
 
+type SigmaBetaProgram = {
+  title: string;
+  program: string;
+  content: readonly string[];
+  bullets?: readonly string[];
+  categories?: readonly { label: string; value: string }[];
+};
+
+const SIGMA_BETA_PROGRAMS: readonly SigmaBetaProgram[] = [
+  {
+    title: "Education",
+    program: "Academic Enrichment & Mentoring",
+    content: [
+      "Club members receive academic assistance and leadership development at the elementary, middle and high school levels. This happens through one-on-one and group approaches to tutoring of Sigma Beta Club members and after school and weekend tutoring by Alumni and Collegiate members in various academic and professional disciplines. Additionally, Sigma Beta Clubs develop partnerships with local institutions, inclusive of colleges and universities, community colleges and trade schools.",
+    ],
+  },
+  {
+    title: "Social Action",
+    program: "Sigma Against Teenage Pregnancy Plus",
+    content: [
+      "The primary area of focus of the SATAPP Program is providing Sigma Beta Club members with tools they need to make smart choices about healthy lifestyles that will help lead to responsible fatherhood later in life.",
+    ],
+  },
+  {
+    title: "Bigger and Better Business",
+    program: "Job Training, Savings and Investment",
+    content: [
+      "Club members increase their awareness of business ownership as well as the importance of saving and investing at an early age. Club members also learn about various professions via internships, job shadowing, and other avenues to visit job sites.",
+    ],
+  },
+  {
+    title: "Childhood Obesity & Health and Wellness",
+    program: "Childhood Obesity Initiative",
+    content: [
+      "The Sigma Beta Club Foundation’s Child Obesity Initiative focuses on the mind, body, and spirit. The primary objective is reducing weight and reversing the poor health of adolescents at an early age through the following principles:",
+    ],
+    bullets: [
+      "Stepping into shape",
+      "Eating healthy",
+      "Exercising daily",
+      "Knowing the obesity facts",
+      "Learning how to grow your own food",
+      "Self-esteem matters",
+      "Advocacy",
+    ],
+  },
+  {
+    title: "Special Programs and Projects",
+    program: "Community Service",
+    content: [
+      "Sigma Beta Club members are required to conduct a variety of community service projects. These may include but are not limited to serving the elderly, March of Dimes: March for Babies, Sickle Cell Centers, visiting children in hospitals, volunteering at their library, working with children with disabilities, cleaning up their neighborhood, etc.",
+      "In addition to our organization-wide initiatives, local clubs also participate in a variety of enrichment programs that cover the following categories:",
+    ],
+    categories: [
+      { label: "Cultural", value: "art shows, plays, concerts, museums" },
+      { label: "Social", value: "parties, parent’s day, cook-outs, movies" },
+      { label: "Athletic", value: "football, baseball, golf, basketball, bowling" },
+    ],
+  },
+];
+
+export function SigmaBetaProgramsSection() {
+  return (
+    <div>
+      <SectionHeading
+        eyebrow="Our programs"
+        title="Programs and initiatives"
+        description="Sigma Beta Club develops young leaders through education, healthy choices, business awareness, service, and enrichment."
+      />
+      <div className="mt-8 space-y-4">
+        {SIGMA_BETA_PROGRAMS.map((program) => (
+          <details
+            key={program.title}
+            open
+            className="group rounded-2xl border border-[var(--public-border)] bg-[var(--public-surface)] shadow-sm"
+          >
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 text-xl font-bold text-[var(--public-blue)] marker:hidden [&::-webkit-details-marker]:hidden sm:px-8">
+              <span>{program.title}</span>
+              <span aria-hidden="true" className="text-2xl font-normal leading-none text-[var(--public-muted)] transition-transform group-open:rotate-45">+</span>
+            </summary>
+            <div className="border-t border-[var(--public-border)] px-6 pb-7 pt-5 sm:px-8">
+              <h3 className="text-sm font-bold text-[var(--public-ink)]">{program.program}</h3>
+              <div className="mt-5 space-y-4 text-sm leading-7 text-[var(--public-muted)]">
+                {program.content.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+                {program.bullets ? (
+                  <ul className="list-disc space-y-2 pl-5">
+                    {program.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}
+                  </ul>
+                ) : null}
+                {program.categories ? (
+                  <ul className="space-y-2 pl-1">
+                    {program.categories.map((category) => (
+                      <li key={category.label}>
+                        <strong className="text-[var(--public-ink)]">{category.label}:</strong> {category.value}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            </div>
+          </details>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 interface SigmaBetaEventsSectionProps {
   events: SanitySigmaBetaEvent[];
 }
