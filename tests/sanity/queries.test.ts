@@ -284,6 +284,7 @@ test("post detail query returns one published tenant post by slug", async () => 
     slug: "chapter-cookout",
     publishedAt: "2026-08-01T12:00:00.000Z",
     coverImage: { asset: { _ref: "image-ref" }, alt: "Brothers serving food" },
+    gallery: [],
     body: [{ _type: "block", children: [{ _type: "span", text: "Story" }] }],
   };
   const { calls, client } = recordingClient(expected);
@@ -295,6 +296,7 @@ test("post detail query returns one published tenant post by slug", async () => 
   assertPublishedPostQuery(calls[0]!);
   assert.match(calls[0]!.query, /slug\.current == \$slug/);
   assert.deepEqual(calls[0]!.params, { chapterSlug: "miles", slug: "chapter-cookout" });
+  assert.match(calls[0]!.query, /gallery\[\]/);
 });
 
 test("gallery query returns only published tenant galleries in deterministic newest-event order", async () => {

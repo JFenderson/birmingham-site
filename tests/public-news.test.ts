@@ -69,6 +69,7 @@ function sampleDetail(overrides: Partial<SanityPostDetail> = {}): SanityPostDeta
     slug: "community-cookout",
     publishedAt: "2026-08-01T12:00:00.000Z",
     coverImage: meaningfulCover,
+    gallery: [],
     body: [{ _type: "block", children: [{ _type: "span", text: "Story" }] }],
     ...overrides,
   };
@@ -89,13 +90,12 @@ test("news list omits cover images when alt text is missing or blank", async () 
   assert.doesNotMatch(markup, /alt=""/);
 });
 
-test("news list renders cover images when alt text is meaningful", async () => {
+test("news list stays text-only even when a cover image exists", async () => {
   postSummaries = [sampleSummary()];
 
   const markup = await renderNewsPage();
 
-  assert.match(markup, /<img\b/);
-  assert.match(markup, /alt="Chapter members serving families"/);
+  assert.doesNotMatch(markup, /<img\b/);
 });
 
 test("news detail omits the cover image when alt text is missing or blank", async () => {
@@ -115,4 +115,20 @@ test("news detail renders the cover image when alt text is meaningful", async ()
 
   assert.match(markup, /<img\b/);
   assert.match(markup, /alt="Chapter members serving families"/);
+});
+
+test("news detail renders a multi-photo gallery with captions", async () => {
+  postDetail = sampleDetail({
+    gallery: [
+      { ...meaningfulCover, alt: "First chapter photo", caption: "Opening remarks" },
+      { ...meaningfulCover, alt: "Second chapter photo", caption: "Fellowship afterward" },
+    ],
+  });
+
+  const markup = await renderNewsPostPage();
+
+  assert.match(markup, /First chapter photo/);
+  assert.match(markup, /Second chapter photo/);
+  assert.match(markup, /Opening remarks/);
+  assert.match(markup, /Fellowship afterward/);
 });

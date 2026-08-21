@@ -1,4 +1,4 @@
-import { defineField, defineType } from "sanity";
+import { defineArrayMember, defineField, defineType } from "sanity";
 import {
   createAccessibleImageField,
   createChapterSlugField,
@@ -32,6 +32,36 @@ export const post = defineType({
       "Cover image",
       "Optional hero image for the news listing and article page.",
     ),
+    defineField({
+      name: "gallery",
+      title: "Article gallery",
+      type: "array",
+      description: "Optional ordered photo gallery shown on the article page. Use this for posts with multiple photos.",
+      of: [
+        defineArrayMember({
+          name: "articlePhoto",
+          title: "Article photo",
+          type: "image",
+          options: { hotspot: true },
+          fields: [
+            defineField({
+              name: "alt",
+              title: "Alt text",
+              type: "string",
+              description: "Describe the image for people who cannot see it.",
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: "caption",
+              title: "Caption",
+              type: "string",
+              description: "Optional caption shown below the image.",
+            }),
+          ],
+          validation: (rule) => rule.required(),
+        }),
+      ],
+    }),
     defineField({
       name: "excerpt",
       type: "text",

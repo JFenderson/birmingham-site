@@ -252,6 +252,17 @@ test("public image validators require alt text when an asset is present", () => 
   );
 });
 
+test("post schema supports an ordered gallery with accessible images", () => {
+  const gallery = schemaField(schemaType("post"), "gallery");
+
+  assert.equal(gallery.type, "array");
+  assert.equal(gallery.validation?.length, undefined);
+  assert.ok(gallery.of?.length);
+  assert.equal(gallery.of?.[0]?.type, "image");
+  assert.ok(gallery.of?.[0]?.fields?.some((field) => field.name === "alt"));
+  assert.ok(gallery.of?.[0]?.fields?.some((field) => field.name === "caption"));
+});
+
 test("gallery photo validators require uploaded assets and alt text", () => {
   const photos = schemaField(schemaType("gallery"), "photos");
   const photo = arrayMember(photos, "galleryPhoto");

@@ -11,6 +11,19 @@ function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
 
+type ArticleImage = SanityImageSource & {
+  asset: { _ref?: string; _id?: string };
+  alt?: string | null;
+  caption?: string | null;
+};
+
+function hasImageAsset(source: unknown): source is ArticleImage {
+  if (!source || typeof source !== "object" || !("asset" in source)) return false;
+
+  const asset = (source as { asset?: unknown }).asset;
+  return Boolean(asset && typeof asset === "object" && ("_ref" in asset || "_id" in asset));
+}
+
 const portableTextComponents: PortableTextComponents = {
   block: {
     normal: ({ children }) => <p className="mt-4 text-[15px] leading-8 text-zinc-700">{children}</p>,
@@ -30,11 +43,14 @@ export default async function NewsPostPage({
   if (!post) notFound();
 
   const coverAlt = post.coverImage?.alt?.trim();
+  const gallery = (post.gallery ?? [])
+    .filter(hasImageAsset)
+    .filter((photo) => Boolean(photo.alt?.trim()));
 
   return (
     <div className="bg-[#f8f9fc] px-6 py-16 sm:px-8 lg:px-8">
       <div className="mx-auto max-w-3xl rounded-md border border-zinc-200 bg-white p-8 shadow-sm sm:p-10">
-        {post.coverImage && coverAlt ? (
+        {hasImageAsset(post.coverImage) && coverAlt ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={urlFor(post.coverImage).width(1600).fit("max").url()}
@@ -51,6 +67,26 @@ export default async function NewsPostPage({
         <div className="mt-6">
           <PortableText value={post.body} components={portableTextComponents} />
         </div>
+        {gallery.length > 1 ? (
+          <section aria-label="Article photo gallery" className="mt-10 border-t border-zinc-200 pt-8">
+            <h2 className="text-2xl font-semibold text-zinc-900">More photos</h2>
+            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+              {gallery.map((photo, index) => (
+                <figure key={`${photo.asset?._ref ?? photo.asset?._id}-${index}`}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={urlFor(photo).width(1200).fit("max").url()}
+                    alt={photo.alt!.trim()}
+                    className="w-full rounded-md object-contain object-center"
+                  />
+                  {photo.caption?.trim() ? (
+                    <figcaption className="mt-2 text-sm leading-6 text-zinc-600">{photo.caption.trim()}</figcaption>
+                  ) : null}
+                </figure>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </div>
     </div>
   );

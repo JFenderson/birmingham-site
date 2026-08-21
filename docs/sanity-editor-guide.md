@@ -96,11 +96,12 @@ Use a `Post` for public news and editorial updates.
 4. Choose the correct `Chapter`.
 5. Leave `Publicly visible` off while drafting.
 6. Add an optional `Cover image`, with meaningful alt text if you upload one.
-7. Add the required `Excerpt`.
-8. Add the article `Body`.
-9. When ready, turn on `Publicly visible`.
-10. Set `Publication date`.
-11. Publish and verify the result on `/news`.
+7. For an article with multiple photos, add them in the ordered `Article gallery` field. Add alt text for every photo and an optional caption. The article page keeps the cover image as the hero and shows the gallery below the article when two or more gallery photos are present.
+8. Add the required `Excerpt`.
+9. Add the article `Body`.
+10. When ready, turn on `Publicly visible`.
+11. Set `Publication date`.
+12. Publish and verify the result on `/news`, then open the article to verify its photos.
 
 ## Creating a community event
 

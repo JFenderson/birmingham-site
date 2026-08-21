@@ -99,6 +99,7 @@ export interface SanityPostDetail {
   slug: string;
   publishedAt: string;
   coverImage: SanityImageWithAlt | null;
+  gallery: Array<SanityImageWithAlt & { caption?: string | null }>;
   body: unknown;
 }
 
@@ -153,6 +154,11 @@ export async function getPublishedPostBySlug(
       coverImage {
         ...,
         alt
+      },
+      gallery[] {
+        ...,
+        alt,
+        caption
       },
       body
     }`,
