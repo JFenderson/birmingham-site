@@ -8,12 +8,12 @@ export default async function AboutProgramsPage() {
 
   return (
     <div className="bg-white px-6 py-16 sm:px-8 lg:px-8">
-      <div className="mx-auto max-w-4xl rounded-md border border-zinc-200 bg-[#f8f9fc] p-8 shadow-sm sm:p-10">
+      <div className="mx-auto max-w-6xl rounded-md border border-zinc-200 bg-[#f8f9fc] p-8 shadow-sm sm:p-10 lg:p-12">
         <h1 className="text-4xl font-bold text-[#013594] sm:text-5xl">Programs</h1>
         {programs.length > 0 ? (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <div className="mt-8 grid gap-6 md:grid-cols-3">
             {programs.map((program) => (
-              <article key={program._id} className="rounded-md border border-zinc-200 bg-white p-5">
+              <article key={program._id} className="rounded-md border border-zinc-200 bg-white p-7">
                 <h2 className="text-xl font-semibold text-[#013594]">{program.title}</h2>
                 <p className="mt-2 text-[15px] leading-7 text-zinc-700">{program.description}</p>
               </article>
