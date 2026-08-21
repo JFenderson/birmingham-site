@@ -13,20 +13,20 @@ function LeaderCard({ leader }: { leader: SanityLeader }) {
 
   return (
     <article className="rounded-md border border-zinc-200 bg-[#f8f9fc] p-4">
-      <div className="mb-4 flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-md bg-white">
+      <div className="mb-4 flex h-32 w-full items-center justify-center overflow-hidden rounded-md bg-white">
         {portraitUrl && portraitAlt ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={portraitUrl}
           alt={portraitAlt}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-contain"
         />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src="/branding/tau-sigma.png"
             alt="Tau Sigma Chapter logo"
-            className="h-full w-full object-contain p-8"
+            className="h-full w-full object-contain p-5"
           />
         )}
       </div>
@@ -73,7 +73,7 @@ export default async function AboutLeadershipPage() {
                   <h2 id={`${section.key}-heading`} className="text-2xl font-bold text-[#013594]">
                     {section.title}
                   </h2>
-                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {leaders.map((leader) => <LeaderCard key={leader._id} leader={leader} />)}
                   </div>
                 </section>
@@ -92,7 +92,7 @@ export default async function AboutLeadershipPage() {
                   <h2 id={`fraternity-${level}-heading`} className="text-2xl font-bold text-[#013594]">
                     {title} Fraternity Leadership
                   </h2>
-                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {leaders.map((leader) => <LeaderCard key={leader._id} leader={leader} />)}
                   </div>
                 </section>
