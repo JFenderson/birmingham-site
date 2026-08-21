@@ -8,7 +8,7 @@ export default async function AboutProgramsPage() {
 
   return (
     <div className="bg-white px-6 py-16 sm:px-8 lg:px-8">
-      <div className="mx-auto max-w-6xl rounded-md border border-zinc-200 bg-[#f8f9fc] p-8 shadow-sm sm:p-10 lg:p-12">
+      <div className="mx-auto max-w-8xl rounded-md border border-zinc-200 bg-[#f8f9fc] p-8 shadow-sm sm:p-10 lg:p-12">
         <h1 className="text-4xl font-bold text-[#013594] sm:text-5xl">Programs</h1>
         {programs.length > 0 ? (
           <div className="mt-8 grid gap-6 md:grid-cols-3">
