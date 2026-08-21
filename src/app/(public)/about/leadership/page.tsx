@@ -37,6 +37,23 @@ function LeaderCard({ leader }: { leader: SanityLeader }) {
   );
 }
 
+function expandLeadershipPlacements(leaders: SanityLeader[]): SanityLeader[] {
+  return leaders.flatMap((leader) => {
+    if (!leader.placements || leader.placements.length === 0) {
+      return [{ ...leader, role: leader.role ?? "Leadership" }];
+    }
+
+    return leader.placements.map((placement, index) => ({
+      ...leader,
+      _id: `${leader._id}-${index}`,
+      role: placement.role,
+      section: placement.section,
+      fraternityLevel: placement.fraternityLevel ?? null,
+      order: placement.order,
+    }));
+  });
+}
+
 export default async function AboutLeadershipPage() {
   const chapter = await getCurrentChapter();
   const cmsLeaders = await getPublishedLeadershipPageLeaders(chapter.chapterSlug);
@@ -44,6 +61,9 @@ export default async function AboutLeadershipPage() {
     chapterName: chapter.name,
     chapterSlug: chapter.chapterSlug,
   });
+  const displayLeaders = content.status === "populated"
+    ? expandLeadershipPlacements(content.leaders)
+    : [];
 
   return (
     <div className="bg-white px-6 py-16 sm:px-8 lg:px-8">
@@ -63,7 +83,7 @@ export default async function AboutLeadershipPage() {
               { key: "executiveBoard", title: "Executive Board" },
               { key: "committeeChairmen", title: "Committee Chairmen" },
             ] as const).map((section) => {
-              const leaders = content.leaders.filter(
+              const leaders = displayLeaders.filter(
                 (leader) => (leader.section ?? "executiveBoard") === section.key,
               );
               if (leaders.length === 0) return null;
@@ -81,7 +101,7 @@ export default async function AboutLeadershipPage() {
             })}
 
             {(["state", "regional", "international"] as const).map((level) => {
-              const leaders = content.leaders.filter(
+              const leaders = displayLeaders.filter(
                 (leader) => leader.section === "fraternityLeadership" && leader.fraternityLevel === level,
               );
               if (leaders.length === 0) return null;

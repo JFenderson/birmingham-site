@@ -157,12 +157,15 @@ test("leader schema supports portraits, bios, and public leadership sections", (
   const designation = schemaField(leaderSchema, "designation");
   const section = schemaField(leaderSchema, "section");
   const fraternityLevel = schemaField(leaderSchema, "fraternityLevel");
+  const placements = schemaField(leaderSchema, "placements");
 
   assert.equal(portrait.type, "image");
   assert.equal(bio.type, "text");
   assert.equal(designation.type, "string");
   assert.equal(section.type, "string");
   assert.equal(fraternityLevel.type, "string");
+  assert.equal(placements.type, "array");
+  assert.equal(placements.of?.[0]?.type, "object");
   assert.equal(section.validation?.length, undefined);
   assert.notEqual(
     validationFor(portrait).customValidators[0]!({ asset: { _ref: "image-ref" }, alt: "   " }, {}),

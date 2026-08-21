@@ -28,10 +28,16 @@ export interface SanityProgram {
 export interface SanityLeader {
   _id: string;
   name: string;
-  role: string;
+  role: string | null;
   designation?: "currentExecutive" | "board" | null;
   section?: "executiveBoard" | "committeeChairmen" | "fraternityLeadership" | null;
   fraternityLevel?: "state" | "regional" | "international" | null;
+  placements?: Array<{
+    section: "executiveBoard" | "committeeChairmen" | "fraternityLeadership";
+    fraternityLevel?: "state" | "regional" | "international" | null;
+    role: string;
+    order: number;
+  }> | null;
   order: number;
   portrait?: SanityImageWithAlt | null;
   bio?: string | null;
@@ -296,6 +302,12 @@ export function getPublishedLeadershipPageLeaders(
       designation,
       section,
       fraternityLevel,
+      placements[] {
+        section,
+        fraternityLevel,
+        role,
+        order
+      },
       order,
       portrait {
         ...,

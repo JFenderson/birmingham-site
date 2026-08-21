@@ -92,11 +92,11 @@ Use a `Leader` for a brother displayed on the public leadership page.
 
 1. Create a `Leader` in `/studio` and choose the correct `Chapter`.
 2. Add the brother's public `Name`, `Role`, and optional portrait/bio.
-3. Choose the `Public leadership section`: `Executive Board`, `Committee Chairmen`, or `Fraternity Leadership`.
-4. If the section is `Fraternity Leadership`, choose the level: `State`, `Regional`, or `International`.
-5. Set the display `Order`, turn on `Publicly visible`, add a publication date if prompted, and publish.
+3. Add a `Leadership placement` for every public section where this brother serves. Each placement includes the section, role, and display order.
+4. For a `Fraternity Leadership` placement, choose the level: `State`, `Regional`, or `International`.
+5. Set the display `Order` inside each placement, turn on `Publicly visible`, add a publication date if prompted, and publish.
 
-The public page displays Executive Board first, followed by Committee Chairmen, then Fraternity Leadership grouped by State, Regional, and International. Existing leader records without a section continue to display in Executive Board for backward compatibility.
+The public page displays one card per placement: Executive Board first, followed by Committee Chairmen, then Fraternity Leadership grouped by State, Regional, and International. A brother can therefore appear in multiple sections without creating duplicate leader records. Existing leader records without placements continue to use their legacy section and role fields.
 
 ## Creating a post
 

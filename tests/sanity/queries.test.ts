@@ -186,6 +186,7 @@ test("leadership page leaders query includes all sections in deterministic order
   assert.match(calls[0]!.query, /bio/);
   assert.match(calls[0]!.query, /section == "executiveBoard"/);
   assert.match(calls[0]!.query, /fraternityLevel == "international"/);
+  assert.match(calls[0]!.query, /placements\[\]/);
 });
 
 test("homepage settings query returns one published tenant singleton with editable sections", async () => {
