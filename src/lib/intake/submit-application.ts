@@ -63,13 +63,25 @@ export async function submitApplication(
     // Best-effort confirmation email — a send failure must never fail the
     // application submission itself, which has already succeeded above.
     try {
-      await submitApplicationDependencies.sendInterestFormNotifications({
+      const notificationResult = await submitApplicationDependencies.sendInterestFormNotifications({
         to: data.email,
         applicantName: data.fullName,
         applicantEmail: data.email,
         chapterName,
         formTypeLabel,
       });
+
+      if (notificationResult.applicantError) {
+        console.error(
+          `[email] Applicant receipt failed. chapterId=${chapterId} error=${notificationResult.applicantError.message}`,
+        );
+      }
+
+      if (notificationResult.adminError) {
+        console.error(
+          `[email] Admin notification failed. chapterId=${chapterId} error=${notificationResult.adminError.message}`,
+        );
+      }
     } catch (err) {
       // Email is best-effort — the application itself already succeeded.
       console.error(
