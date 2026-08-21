@@ -153,7 +153,7 @@ test("current executive leaders query filters published tenant leaders by design
   assert.match(calls[0]!.query, /order\(order asc, name asc, _id asc\)/);
 });
 
-test("leadership page leaders query includes current executive and board designations in deterministic order", async () => {
+test("leadership page leaders query includes all sections in deterministic order", async () => {
   const expected = [
     {
       _id: "leader-1",
@@ -181,13 +181,11 @@ test("leadership page leaders query includes current executive and board designa
   assert.deepEqual(result, expected);
   assert.equal(calls.length, 1);
   assertPublishedTenantQuery(calls[0]!, "leader");
-  assert.match(calls[0]!.query, /designation in \["currentExecutive", "board"\]/);
+  assert.doesNotMatch(calls[0]!.query, /designation in \["currentExecutive", "board"\]/);
   assert.match(calls[0]!.query, /portrait \{/);
   assert.match(calls[0]!.query, /bio/);
-  assert.match(
-    calls[0]!.query,
-    /order\(select\(designation == "currentExecutive" => 0, designation == "board" => 1, 2\) asc, order asc, name asc, _id asc\)/,
-  );
+  assert.match(calls[0]!.query, /section == "executiveBoard"/);
+  assert.match(calls[0]!.query, /fraternityLevel == "international"/);
 });
 
 test("homepage settings query returns one published tenant singleton with editable sections", async () => {

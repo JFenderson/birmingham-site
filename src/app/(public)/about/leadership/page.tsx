@@ -5,11 +5,32 @@ import { getSafeImageAlt, resolveLeadershipContent } from "@/lib/public-content"
 import { getCurrentChapter } from "@/lib/tenant/get-chapter";
 import { sanityClient } from "@/sanity/client";
 import { getPublishedLeadershipPageLeaders } from "@/sanity/queries";
+import type { SanityLeader } from "@/sanity/queries";
 
 const builder = createImageUrlBuilder(sanityClient);
 
 function urlFor(source: SanityImageSource) {
   return builder.image(source);
+}
+
+function LeaderCard({ leader }: { leader: SanityLeader }) {
+  const portraitAlt = getSafeImageAlt(leader.portrait);
+
+  return (
+    <article className="rounded-md border border-zinc-200 bg-[#f8f9fc] p-4">
+      {leader.portrait && portraitAlt ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={urlFor(leader.portrait).width(480).height(480).url()}
+          alt={portraitAlt}
+          className="mb-4 h-40 w-full rounded-md object-cover"
+        />
+      ) : null}
+      <p className="font-semibold text-zinc-900">{leader.name}</p>
+      <p className="text-sm text-zinc-600">{leader.role}</p>
+      {leader.bio ? <p className="mt-3 text-sm leading-7 text-zinc-700">{leader.bio}</p> : null}
+    </article>
+  );
 }
 
 export default async function AboutLeadershipPage() {
@@ -33,29 +54,44 @@ export default async function AboutLeadershipPage() {
             <p className="text-sm leading-7 text-zinc-700">{content.message}</p>
           </div>
         ) : (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            {content.leaders.map((leader) => {
-              const portraitAlt = getSafeImageAlt(leader.portrait);
+          <div className="mt-8 space-y-12">
+            {([
+              { key: "executiveBoard", title: "Executive Board" },
+              { key: "committeeChairmen", title: "Committee Chairmen" },
+            ] as const).map((section) => {
+              const leaders = content.leaders.filter(
+                (leader) => (leader.section ?? "executiveBoard") === section.key,
+              );
+              if (leaders.length === 0) return null;
 
               return (
-                <article
-                  key={leader._id}
-                  className="rounded-md border border-zinc-200 bg-[#f8f9fc] p-4"
-                >
-                  {leader.portrait && portraitAlt ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={urlFor(leader.portrait).width(480).height(480).url()}
-                      alt={portraitAlt}
-                      className="mb-4 h-40 w-full rounded-md object-cover"
-                    />
-                  ) : null}
-                  <p className="font-semibold text-zinc-900">{leader.name}</p>
-                  <p className="text-sm text-zinc-600">{leader.role}</p>
-                  {leader.bio ? (
-                    <p className="mt-3 text-sm leading-7 text-zinc-700">{leader.bio}</p>
-                  ) : null}
-                </article>
+                <section key={section.key} aria-labelledby={`${section.key}-heading`}>
+                  <h2 id={`${section.key}-heading`} className="text-2xl font-bold text-[#013594]">
+                    {section.title}
+                  </h2>
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    {leaders.map((leader) => <LeaderCard key={leader._id} leader={leader} />)}
+                  </div>
+                </section>
+              );
+            })}
+
+            {(["state", "regional", "international"] as const).map((level) => {
+              const leaders = content.leaders.filter(
+                (leader) => leader.section === "fraternityLeadership" && leader.fraternityLevel === level,
+              );
+              if (leaders.length === 0) return null;
+
+              const title = `${level.charAt(0).toUpperCase()}${level.slice(1)}`;
+              return (
+                <section key={level} aria-labelledby={`fraternity-${level}-heading`}>
+                  <h2 id={`fraternity-${level}-heading`} className="text-2xl font-bold text-[#013594]">
+                    {title} Fraternity Leadership
+                  </h2>
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    {leaders.map((leader) => <LeaderCard key={leader._id} leader={leader} />)}
+                  </div>
+                </section>
               );
             })}
           </div>

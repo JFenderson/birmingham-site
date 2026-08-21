@@ -86,6 +86,18 @@ Avoid:
 
 If an image asset is uploaded without alt text, the schema validation blocks publishing, and public rendering intentionally omits blank-alt images.
 
+## Creating a leader
+
+Use a `Leader` for a brother displayed on the public leadership page.
+
+1. Create a `Leader` in `/studio` and choose the correct `Chapter`.
+2. Add the brother's public `Name`, `Role`, and optional portrait/bio.
+3. Choose the `Public leadership section`: `Executive Board`, `Committee Chairmen`, or `Fraternity Leadership`.
+4. If the section is `Fraternity Leadership`, choose the level: `State`, `Regional`, or `International`.
+5. Set the display `Order`, turn on `Publicly visible`, add a publication date if prompted, and publish.
+
+The public page displays Executive Board first, followed by Committee Chairmen, then Fraternity Leadership grouped by State, Regional, and International. Existing leader records without a section continue to display in Executive Board for backward compatibility.
+
 ## Creating a post
 
 Use a `Post` for public news and editorial updates.

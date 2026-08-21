@@ -37,6 +37,41 @@ export const leader = defineType({
       },
       validation: (rule) => rule.required(),
     }),
+    defineField({
+      name: "section",
+      title: "Public leadership section",
+      type: "string",
+      description: "Choose where this leader appears on the public leadership page.",
+      initialValue: "executiveBoard",
+      options: {
+        list: [
+          { title: "Executive Board", value: "executiveBoard" },
+          { title: "Committee Chairmen", value: "committeeChairmen" },
+          { title: "Fraternity Leadership", value: "fraternityLeadership" },
+        ],
+        layout: "radio",
+      },
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: "fraternityLevel",
+      title: "Fraternity leadership level",
+      type: "string",
+      description: "For Fraternity Leadership only, choose the level at which this brother serves.",
+      options: {
+        list: [
+          { title: "State", value: "state" },
+          { title: "Regional", value: "regional" },
+          { title: "International", value: "international" },
+        ],
+      },
+      hidden: ({ parent }) => parent?.section !== "fraternityLeadership",
+      validation: (rule) => rule.custom((value, context) => {
+        const parent = context.parent as { section?: string } | undefined;
+        if (parent?.section !== "fraternityLeadership") return true;
+        return value ? true : "Choose State, Regional, or International.";
+      }),
+    }),
     createAccessibleImageField(
       "portrait",
       "Portrait",

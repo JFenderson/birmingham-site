@@ -30,6 +30,8 @@ export interface SanityLeader {
   name: string;
   role: string;
   designation?: "currentExecutive" | "board" | null;
+  section?: "executiveBoard" | "committeeChairmen" | "fraternityLeadership" | null;
+  fraternityLevel?: "state" | "regional" | "international" | null;
   order: number;
   portrait?: SanityImageWithAlt | null;
   bio?: string | null;
@@ -279,14 +281,21 @@ export function getPublishedLeadershipPageLeaders(
     `*[
       _type == "leader" &&
       chapterSlug == $chapterSlug &&
-      designation in ["currentExecutive", "board"] &&
       published == true &&
       !(_id in path("drafts.**"))
-    ] | order(select(designation == "currentExecutive" => 0, designation == "board" => 1, 2) asc, order asc, name asc, _id asc) {
+    ] | order(
+      select(section == "executiveBoard" => 0, section == "committeeChairmen" => 1, section == "fraternityLeadership" => 2, 0) asc,
+      select(fraternityLevel == "state" => 0, fraternityLevel == "regional" => 1, fraternityLevel == "international" => 2, 3) asc,
+      order asc,
+      name asc,
+      _id asc
+    ) {
       _id,
       name,
       role,
       designation,
+      section,
+      fraternityLevel,
       order,
       portrait {
         ...,

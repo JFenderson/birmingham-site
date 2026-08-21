@@ -150,15 +150,20 @@ test("homepage settings use shared chapter, publication, and public image valida
   assert.notEqual(hrefRule.customValidators[0]!("//evil.example/phish", {}), true);
 });
 
-test("leader schema supports portraits, bios, and current executive designation", () => {
+test("leader schema supports portraits, bios, and public leadership sections", () => {
   const leaderSchema = schemaType("leader");
   const portrait = schemaField(leaderSchema, "portrait");
   const bio = schemaField(leaderSchema, "bio");
   const designation = schemaField(leaderSchema, "designation");
+  const section = schemaField(leaderSchema, "section");
+  const fraternityLevel = schemaField(leaderSchema, "fraternityLevel");
 
   assert.equal(portrait.type, "image");
   assert.equal(bio.type, "text");
   assert.equal(designation.type, "string");
+  assert.equal(section.type, "string");
+  assert.equal(fraternityLevel.type, "string");
+  assert.equal(section.validation?.length, undefined);
   assert.notEqual(
     validationFor(portrait).customValidators[0]!({ asset: { _ref: "image-ref" }, alt: "   " }, {}),
     true,
