@@ -50,7 +50,7 @@ export default async function Home() {
   const heroImage =
     content.hero.image && heroImageAlt
       ? {
-          src: urlFor(content.hero.image).width(1100).height(825).url(),
+          src: urlFor(content.hero.image).width(1100).fit("max").url(),
           alt: heroImageAlt,
         }
       : null;

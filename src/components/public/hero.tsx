@@ -91,14 +91,14 @@ export function Hero({
         </div>
 
         {image ? (
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-white/20 shadow-2xl">
+          <div className="relative aspect-[3/2] object-contain overflow-hidden rounded-2xl border border-white/20 shadow-2xl">
             <Image
               src={image.src}
               alt={image.alt}
               fill
               unoptimized={typeof image.src === "string" && image.src.startsWith("http")}
               sizes="(max-width: 1023px) calc(100vw - (var(--public-gutter) * 2)), 40vw"
-              className="object-cover"
+              className="object-contain"
             />
           </div>
         ) : null}
