@@ -6,6 +6,12 @@ import { PortalStatusBadge } from "@/components/portal/portal-status-badge";
 
 const adminAreas = [
   {
+    title: "Initiative reports",
+    description: "Review monthly Black Spending and daily steps totals for PIA reporting.",
+    href: "/admin/initiatives",
+    action: "Open reports",
+  },
+  {
     title: "Member management",
     description: "Review approvals, membership status, and administrator access.",
     href: "/admin/members",

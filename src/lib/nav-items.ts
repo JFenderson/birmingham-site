@@ -24,5 +24,6 @@ export const NAV_ITEMS = [
   },
   { href: "/sigma-beta-club", label: "Sigma Beta Club" },
   { href: "/foundation", label: "Foundation" },
+  { href: "/initiatives", label: "Initiatives" },
   { href: "/contact", label: "Contact" },
 ];
