@@ -18,6 +18,11 @@ export interface SanityEvent {
   publishedAt: string | null;
 }
 
+export interface SanityCommunityInitiative { title: string; subtitle?: string | null; body: string; actionUrl?: string | null; actionLabel?: string | null; heroImage?: SanityImageWithAlt | null; }
+export interface SanitySignatureWeekend { title: string; overview: string; ticketUrl?: string | null; ticketLabel?: string | null; heroImage?: SanityImageWithAlt | null; schedule: Array<{ title: string; date: string; location?: string | null; description?: string | null; flyer?: SanityImageWithAlt | null; }>; }
+export function getCommunityInitiative(chapterSlug: string, slug: string, client: SanityQueryClient = sanityClient) { return fetchPublishedDocument<SanityCommunityInitiative>(`*[ _type == "communityInitiative" && chapterSlug == $chapterSlug && slug.current == $slug && published == true ][0]{title,subtitle,body,actionUrl,actionLabel,heroImage{...,alt}}`, { chapterSlug, slug }, "community initiative", client); }
+export function getSignatureWeekend(chapterSlug: string, slug: string, client: SanityQueryClient = sanityClient) { return fetchPublishedDocument<SanitySignatureWeekend>(`*[ _type == "signatureWeekend" && chapterSlug == $chapterSlug && slug.current == $slug && published == true ][0]{title,overview,ticketUrl,ticketLabel,heroImage{...,alt},schedule[]{title,date,location,description,flyer{...,alt}}}`, { chapterSlug, slug }, "signature weekend", client); }
+
 export interface SanityProgram {
   _id: string;
   title: string;

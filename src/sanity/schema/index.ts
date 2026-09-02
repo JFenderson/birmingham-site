@@ -12,6 +12,8 @@ import { sigmaBetaEvent } from "./sigma-beta-event.ts";
 import { sigmaBetaSettings } from "./sigma-beta-settings.ts";
 import { siteSettings } from "./site-settings.ts";
 import { video } from "./video.ts";
+import { communityInitiative } from "./community-initiative.ts";
+import { signatureWeekend } from "./signature-weekend.ts";
 
 export const sanitySchemaTypes = [
   post,
@@ -28,4 +30,6 @@ export const sanitySchemaTypes = [
   foundationProject,
   foundationEvent,
   foundationBoardMember,
+  communityInitiative,
+  signatureWeekend,
 ];
