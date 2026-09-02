@@ -28,4 +28,16 @@ export function getFoundationAdminEmail() {
   return readEnv("FOUNDATION_ADMIN_EMAIL");
 }
 
+export function getEducationDirectorEmail() {
+  return readEnv("EDUCATION_DIRECTOR_EMAIL");
+}
+
+export function getBbbDirectorEmail() {
+  return readEnv("BBB_DIRECTOR_EMAIL");
+}
+
+export function getSocialActionDirectorEmail() {
+  return readEnv("SOCIAL_ACTION_DIRECTOR_EMAIL");
+}
+
 export const EMAIL_FROM = getEmailFrom();

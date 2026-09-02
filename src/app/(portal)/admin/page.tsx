@@ -6,6 +6,12 @@ import { PortalStatusBadge } from "@/components/portal/portal-status-badge";
 
 const adminAreas = [
   {
+    title: "Scholarship applications",
+    description: "Review Sapphire Scholarship applications and supporting documents.",
+    href: "/admin/scholarship",
+    action: "Review applications",
+  },
+  {
     title: "Initiative reports",
     description: "Review monthly Black Spending and daily steps totals for PIA reporting.",
     href: "/admin/initiatives",
