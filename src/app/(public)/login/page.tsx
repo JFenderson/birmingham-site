@@ -89,6 +89,10 @@ function LoginForm() {
         {isSubmitting ? "Signing in…" : "Sign in"}
       </button>
       <p className="text-center text-sm text-zinc-600">
+        <Link href="/initiatives" className="font-semibold text-[var(--public-blue)] hover:underline">
+          Initiative Tracker
+        </Link>
+        <span className="mx-2 text-zinc-400">·</span>
         Need member access?{" "}
         <Link href="/request-access" className="font-semibold text-[var(--public-blue)] hover:underline">
           Request access
@@ -104,10 +108,20 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex flex-1 items-center justify-center px-4">
+    <div className="flex flex-1 items-center justify-center px-4 py-12">
+      <div className="grid w-full max-w-4xl items-stretch gap-6 lg:grid-cols-[1fr_1.15fr]">
+        <aside className="order-first flex flex-col justify-center rounded-3xl bg-[#0047AB] p-8 text-white shadow-lg lg:order-none lg:p-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-100">Chapter initiatives</p>
+          <h2 className="mt-3 text-3xl font-bold">Track the impact.</h2>
+          <p className="mt-4 leading-7 text-blue-50">Submit Black Spending receipts or daily step screenshots without creating an account. View the chapter totals and rankings.</p>
+          <Link href="/initiatives" className="mt-7 inline-flex w-fit rounded-full bg-white px-5 py-3 font-semibold text-[#0047AB] transition-colors hover:bg-blue-50">Open Initiative Tracker <span aria-hidden="true" className="ml-2">→</span></Link>
+        </aside>
+        <div className="flex items-center justify-center rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-10">
       <Suspense fallback={null}>
         <LoginForm />
       </Suspense>
+        </div>
+    </div>
     </div>
   );
 }
