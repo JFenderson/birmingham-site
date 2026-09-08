@@ -169,8 +169,13 @@ export function InitiativeTracker() {
           I confirm this is a Black-owned business.
         </label>
       )}
-      <button className="rounded-full bg-[var(--public-primary)] px-6 py-3 font-semibold text-white sm:col-span-2">
-        Submit initiative
+      <button
+        type="submit"
+        className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[var(--public-primary)] px-6 py-3 font-semibold text-white shadow-sm transition-opacity hover:opacity-90 sm:col-span-2"
+      >
+        {initiative === "black_spending"
+          ? "Submit Black Spending"
+          : "Submit Steps Entry"}
       </button>
       {result && (
         <p className="sm:col-span-2 rounded-xl bg-slate-50 p-4 text-sm">
