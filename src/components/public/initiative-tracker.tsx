@@ -111,16 +111,42 @@ export function InitiativeTracker() {
           </label>
         </>
       )}
-      <label>
-        Minutes spent
+      <fieldset className="sm:col-span-2">
+        <legend>Time spent (optional)</legend>
+        <div className="mt-2 grid gap-4 sm:grid-cols-2">
+        <label>
+          Hours
+          <input
+            name="durationHours"
+            type="number"
+            min="0"
+            max="24"
+            className="mt-2 w-full rounded-xl border p-3"
+          />
+        </label>
+        <label>
+          Minutes
+          <input
+            name="durationMinutes"
+            type="number"
+            min="0"
+            max="59"
+            className="mt-2 w-full rounded-xl border p-3"
+          />
+        </label>
+        </div>
+      </fieldset>
+      {initiative === "steps" && <label>
+        Miles walked (optional)
         <input
-          required
-          name="durationMinutes"
+          name="distanceMiles"
           type="number"
-          min="1"
+          min="0"
+          max="500"
+          step="0.01"
           className="mt-2 w-full rounded-xl border p-3"
         />
-      </label>
+      </label>}
       <label>
         Receipt or screenshot
         <input

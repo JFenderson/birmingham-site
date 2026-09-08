@@ -33,12 +33,18 @@ export async function submitInitiative(formData: FormData) {
   const raw = Object.fromEntries(formData.entries());
   const parsed = initiativeSubmissionSchema.safeParse({
     ...raw,
+    durationHours: raw.durationHours,
     durationMinutes: raw.durationMinutes,
     amountCents: raw.amountCents,
     steps: raw.steps,
     evidencePath: "pending",
   });
   if (!parsed.success) return { error: "Please complete all required fields." };
+  const durationMinutes =
+    (parsed.data.durationHours ?? 0) * 60 +
+    (parsed.data.durationMinutes ?? 0);
+  if (durationMinutes > 1440)
+    return { error: "Time spent cannot be more than 24 hours." };
   const { chapterId } = await getTenantContext();
   const token = crypto.randomBytes(24).toString("hex");
   const path = `${chapterId}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
@@ -68,7 +74,10 @@ export async function submitInitiative(formData: FormData) {
     distance_miles:
       value.initiative === "steps" ? (value.distanceMiles ?? null) : null,
     tracked_on: value.initiative === "steps" ? value.trackedOn : null,
-    duration_minutes: value.durationMinutes,
+    duration_minutes:
+      value.durationHours === undefined && value.durationMinutes === undefined
+        ? null
+        : durationMinutes,
     evidence_path: path,
     evidence_content_type: file.type,
     evidence_size_bytes: file.size,

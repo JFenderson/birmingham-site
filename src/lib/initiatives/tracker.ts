@@ -3,7 +3,8 @@ import { z } from "zod";
 const common = {
   firstName: z.string().trim().min(1).max(80),
   lastName: z.string().trim().min(1).max(120),
-  durationMinutes: z.coerce.number().int().min(1).max(1440),
+  durationHours: z.preprocess((value) => value === "" || value === undefined ? undefined : value, z.coerce.number().int().min(0).max(24).optional()),
+  durationMinutes: z.preprocess((value) => value === "" || value === undefined ? undefined : value, z.coerce.number().int().min(0).max(59).optional()),
   evidencePath: z.string().trim().min(1).max(500),
 };
 
@@ -13,7 +14,7 @@ export const initiativeSubmissionSchema = z.discriminatedUnion("initiative", [
 ]);
 
 export type InitiativeSubmission = z.infer<typeof initiativeSubmissionSchema>;
-export type TotalsInput = { initiative: string; amountCents: number | null; durationMinutes: number; steps: number | null };
+export type TotalsInput = { initiative: string; amountCents: number | null; durationMinutes: number | null; steps: number | null };
 
 export function formatPublicName(firstName: string, lastName: string) {
   return `${firstName.trim().charAt(0).toUpperCase()}. ${lastName.trim()}`;
@@ -23,11 +24,11 @@ export function monthlyTotals(rows: TotalsInput[]) {
   return rows.reduce((totals, row) => {
     if (row.initiative === "black_spending") {
       totals.blackSpendingCents += row.amountCents ?? 0;
-      totals.blackSpendingMinutes += row.durationMinutes;
+      totals.blackSpendingMinutes += row.durationMinutes ?? 0;
     }
     if (row.initiative === "steps") {
       totals.steps += row.steps ?? 0;
-      totals.stepsMinutes += row.durationMinutes;
+      totals.stepsMinutes += row.durationMinutes ?? 0;
     }
     return totals;
   }, { blackSpendingCents: 0, blackSpendingMinutes: 0, steps: 0, stepsMinutes: 0 });

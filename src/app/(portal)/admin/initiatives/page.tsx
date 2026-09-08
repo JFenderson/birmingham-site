@@ -22,7 +22,7 @@ export default async function InitiativeReportPage() {
             ${(snapshot.totals.blackSpendingCents / 100).toFixed(2)}
           </p>
           <p className="mt-2 text-sm text-zinc-500">
-            {snapshot.totals.blackSpendingMinutes} minutes
+            {snapshot.totals.blackSpendingMinutes} minutes recorded
           </p>
         </div>
         <div className="rounded-2xl bg-white p-6 shadow-sm">
@@ -31,7 +31,7 @@ export default async function InitiativeReportPage() {
             {snapshot.totals.steps.toLocaleString()}
           </p>
           <p className="mt-2 text-sm text-zinc-500">
-            {snapshot.totals.stepsMinutes} minutes
+            {snapshot.totals.stepsMinutes} minutes recorded
           </p>
         </div>
       </div>
