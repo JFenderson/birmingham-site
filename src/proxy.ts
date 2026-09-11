@@ -9,6 +9,16 @@ import {
 const PORTAL_PREFIXES = ["/dashboard", "/admin"];
 
 export async function proxy(request: NextRequest) {
+  // Upgrade insecure requests without changing the hostname. This keeps
+  // staging and tenant subdomains on their own site instead of redirecting
+  // them to the canonical production domain.
+  const forwardedProto = request.headers.get("x-forwarded-proto");
+  if (process.env.NODE_ENV === "production" && (forwardedProto === "http" || request.nextUrl.protocol === "http:")) {
+    const secureUrl = request.nextUrl.clone();
+    secureUrl.protocol = "https:";
+    return NextResponse.redirect(secureUrl, 308);
+  }
+
   const tenant = resolveTenantFromRequest(
     request.headers.get("host"),
     request.nextUrl.searchParams
