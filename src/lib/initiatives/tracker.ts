@@ -26,6 +26,20 @@ export function formatPublicName(firstName: string, lastName: string) {
   return `${firstName.trim().charAt(0).toUpperCase()}. ${lastName.trim()}`;
 }
 
+export function rankInitiativePeople(rows: Array<{ firstName: string; lastName: string; score: number }>) {
+  const totals = new Map<string, { firstName: string; lastName: string; score: number }>();
+  for (const row of rows) {
+    const key = `${row.firstName.trim().toLocaleLowerCase()}\u0000${row.lastName.trim().toLocaleLowerCase()}`;
+    const current = totals.get(key);
+    if (current) current.score += row.score;
+    else totals.set(key, { ...row, firstName: row.firstName.trim(), lastName: row.lastName.trim() });
+  }
+  return [...totals.values()]
+    .map((row) => ({ name: formatPublicName(row.firstName, row.lastName), score: row.score }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10);
+}
+
 export function monthlyTotals(rows: TotalsInput[]) {
   return rows.reduce((totals, row) => {
     if (row.initiative === "black_spending") {

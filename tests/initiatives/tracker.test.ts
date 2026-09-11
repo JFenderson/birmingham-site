@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { estimateStepsFromMiles, formatPublicName, initiativeSubmissionSchema, monthlyTotals } from "../../src/lib/initiatives/tracker";
+import { estimateStepsFromMiles, formatPublicName, initiativeSubmissionSchema, monthlyTotals, rankInitiativePeople } from "../../src/lib/initiatives/tracker";
 
 test("formats public ranking names as first initial plus last name", () => {
   assert.equal(formatPublicName("Jordan", "Smith"), "J. Smith");
@@ -34,4 +34,15 @@ test("calculates initiative monthly totals from approved submissions", () => {
 test("estimates steps from miles using a configurable rate", () => {
   assert.equal(estimateStepsFromMiles(4.51, 2100), 9471);
   assert.equal(estimateStepsFromMiles(0, 2100), 0);
+});
+
+test("combines steps for each brother before ranking", () => {
+  assert.deepEqual(rankInitiativePeople([
+    { firstName: "Doug", lastName: "Crowder", score: 5000 },
+    { firstName: "doug", lastName: "CROWDER", score: 7000 },
+    { firstName: "Jordan", lastName: "Smith", score: 11000 },
+  ]), [
+    { name: "D. Crowder", score: 12000 },
+    { name: "J. Smith", score: 11000 },
+  ]);
 });
