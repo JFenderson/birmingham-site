@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { formatPublicName, initiativeSubmissionSchema, monthlyTotals } from "../../src/lib/initiatives/tracker";
+import { estimateStepsFromMiles, formatPublicName, initiativeSubmissionSchema, monthlyTotals } from "../../src/lib/initiatives/tracker";
 
 test("formats public ranking names as first initial plus last name", () => {
   assert.equal(formatPublicName("Jordan", "Smith"), "J. Smith");
@@ -19,9 +19,19 @@ test("allows a steps submission without a duration", () => {
   assert.equal(parsed.initiative === "steps" ? parsed.durationMinutes : 1, undefined);
 });
 
+test("allows a steps submission with miles instead of steps", () => {
+  const parsed = initiativeSubmissionSchema.parse({ initiative: "steps", firstName: "Jordan", lastName: "Smith", trackedOn: "2026-09-01", distanceMiles: 2.4, evidencePath: "x" });
+  assert.equal(parsed.initiative, "steps");
+});
+
 test("calculates initiative monthly totals from approved submissions", () => {
   assert.deepEqual(monthlyTotals([
     { initiative: "black_spending", amountCents: 1250, durationMinutes: null, steps: null },
     { initiative: "steps", amountCents: null, durationMinutes: 90, steps: 8000 },
   ]), { blackSpendingCents: 1250, blackSpendingMinutes: 0, steps: 8000, stepsMinutes: 90 });
+});
+
+test("estimates steps from miles using a configurable rate", () => {
+  assert.equal(estimateStepsFromMiles(4.51, 2100), 9471);
+  assert.equal(estimateStepsFromMiles(0, 2100), 0);
 });

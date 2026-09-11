@@ -1,12 +1,14 @@
 "use client";
 import { useState } from "react";
 import { submitInitiative } from "@/app/(public)/initiatives/actions";
+import { DEFAULT_STEPS_PER_MILE, estimateStepsFromMiles } from "@/lib/initiatives/tracker";
 
 export function InitiativeTracker() {
   const [initiative, setInitiative] = useState<"black_spending" | "steps">(
     "black_spending",
   );
   const [result, setResult] = useState<string | null>(null);
+  const [miles, setMiles] = useState("");
   return (
     <form
       action={async (data) => {
@@ -92,9 +94,8 @@ export function InitiativeTracker() {
         <>
           <label>
             Steps
-            <input
-              required
-              name="steps"
+          <input
+            name="steps"
               type="number"
               min="1"
               className="mt-2 w-full rounded-xl border p-3"
@@ -122,6 +123,7 @@ export function InitiativeTracker() {
             min="0"
             max="24"
             className="mt-2 w-full rounded-xl border p-3"
+            placeholder="Leave blank to estimate from miles"
           />
         </label>
         <label>
@@ -144,8 +146,10 @@ export function InitiativeTracker() {
           min="0"
           max="500"
           step="0.01"
+          onChange={(e) => setMiles(e.target.value)}
           className="mt-2 w-full rounded-xl border p-3"
         />
+        <p className="mt-2 text-sm text-slate-500">If steps are blank, we’ll estimate {miles ? estimateStepsFromMiles(Number(miles), DEFAULT_STEPS_PER_MILE).toLocaleString() : "0"} steps using {DEFAULT_STEPS_PER_MILE.toLocaleString()} steps per mile.</p>
       </label>}
       <label>
         Receipt or screenshot

@@ -10,11 +10,17 @@ const common = {
 
 export const initiativeSubmissionSchema = z.discriminatedUnion("initiative", [
   z.object({ initiative: z.literal("black_spending"), ...common, businessName: z.string().trim().min(1).max(200), amountCents: z.coerce.number().int().min(1).max(10_000_000), spentOn: z.string().date(), blackOwnedConfirmed: z.preprocess((value) => value === true || value === "true" || value === undefined, z.literal(true)).default(true) }),
-  z.object({ initiative: z.literal("steps"), ...common, steps: z.coerce.number().int().min(1).max(200_000), trackedOn: z.string().date(), distanceMiles: z.coerce.number().min(0).max(500).optional() }),
+  z.object({ initiative: z.literal("steps"), ...common, steps: z.preprocess((value) => value === "" || value === undefined ? undefined : value, z.coerce.number().int().min(1).max(200_000).optional()), trackedOn: z.string().date(), distanceMiles: z.preprocess((value) => value === "" || value === undefined ? undefined : value, z.coerce.number().min(0).max(500).optional()) }).refine((value) => value.steps !== undefined || value.distanceMiles !== undefined, { message: "Steps or miles are required" }),
 ]);
 
 export type InitiativeSubmission = z.infer<typeof initiativeSubmissionSchema>;
 export type TotalsInput = { initiative: string; amountCents: number | null; durationMinutes: number | null; steps: number | null };
+
+export const DEFAULT_STEPS_PER_MILE = 2100;
+
+export function estimateStepsFromMiles(miles: number, stepsPerMile = DEFAULT_STEPS_PER_MILE) {
+  return Math.round(miles * stepsPerMile);
+}
 
 export function formatPublicName(firstName: string, lastName: string) {
   return `${firstName.trim().charAt(0).toUpperCase()}. ${lastName.trim()}`;

@@ -3,7 +3,7 @@
 import crypto from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getTenantContext } from "@/lib/tenant/resolve-chapter";
-import { initiativeSubmissionSchema } from "@/lib/initiatives/tracker";
+import { estimateStepsFromMiles, initiativeSubmissionSchema } from "@/lib/initiatives/tracker";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
@@ -54,6 +54,7 @@ export async function submitInitiative(formData: FormData) {
     .upload(path, file, { contentType: file.type, upsert: false });
   if (upload.error) return { error: "Could not save the proof file." };
   const value = parsed.data;
+  const submittedSteps = value.initiative === "steps" ? value.steps : undefined;
   // The generated Supabase types are refreshed from migrations in deployment; this
   // migration is intentionally shipped alongside the feature.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -70,7 +71,10 @@ export async function submitInitiative(formData: FormData) {
     amount_cents:
       value.initiative === "black_spending" ? value.amountCents : null,
     spent_on: value.initiative === "black_spending" ? value.spentOn : null,
-    steps: value.initiative === "steps" ? value.steps : null,
+    steps: value.initiative === "steps" ? submittedSteps ?? estimateStepsFromMiles(value.distanceMiles ?? 0) : null,
+    steps_source: value.initiative === "steps" && submittedSteps === undefined ? "estimated" : "submitted",
+    steps_per_mile_used: value.initiative === "steps" && submittedSteps === undefined ? 2100 : null,
+    submission_source: "public_submission",
     distance_miles:
       value.initiative === "steps" ? (value.distanceMiles ?? null) : null,
     tracked_on: value.initiative === "steps" ? value.trackedOn : null,
