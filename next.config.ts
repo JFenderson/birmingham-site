@@ -2,6 +2,19 @@ import type { NextConfig } from "next";
 import path from "node:path";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return process.env.NODE_ENV === "production"
+      ? [{ source: "/:path*", destination: "https://birminghamsigmas.org/:path*", permanent: true }]
+      : [];
+  },
+  async headers() {
+    return [{ source: "/(.*)", headers: [
+      { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains; preload" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+    ] }];
+  },
   // Pin the workspace root to this project — a stray package-lock.json in
   // an unrelated ancestor directory (C:\Users\josep) otherwise makes
   // Turbopack guess the wrong root.

@@ -119,8 +119,10 @@ export function PublicFooter({ chapter }: { chapter: CurrentChapter }) {
           </div>
         </div>
       </div>
-      <div className="border-t border-white/10 px-[var(--public-gutter)] py-5 text-center text-xs text-blue-100/70">
+      <div className="border-t border-white/10 px-[var(--public-gutter)] py-5 text-center text-xs text-blue-100/90">
         © {new Date().getFullYear()} {chapter.name}. All rights reserved.
+        <span className="mx-2">·</span><Link href="/privacy" className="underline-offset-2 hover:underline">Privacy Policy</Link>
+        <span className="mx-2">·</span><Link href="/terms" className="underline-offset-2 hover:underline">Terms</Link>
       </div>
     </footer>
   );

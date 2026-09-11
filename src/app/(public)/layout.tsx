@@ -2,6 +2,7 @@ import { getCurrentChapter } from "@/lib/tenant/get-chapter";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
 import { AuthRecoveryRedirect } from "@/components/auth-recovery-redirect";
+import { CookieConsent } from "@/components/cookie-consent";
 
 export default async function PublicLayout({
   children,
@@ -16,6 +17,7 @@ export default async function PublicLayout({
         {children}
       </main>
       <PublicFooter chapter={chapter} />
+      <CookieConsent />
     </div>
   );
 }

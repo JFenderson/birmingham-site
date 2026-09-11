@@ -1,0 +1,2 @@
+import type { MetadataRoute } from "next";
+export default function sitemap(): MetadataRoute.Sitemap { const base = "https://birminghamsigmas.org"; const paths = ["/", "/about", "/photos", "/news", "/community-events", "/sigma-beta-club", "/foundation", "/join", "/contact", "/privacy", "/terms"]; return paths.map((path) => ({ url: `${base}${path}`, lastModified: new Date(), changeFrequency: path === "/" ? "weekly" : "monthly", priority: path === "/" ? 1 : 0.7 })); }
