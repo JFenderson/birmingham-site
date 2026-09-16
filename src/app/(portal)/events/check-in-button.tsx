@@ -15,6 +15,7 @@ export function CheckInButton({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(alreadyCheckedIn);
+  const [code, setCode] = useState("");
 
   function handleCheckIn() {
     setError(null);
@@ -31,6 +32,7 @@ export function CheckInButton({
             eventId,
             lat: position.coords.latitude,
             lng: position.coords.longitude,
+            code,
           });
           setPending(false);
           if (result.error) {
@@ -54,11 +56,12 @@ export function CheckInButton({
   }
 
   return (
-    <div className="flex flex-col items-end gap-1">
+    <div className="flex flex-col items-end gap-2">
+      <input value={code} onChange={(event) => setCode(event.target.value)} placeholder="Event code" autoComplete="off" className="w-32 rounded border px-2 py-1 text-sm" />
       <button
         type="button"
         onClick={handleCheckIn}
-        disabled={pending}
+        disabled={pending || code.trim().length < 6}
         className="rounded-md bg-navy px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-navy-dark disabled:opacity-50"
       >
         {pending ? "Checking in…" : "Check In"}

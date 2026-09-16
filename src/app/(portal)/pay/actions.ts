@@ -1,10 +1,12 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
+import { headers } from "next/headers";
 import { requireRole } from "@/lib/auth/rbac";
 import { createSquareClient } from "@/lib/square/client";
 import { recordTransaction } from "@/lib/square/record-payment";
 import { paymentIntentSchema } from "@/lib/validation/schemas";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { beginPaymentIntent, recordPaymentIntentResult } from "@/lib/square/payment-intent";
 
 const ALL_ROLES = [
   "Member",
@@ -21,14 +23,28 @@ export async function submitPayment(
   if (!parsed.success) return { error: "Invalid payment details." };
   const data = parsed.data;
 
-  const { chapterId, user } = await requireRole(ALL_ROLES);
+  const { chapterId, user } = await requireRole(ALL_ROLES, { requireMfa: false });
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const limits = await Promise.all([
+    checkRateLimit(`payment:member:${user.id}`, { limit: 10, windowMs: 60 * 60_000 }),
+    checkRateLimit(`payment:ip:${ip}`, { limit: 20, windowMs: 60 * 60_000 }),
+  ]);
+  if (limits.some((result) => !result.success)) return { error: "Too many payment attempts. Please wait before trying again." };
+  const intent = await beginPaymentIntent({
+    chapterId, profileId: user.id, clientRequestId: data.clientRequestId,
+    type: data.type, amountCents: data.amountCents,
+  });
+  if (!intent) return { error: "This payment request is invalid. Start a new payment." };
+  if (intent.square_payment_id) {
+    return intent.status === "completed" ? { error: null } : { error: "This payment attempt has already been processed. Check your payment history before trying again." };
+  }
 
   const square = createSquareClient();
   let payment;
   try {
     const response = await square.payments.create({
       sourceId: data.sourceId,
-      idempotencyKey: randomUUID(),
+      idempotencyKey: data.clientRequestId,
       amountMoney: { amount: BigInt(data.amountCents), currency: "USD" },
       locationId: process.env.SQUARE_LOCATION_ID!,
     });
@@ -62,6 +78,8 @@ export async function submitPayment(
     status,
     description: data.description || null,
   });
+
+  await recordPaymentIntentResult(intent.id, payment.id, status);
 
   if (result.error) {
     // The charge succeeded but we failed to record it — do NOT tell the

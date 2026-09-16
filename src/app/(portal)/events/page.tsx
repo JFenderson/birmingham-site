@@ -16,11 +16,11 @@ const ALL_ROLES = [
 ] as const;
 
 export default async function EventsPage() {
-  const { supabase, chapterId, role, user } = await requireRole(ALL_ROLES);
+  const { supabase, chapterId, role, user } = await requireRole(ALL_ROLES, { requireMfa: false });
 
-  const { data: events } = await supabase
-    .from("events")
-    .select("id, title, description, starts_at, location_name, geofence_radius_m")
+  const { data: events } = await (supabase
+    .from("events") as any)
+    .select("id, title, description, starts_at, location_name, geofence_radius_m, check_in_code_hash")
     .eq("chapter_id", chapterId)
     .eq("is_deleted", false)
     .order("starts_at", { ascending: true });
@@ -94,7 +94,15 @@ export default async function EventsPage() {
       ) : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
           <div className="space-y-4">
-            {events.map((event) => (
+            {events.map((event: {
+              id: string;
+              title: string;
+              description: string | null;
+              starts_at: string;
+              location_name: string | null;
+              geofence_radius_m: number | null;
+              check_in_code_hash: string | null;
+            }) => (
               <PortalCard
                 key={event.id}
                 as="article"
@@ -107,7 +115,7 @@ export default async function EventsPage() {
                       <PortalStatusBadge variant="info">
                         {new Date(event.starts_at).toLocaleDateString()}
                       </PortalStatusBadge>
-                      {event.geofence_radius_m !== null ? (
+                      {event.geofence_radius_m !== null && event.check_in_code_hash ? (
                         <PortalStatusBadge variant="success">Check-in enabled</PortalStatusBadge>
                       ) : (
                         <PortalStatusBadge variant="neutral">Attendance only</PortalStatusBadge>
@@ -144,7 +152,7 @@ export default async function EventsPage() {
                   </div>
 
                   <div className="sm:shrink-0">
-                    {event.geofence_radius_m !== null ? (
+                    {event.geofence_radius_m !== null && event.check_in_code_hash ? (
                       <CheckInButton
                         eventId={event.id}
                         alreadyCheckedIn={checkedInEventIds.has(event.id)}

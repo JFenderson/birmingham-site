@@ -93,28 +93,9 @@ export async function softDeleteDocument(
     return { error: `Your role can't remove ${doc.category} documents.` };
   }
 
-  const { error } = await softDeleteDocumentRow({ documentId, chapterId });
+  const { error } = await softDeleteDocumentRow({ documentId, chapterId, actorId: user.id });
 
   if (error) return { error };
-
-  // softDeleteDocumentRow runs the UPDATE via the service-role admin
-  // client, so the audit_documents trigger's auth.uid() call sees null —
-  // the real actor would be lost. Explicitly log the audit event here via
-  // the caller's own authenticated client so the true actor is recorded.
-  // Best-effort only: the soft-delete itself already succeeded above, so
-  // an error here shouldn't fail the user-facing operation.
-  const { error: auditError } = await supabase.rpc("log_audit_event", {
-    p_chapter_id: chapterId,
-    p_user_id: user.id,
-    p_action: "documents.soft_delete",
-    p_target_table: "documents",
-    p_target_id: documentId,
-    p_ip: null,
-    p_metadata: {},
-  });
-  if (auditError) {
-    console.error("log_audit_event failed for documents.soft_delete:", auditError);
-  }
 
   revalidatePath("/vault");
   return { error: null };

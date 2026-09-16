@@ -5,12 +5,6 @@ export type MemberRole =
   | "Intake Director"
   | "Admin";
 
-export const MFA_REQUIRED_ROLES: readonly MemberRole[] = [
-  "Admin",
-  "Treasurer",
-  "Intake Director",
-];
-
 export interface TenantContext {
   chapterId: string;
   chapterSlug: string;

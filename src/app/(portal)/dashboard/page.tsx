@@ -190,7 +190,7 @@ export function buildDashboardSections({
 }
 
 export default async function DashboardPage() {
-  const { user, role, chapterId, supabase } = await requireRole(ALL_ROLES);
+  const { user, role, chapterId, supabase } = await requireRole(ALL_ROLES, { requireMfa: false });
 
   const { data: events } = await supabase
     .from("events")

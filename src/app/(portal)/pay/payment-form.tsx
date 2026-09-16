@@ -31,6 +31,7 @@ export function PaymentForm() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const requestId = useRef(crypto.randomUUID());
 
   useEffect(() => {
     let cancelled = false;
@@ -97,6 +98,7 @@ export function PaymentForm() {
       const amountCents = Math.round(parsedAmount * 100);
       const outcome = await submitPayment({
         sourceId: result.token,
+        clientRequestId: requestId.current,
         amountCents,
         type,
       });

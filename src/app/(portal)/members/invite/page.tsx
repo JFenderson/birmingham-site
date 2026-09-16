@@ -9,6 +9,7 @@ export default async function InviteMemberPage() {
     await requireChapterAdmin();
   } catch (err) {
     if (err instanceof AuthorizationError && err.code === "UNAUTHENTICATED") redirect("/login");
+    if (err instanceof AuthorizationError && err.code === "MFA_REQUIRED") redirect("/security/mfa?next=/members/invite");
     if (err instanceof AuthorizationError) redirect("/security/access");
     throw err;
   }

@@ -18,7 +18,7 @@ export default async function PortalLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   let role;
   try {
-    ({ role } = await requireRole(ALL_ROLES));
+    ({ role } = await requireRole(ALL_ROLES, { requireMfa: false }));
   } catch (err) {
     if (err instanceof MfaRequiredError) {
       redirect("/security/mfa");

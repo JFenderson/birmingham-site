@@ -23,7 +23,9 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export default async function VaultPage() {
-  const { supabase, chapterId, role } = await requireRole(ALL_ROLES);
+  const { supabase, chapterId, role } = await requireRole(ALL_ROLES, { requireMfa: false });
+  const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  const verifiedOfficer = assurance?.currentLevel === "aal2";
 
   const { data: documents } = await supabase
     .from("documents")
@@ -65,6 +67,11 @@ export default async function VaultPage() {
         }
       />
 
+      {canUpload && !verifiedOfficer && (
+        <p className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm">
+          General member documents are available below. <a href="/security/mfa?next=/vault" className="font-semibold underline">Verify to unlock officer records and document changes</a>.
+        </p>
+      )}
       {byCategory.size === 0 ? (
         <PortalEmptyState
           icon={FolderLock}
@@ -116,7 +123,7 @@ export default async function VaultPage() {
                         bucket={doc.storage_bucket}
                         path={doc.storage_path}
                       />
-                      {canUpload && <DeleteButton documentId={doc.id} />}
+                      {canUpload && verifiedOfficer && <DeleteButton documentId={doc.id} />}
                     </div>
                   </div>
                 ))}

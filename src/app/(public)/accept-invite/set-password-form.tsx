@@ -47,6 +47,7 @@ export function SetPasswordForm() {
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm"><a href="/login/forgot-password" className="underline">Request a recovery email</a> · <a href="/security/mfa?next=/accept-invite" className="underline">Officer verification</a></p>}
 
       <button
         type="submit"
@@ -55,6 +56,7 @@ export function SetPasswordForm() {
       >
         {pending ? "Saving…" : "Set Password and Continue"}
       </button>
+      <a href="/dashboard" className="block text-center text-sm underline">Continue without a password — use email links instead</a>
     </form>
   );
 }

@@ -105,6 +105,15 @@ export function NewEventForm() {
             />
           </div>
           <div className="space-y-2">
+            <label className="text-xs text-zinc-500">Check-in code</label>
+            <input
+              type="password"
+              autoComplete="off"
+              className="min-h-11 w-full rounded-2xl border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+              {...register("checkInCode")}
+            />
+          </div>
+          <div className="space-y-2">
             <label className="text-xs text-zinc-500">Longitude</label>
             <input
               type="number"
@@ -122,6 +131,7 @@ export function NewEventForm() {
             />
           </div>
         </div>
+        <p className="mt-3 text-xs text-zinc-500">Share this code with attendees at the event. It is required with location check-in and is not stored in readable form.</p>
         {errors.root && <p className="mt-2 text-sm text-red-600">{errors.root.message}</p>}
       </div>
 

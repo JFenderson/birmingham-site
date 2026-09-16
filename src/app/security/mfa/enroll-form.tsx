@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 
 type Mode = "loading" | "needs-enrollment" | "needs-step-up" | "already-verified";
 
-export function EnrollForm() {
+export function EnrollForm({ next = "/dashboard" }: { next?: string }) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const initializedRef = useRef(false);
@@ -93,14 +93,14 @@ export function EnrollForm() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push(next);
     router.refresh();
   }
 
   if (mode === "already-verified") {
     return (
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        MFA is already enrolled on this account.
+        Verification is complete. <a href={next} className="underline">Continue</a>
       </p>
     );
   }

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { submitInitiative } from "@/app/(public)/initiatives/actions";
+import { createClient } from "@/lib/supabase/client";
+import { finalizeInitiativeUpload, prepareInitiativeUpload } from "@/app/(public)/initiatives/actions";
 import { DEFAULT_STEPS_PER_MILE, estimateStepsFromMiles } from "@/lib/initiatives/tracker";
 
 export function InitiativeTracker() {
@@ -9,14 +10,33 @@ export function InitiativeTracker() {
   );
   const [result, setResult] = useState<string | null>(null);
   const [miles, setMiles] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   return (
     <form
       action={async (data) => {
-        const response = await submitInitiative(data);
+        setSubmitting(true);
+        const evidence = data.get("evidence");
+        if (!(evidence instanceof File)) {
+          setResult("Upload a receipt or screenshot first.");
+          setSubmitting(false);
+          return;
+        }
+        const values = Object.fromEntries([...data.entries()].filter(([, value]) => typeof value === "string"));
+        const prepared = await prepareInitiativeUpload(values, { name: evidence.name, size: evidence.size });
+        if ("error" in prepared) {
+          setResult(prepared.error);
+          setSubmitting(false);
+          return;
+        }
+        const { error: uploadError } = await createClient().storage
+          .from("initiative-evidence")
+          .uploadToSignedUrl(prepared.path, prepared.token, evidence, { contentType: evidence.type });
+        const response = uploadError ? { error: "We could not upload the proof file. Please try again." } : await finalizeInitiativeUpload(prepared.id);
         setResult(
           response.error ??
-            "Submitted. Save your private edit code: " + response.token,
+            "Submitted for review. It will appear in chapter totals once verified.",
         );
+        setSubmitting(false);
       }}
       className="mt-8 grid gap-4 rounded-3xl border border-black/10 bg-white p-6 shadow-sm sm:grid-cols-2"
     >
@@ -175,9 +195,10 @@ export function InitiativeTracker() {
       )}
       <button
         type="submit"
+        disabled={submitting}
         className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[var(--public-primary)] px-6 py-3 font-semibold text-white shadow-sm transition-opacity hover:opacity-90 sm:col-span-2"
       >
-        {initiative === "black_spending"
+        {submitting ? "Submitting…" : initiative === "black_spending"
           ? "Submit Black Spending"
           : "Submit Steps Entry"}
       </button>

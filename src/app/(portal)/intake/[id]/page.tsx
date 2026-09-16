@@ -51,7 +51,7 @@ export default async function IntakeDetailPage({
     session = await requireRole(["Intake Director", "Admin"]);
   } catch (err) {
     if (err instanceof MfaRequiredError) {
-      redirect("/security/mfa");
+      redirect(`/security/mfa?next=${encodeURIComponent(`/intake/${id}`)}`);
     }
     if (err instanceof PermissionError) {
       redirect("/dashboard");

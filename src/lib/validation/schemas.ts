@@ -110,11 +110,14 @@ export const eventFormSchema = z
   .object({
     title: z.string().trim().min(1).max(200),
     description: z.string().trim().max(2000).optional().or(z.literal("")),
-    startsAt: z.string().trim().min(1),
+    startsAt: z.string().trim().refine((value) => Number.isFinite(Date.parse(value)), {
+      message: "Enter a valid event date and time.",
+    }),
     locationName: z.string().trim().max(200).optional().or(z.literal("")),
     geofenceLat: z.coerce.number().min(-90).max(90).optional(),
     geofenceLng: z.coerce.number().min(-180).max(180).optional(),
     geofenceRadiusM: z.coerce.number().int().min(10).max(5000).optional(),
+    checkInCode: z.string().trim().min(6).max(64).optional().or(z.literal("")),
   })
   .refine(
     (data) =>
@@ -123,8 +126,9 @@ export const eventFormSchema = z
         data.geofenceRadiusM === undefined) ||
       (data.geofenceLat !== undefined &&
         data.geofenceLng !== undefined &&
-        data.geofenceRadiusM !== undefined),
-    { message: "Geofence latitude, longitude, and radius must all be set together." }
+        data.geofenceRadiusM !== undefined &&
+        Boolean(data.checkInCode)),
+    { message: "Geofence latitude, longitude, radius, and a check-in code must all be set together." }
   );
 export type EventFormInput = z.infer<typeof eventFormSchema>;
 
@@ -132,6 +136,7 @@ export const checkInSchema = z.object({
   eventId: z.string().uuid(),
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
+  code: z.string().trim().min(6).max(64),
 });
 export type CheckInInput = z.infer<typeof checkInSchema>;
 
@@ -144,6 +149,7 @@ export type DocumentUploadInput = z.infer<typeof documentUploadSchema>;
 
 export const paymentIntentSchema = z.object({
   sourceId: z.string().trim().min(1), // tokenized card nonce from Web Payments SDK
+  clientRequestId: z.string().uuid(),
   amountCents: z.coerce.number().int().min(100).max(1_000_000),
   type: z.enum(["dues", "event_fee", "donation"]),
   description: z.string().trim().max(200).optional().or(z.literal("")),

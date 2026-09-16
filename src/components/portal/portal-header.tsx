@@ -1,5 +1,6 @@
 import { Menu } from "lucide-react";
 import Link from "next/link";
+import { SignOutButton } from "./sign-out-button";
 import type { MemberRole } from "@/types/domain";
 import {
   getPortalNavigationSections,
@@ -29,6 +30,7 @@ export function PortalHeader({ role }: PortalHeaderProps) {
           {role}
         </div>
 
+        <SignOutButton />
         <details className="group relative lg:hidden">
           <summary className="flex list-none items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-navy hover:text-navy dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:border-blue-300 dark:hover:text-blue-300">
             <Menu className="size-4" aria-hidden="true" />

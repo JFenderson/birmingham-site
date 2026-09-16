@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { verifySquareSignature } from "@/lib/square/verify-webhook";
 import { handleSquareWebhookEvent } from "@/lib/square/handle-webhook";
+import { createHash } from "node:crypto";
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -23,7 +24,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  await handleSquareWebhookEvent(event);
+  try {
+    await handleSquareWebhookEvent(event, createHash("sha256").update(body).digest("hex"));
+  } catch (error) {
+    console.error("[square] webhook processing failed", error);
+    return NextResponse.json({ error: "Processing failed; retry requested" }, { status: 500 });
+  }
 
   return NextResponse.json({ received: true });
 }

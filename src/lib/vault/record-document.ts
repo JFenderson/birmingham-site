@@ -89,6 +89,7 @@ export async function recordDocument(params: {
 export async function softDeleteDocumentRow(params: {
   documentId: string;
   chapterId: string;
+  actorId: string;
 }): Promise<{ error: string | null }> {
   const admin = createAdminClient();
   const { error } = await admin
@@ -97,5 +98,12 @@ export async function softDeleteDocumentRow(params: {
     .eq("id", params.documentId)
     .eq("chapter_id", params.chapterId);
 
-  return { error: error ? "Could not remove document." : null };
+  if (error) return { error: "Could not remove document." };
+  const { error: auditError } = await (admin as any).rpc("log_service_audit_event", {
+    p_chapter_id: params.chapterId, p_user_id: params.actorId,
+    p_action: "documents.soft_delete", p_target_table: "documents",
+    p_target_id: params.documentId, p_metadata: {},
+  });
+  if (auditError) console.error("Could not audit document deletion:", auditError);
+  return { error: null };
 }

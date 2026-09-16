@@ -19,7 +19,7 @@ export default async function InitiativesPage() {
         <h1 className="mt-3 text-4xl font-bold">Show up. Track the impact.</h1>
         <p className="mt-4 max-w-2xl text-lg text-slate-600">
           Submit your Black Spending or daily steps proof. Entries are included
-          automatically in the chapter totals.
+          after a chapter reviewer verifies the proof.
         </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl bg-white p-5">

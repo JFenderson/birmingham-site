@@ -10,7 +10,7 @@ export default async function VaultUploadPage() {
   try {
     ({ role, chapterId } = await requireRole(["Admin", "Secretary", "Treasurer"]));
   } catch (err) {
-    if (err instanceof MfaRequiredError) redirect("/security/mfa");
+    if (err instanceof MfaRequiredError) redirect("/security/mfa?next=/vault/upload");
     if (err instanceof PermissionError) redirect("/vault");
     throw err;
   }

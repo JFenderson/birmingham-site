@@ -72,8 +72,20 @@ export async function requestRootMemberAccess(
   }
 
   const admin = requestAccessDependencies.createAdminClient();
+  // A membership number and surname are not proof of identity. Deliver the
+  // invitation only to a roster contact already controlled by the chapter.
+  const { data: rosterContact } = await admin
+    .from("root_member_roster")
+    .select("roster_email")
+    .eq("id", rosterMatch.rosterId)
+    .eq("chapter_id", input.chapterId)
+    .maybeSingle();
+  const rosterEmail = rosterContact?.roster_email?.trim().toLowerCase();
+  if (!rosterEmail || rosterEmail !== input.email.trim().toLowerCase()) {
+    return { created: false };
+  }
   const { data: inviteData, error: inviteError } =
-    await admin.auth.admin.inviteUserByEmail(input.email, {
+    await admin.auth.admin.inviteUserByEmail(rosterEmail, {
       data: {
         full_name: input.fullName,
         requested_chapter_id: input.chapterId,

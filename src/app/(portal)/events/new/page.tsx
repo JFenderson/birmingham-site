@@ -9,7 +9,7 @@ export default async function NewEventPage() {
     await requireRole(["Admin", "Secretary"]);
   } catch (err) {
     if (err instanceof MfaRequiredError) {
-      redirect("/security/mfa");
+      redirect("/security/mfa?next=/events/new");
     }
     if (err instanceof PermissionError) {
       redirect("/events");

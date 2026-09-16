@@ -8,6 +8,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { resolveSafeLoginRedirect } from "@/lib/security/redirects";
 import { loginSchema, type LoginInput } from "@/lib/validation/schemas";
+import { EmailLinkForm } from "./email-link-form";
 
 function LoginForm() {
   const router = useRouter();
@@ -41,7 +42,7 @@ function LoginForm() {
       onSubmit={(e) => void handleSubmit(onSubmit)(e)}
       className="w-full max-w-sm space-y-4"
     >
-      <h1 className="text-2xl font-bold text-navy">Brothers Only Sign In</h1>
+      <h2 className="text-lg font-semibold text-navy">Sign in with my password</h2>
 
       {inviteExpired && (
         <p className="text-sm text-red-600">
@@ -56,6 +57,7 @@ function LoginForm() {
         <input
           id="email"
           type="email"
+          autoComplete="email"
           className="w-full rounded-md border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
           {...register("email")}
         />
@@ -71,6 +73,7 @@ function LoginForm() {
         <input
           id="password"
           type="password"
+          autoComplete="current-password"
           className="w-full rounded-md border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
           {...register("password")}
         />
@@ -117,11 +120,25 @@ export default function LoginPage() {
           <Link href="/initiatives" className="mt-7 inline-flex w-fit rounded-full bg-white px-5 py-3 font-semibold text-[#0047AB] transition-colors hover:bg-blue-50">Open Initiative Tracker <span aria-hidden="true" className="ml-2">→</span></Link>
         </aside>
         <div className="flex items-center justify-center rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-10">
-      <Suspense fallback={null}>
-        <LoginForm />
-      </Suspense>
+          <div className="w-full max-w-sm space-y-6">
+            <h1 className="text-2xl font-bold text-navy">Member Portal Sign In</h1>
+            <Suspense fallback={null}><LinkError /></Suspense>
+            <EmailLinkForm />
+            <details className="border-t border-zinc-200 pt-5">
+              <summary className="min-h-11 cursor-pointer font-semibold text-navy">Sign in with my password</summary>
+              <Suspense fallback={null}><LoginForm /></Suspense>
+            </details>
+            <p className="text-sm text-zinc-600">Need a member account? <Link href="/request-access" className="font-semibold underline">Request access</Link></p>
+          </div>
         </div>
-    </div>
+      </div>
     </div>
   );
+}
+
+function LinkError() {
+  const params = useSearchParams();
+  return params.get("error") === "link-expired"
+    ? <p role="alert" className="text-sm text-red-600">That link has expired or was already used. Request a new link below. If you opened it in another browser, try opening it in the browser where you requested it.</p>
+    : null;
 }

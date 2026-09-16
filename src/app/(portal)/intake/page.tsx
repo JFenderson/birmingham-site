@@ -24,7 +24,7 @@ export default async function IntakePage() {
     session = await requireRole(["Intake Director", "Admin"]);
   } catch (err) {
     if (err instanceof MfaRequiredError) {
-      redirect("/security/mfa");
+      redirect("/security/mfa?next=/intake");
     }
     if (err instanceof PermissionError) {
       redirect("/dashboard");

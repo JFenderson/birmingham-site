@@ -25,6 +25,31 @@ function createHeaders(ip = "203.0.113.10") {
   });
 }
 
+function withTrustedRosterEmail(client: any): any {
+  return {
+    ...client,
+    from() {
+      return {
+        select() {
+          return {
+            eq() {
+              return {
+                eq() {
+                  return {
+                    maybeSingle() {
+                      return Promise.resolve({ data: { roster_email: validInput.email }, error: null });
+                    },
+                  };
+                },
+              };
+            },
+          };
+        },
+      };
+    },
+  };
+}
+
 test("request access schema accepts bounded member identifiers and contact fields", () => {
   const parsed = requestAccessSchema.safeParse(validInput);
 
@@ -66,7 +91,7 @@ test("requestRootMemberAccess only creates an invite and claims a profile after 
     requestAccessModule.requestAccessDependencies,
     "createAdminClient",
     () =>
-      ({
+      withTrustedRosterEmail({
         auth: {
           admin: {
             inviteUserByEmail(email: string, options: Record<string, unknown>) {
@@ -163,7 +188,7 @@ test("requestRootMemberAccess cleans up the invited Auth user when the atomic ro
     requestAccessModule.requestAccessDependencies,
     "createAdminClient",
     () =>
-      ({
+      withTrustedRosterEmail({
         auth: {
           admin: {
             inviteUserByEmail() {

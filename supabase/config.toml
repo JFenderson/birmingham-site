@@ -247,6 +247,10 @@ otp_expiry = 3600
 subject = "You have been invited"
 content_path = "./supabase/templates/invite.html"
 
+[auth.email.template.magic_link]
+subject = "Your Member Portal sign-in link"
+content_path = "./supabase/templates/magic-link.html"
+
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
 # enabled = true
@@ -299,8 +303,8 @@ max_enrolled_factors = 10
 
 # Control MFA via App Authenticator (TOTP)
 [auth.mfa.totp]
-enroll_enabled = false
-verify_enabled = false
+enroll_enabled = true
+verify_enabled = true
 
 # Configure MFA via Phone Messaging
 [auth.mfa.phone]
