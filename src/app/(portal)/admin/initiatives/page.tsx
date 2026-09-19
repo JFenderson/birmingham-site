@@ -37,12 +37,20 @@ function InitiativeReportSection({
             {entries.length} verified {entries.length === 1 ? "entry" : "entries"} for {month}.
           </p>
         </div>
-        <a
-          className="rounded-full bg-navy px-4 py-2 text-sm font-semibold text-white"
-          href={`/admin/initiatives/report.csv?month=${encodeURIComponent(month)}&initiative=${initiative}`}
-        >
-          Download {isSteps ? "Steps" : "Black Spending"} CSV
-        </a>
+        <div className="flex flex-wrap gap-2">
+          <a
+            className="rounded-full bg-navy px-4 py-2 text-sm font-semibold text-white"
+            href={`/admin/initiatives/report.png?month=${encodeURIComponent(month)}&initiative=${initiative}`}
+          >
+            Download PNG report
+          </a>
+          <a
+            className="rounded-full border border-navy px-4 py-2 text-sm font-semibold text-navy"
+            href={`/admin/initiatives/report.csv?month=${encodeURIComponent(month)}&initiative=${initiative}`}
+          >
+            Download CSV ledger
+          </a>
+        </div>
       </div>
       {entries.length > 0 && (
         <div className="mt-5 overflow-x-auto">
