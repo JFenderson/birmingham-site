@@ -1,5 +1,7 @@
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 
+export type InitiativeReportKind = "black_spending" | "steps";
+
 export type InitiativeReportRow = {
   initiative: string;
   firstName: string;
@@ -20,6 +22,10 @@ export function reportMonth(value: string | undefined): string {
   return new Date().toISOString().slice(0, 7);
 }
 
+export function initiativeReportKind(value: string | null): InitiativeReportKind | null {
+  return value === "black_spending" || value === "steps" ? value : null;
+}
+
 function csvCell(value: string | number | null | undefined): string {
   const text = String(value ?? "");
   const safeText = /^[=+\-@]/.test(text.trimStart()) ? `'${text}` : text;
@@ -32,6 +38,7 @@ function csvLine(values: Array<string | number | null | undefined>): string {
 
 export function initiativeReportCsv(input: {
   month: string;
+  initiative: InitiativeReportKind;
   totals: {
     blackSpendingCents: number;
     blackSpendingMinutes: number;
@@ -40,26 +47,26 @@ export function initiativeReportCsv(input: {
   };
   entries: InitiativeReportRow[];
 }): string {
+  const isSteps = input.initiative === "steps";
   const rows = [
-    csvLine(["Birmingham Sigmas initiative report"]),
+    csvLine([`Birmingham Sigmas ${isSteps ? "Steps" : "Black Spending"} report`]),
     csvLine(["Reporting month", input.month]),
-    csvLine(["Verified Black Spending", `$${(input.totals.blackSpendingCents / 100).toFixed(2)}`]),
-    csvLine(["Verified Steps", input.totals.steps]),
-    csvLine(["Black Spending time (minutes)", input.totals.blackSpendingMinutes]),
-    csvLine(["Steps time (minutes)", input.totals.stepsMinutes]),
+    csvLine(isSteps
+      ? ["Verified Steps", input.totals.steps]
+      : ["Verified Black Spending", `$${(input.totals.blackSpendingCents / 100).toFixed(2)}`]),
+    csvLine(isSteps
+      ? ["Steps time (minutes)", input.totals.stepsMinutes]
+      : ["Black Spending time (minutes)", input.totals.blackSpendingMinutes]),
     "",
-    csvLine(["Initiative", "Participant", "Activity date", "Steps", "Miles", "Amount", "Minutes", "Business", "Steps source", "Approved at"]),
+    csvLine(isSteps
+      ? ["Participant", "Activity date", "Steps", "Miles", "Minutes", "Steps source", "Approved at"]
+      : ["Participant", "Activity date", "Amount", "Minutes", "Business", "Approved at"]),
     ...input.entries.map((entry) => csvLine([
-      entry.initiative === "steps" ? "Steps" : "Black Spending",
       `${entry.firstName} ${entry.lastName}`,
-      entry.initiative === "steps" ? entry.trackedOn : entry.spentOn,
-      entry.steps,
-      entry.distanceMiles,
-      entry.amountCents === null ? null : `$${(entry.amountCents / 100).toFixed(2)}`,
-      entry.durationMinutes,
-      entry.businessName,
-      entry.stepsSource,
-      entry.reviewedAt,
+      isSteps ? entry.trackedOn : entry.spentOn,
+      ...(isSteps
+        ? [entry.steps, entry.distanceMiles, entry.durationMinutes, entry.stepsSource, entry.reviewedAt]
+        : [entry.amountCents === null ? null : `$${(entry.amountCents / 100).toFixed(2)}`, entry.durationMinutes, entry.businessName, entry.reviewedAt]),
     ])),
   ];
 

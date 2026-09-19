@@ -51,6 +51,7 @@ test("combines steps for each brother before ranking", () => {
 test("builds a spreadsheet-safe monthly initiative CSV", () => {
   const csv = initiativeReportCsv({
     month: "2026-09",
+    initiative: "black_spending",
     totals: { blackSpendingCents: 1250, blackSpendingMinutes: 10, steps: 8000, stepsMinutes: 90 },
     entries: [{
       initiative: "black_spending", firstName: "Jordan", lastName: "Smith", businessName: "=UNSAFE()",
@@ -58,6 +59,7 @@ test("builds a spreadsheet-safe monthly initiative CSV", () => {
       trackedOn: null, durationMinutes: 10, stepsSource: null, reviewedAt: "2026-09-02T12:00:00Z",
     }],
   });
+  assert.match(csv, /Black Spending report/);
   assert.match(csv, /Verified Black Spending","\$12\.50/);
   assert.match(csv, /"'=UNSAFE\(\)"/);
   assert.equal(reportMonth("2026-13"), new Date().toISOString().slice(0, 7));
