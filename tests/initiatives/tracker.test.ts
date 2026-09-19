@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { initiativeReportCsv, reportMonth } from "../../src/lib/initiatives/report";
 import { estimateStepsFromMiles, formatPublicName, initiativeSubmissionSchema, monthlyTotals, rankInitiativePeople } from "../../src/lib/initiatives/tracker";
 
 test("formats public ranking names as first initial plus last name", () => {
@@ -45,4 +46,20 @@ test("combines steps for each brother before ranking", () => {
     { name: "D. Crowder", score: 12000 },
     { name: "J. Smith", score: 11000 },
   ]);
+});
+
+test("builds a spreadsheet-safe monthly initiative CSV", () => {
+  const csv = initiativeReportCsv({
+    month: "2026-09",
+    totals: { blackSpendingCents: 1250, blackSpendingMinutes: 10, steps: 8000, stepsMinutes: 90 },
+    entries: [{
+      initiative: "black_spending", firstName: "Jordan", lastName: "Smith", businessName: "=UNSAFE()",
+      amountCents: 1250, spentOn: "2026-09-01", steps: null, distanceMiles: null,
+      trackedOn: null, durationMinutes: 10, stepsSource: null, reviewedAt: "2026-09-02T12:00:00Z",
+    }],
+  });
+  assert.match(csv, /Verified Black Spending","\$12\.50/);
+  assert.match(csv, /"'=UNSAFE\(\)"/);
+  assert.equal(reportMonth("2026-13"), new Date().toISOString().slice(0, 7));
+  assert.equal(reportMonth("2026-09"), "2026-09");
 });
