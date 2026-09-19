@@ -2,17 +2,27 @@ import { requireChapterAdmin } from "@/lib/auth/authorization";
 import { getTenantContext } from "@/lib/tenant/resolve-chapter";
 import { getInitiativeSnapshot } from "@/lib/initiatives/queries";
 import { PortalPageHeader } from "@/components/portal/portal-page-header";
-import { listPendingInitiativeSubmissions } from "@/lib/initiatives/review";
-import { approveImportedInitiatives, reviewInitiative } from "./actions";
+import {
+  countLegacyInitiativeImportInMiles,
+  listPendingInitiativeSubmissions,
+} from "@/lib/initiatives/review";
+import {
+  approveImportedInitiatives,
+  restoreLegacyImportedInitiatives,
+  reviewInitiative,
+} from "./actions";
 
 export default async function InitiativeReportPage() {
   await requireChapterAdmin();
-  const { chapterId } = await getTenantContext();
+  const { chapterId, chapterSlug } = await getTenantContext();
   const month = new Date().toISOString().slice(0, 7);
-  const snapshot = await getInitiativeSnapshot(chapterId, month);
-  const pending = await listPendingInitiativeSubmissions(chapterId);
+  const [snapshot, pending, legacyImportCount] = await Promise.all([
+    getInitiativeSnapshot(chapterId, month),
+    listPendingInitiativeSubmissions(chapterId),
+    chapterSlug === "root" ? countLegacyInitiativeImportInMiles() : Promise.resolve(0),
+  ]);
   const pendingImportedCount = pending.filter(
-    (entry: any) => entry.submission_source === "group_chat_import"
+    (entry) => entry.submission_source === "group_chat_import"
   ).length;
   return (
     <div className="space-y-8">
@@ -44,7 +54,13 @@ export default async function InitiativeReportPage() {
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-semibold">Awaiting review</h2>
-          {pendingImportedCount > 0 && (
+          {legacyImportCount > 0 ? (
+            <form action={restoreLegacyImportedInitiatives}>
+              <button className="rounded-full bg-navy px-4 py-2 text-sm font-semibold text-white">
+                Restore {legacyImportCount} imported {legacyImportCount === 1 ? "entry" : "entries"}
+              </button>
+            </form>
+          ) : pendingImportedCount > 0 && (
             <form action={approveImportedInitiatives}>
               <button className="rounded-full bg-navy px-4 py-2 text-sm font-semibold text-white">
                 Approve {pendingImportedCount} imported {pendingImportedCount === 1 ? "entry" : "entries"}
@@ -52,7 +68,7 @@ export default async function InitiativeReportPage() {
             </form>
           )}
         </div>
-        {pending.length === 0 ? <p className="text-sm text-zinc-500">No entries are waiting for review.</p> : pending.map((entry: any) => (
+        {pending.length === 0 ? <p className="text-sm text-zinc-500">No entries are waiting for review.</p> : pending.map((entry) => (
           <article key={entry.id} className="rounded-2xl bg-white p-5 shadow-sm">
             <p className="font-semibold">{entry.first_name} {entry.last_name} · {entry.initiative === "steps" ? `${entry.steps?.toLocaleString() ?? 0} steps` : `$${((entry.amount_cents ?? 0) / 100).toFixed(2)}`}</p>
             <p className="mt-1 text-sm text-zinc-500">Submitted {new Date(entry.created_at).toLocaleString()}</p>

@@ -7,6 +7,7 @@ from datetime import datetime
 import openpyxl
 
 RATE = 2100
+CHAPTER_SLUG = "root"
 batch = str(uuid.uuid4())
 book = openpyxl.load_workbook(sys.argv[1], data_only=True)
 sheet = book.active
@@ -29,5 +30,5 @@ for row in rows:
     hours = row.get("Hour") or 0
     minutes = row.get("Min") or 0
     duration = int(hours * 60 + minutes) or None
-    print("insert into public.initiative_submissions (chapter_id, initiative, first_name, last_name, steps, distance_miles, tracked_on, duration_minutes, submission_source, steps_source, steps_per_mile_used, import_batch_id) select id, 'steps', {0}, {1}, {2}, {3}, {4}, {5}, 'group_chat_import', {6}, {7}, '{8}' from public.chapters where slug = 'miles' and not exists (select 1 from public.initiative_submissions s where s.chapter_id = public.chapters.id and s.initiative = 'steps' and lower(s.first_name) = lower({0}) and lower(s.last_name) = lower({1}) and s.tracked_on = {4} and s.is_deleted = false);".format(sql(str(row['Name']).split(' ', 1)[0]), sql(str(row['Name']).split(' ', 1)[1]), sql(int(steps)), sql(miles), sql(row['Date']), sql(duration), sql('estimated' if estimated else 'submitted'), sql(RATE if estimated else None), batch))
+    print("insert into public.initiative_submissions (chapter_id, initiative, first_name, last_name, steps, distance_miles, tracked_on, duration_minutes, submission_source, steps_source, steps_per_mile_used, import_batch_id) select id, 'steps', {0}, {1}, {2}, {3}, {4}, {5}, 'group_chat_import', {6}, {7}, '{8}' from public.chapters where slug = {9} and not exists (select 1 from public.initiative_submissions s where s.chapter_id = public.chapters.id and s.initiative = 'steps' and lower(s.first_name) = lower({0}) and lower(s.last_name) = lower({1}) and s.tracked_on = {4} and s.is_deleted = false);".format(sql(str(row['Name']).split(' ', 1)[0]), sql(str(row['Name']).split(' ', 1)[1]), sql(int(steps)), sql(miles), sql(row['Date']), sql(duration), sql('estimated' if estimated else 'submitted'), sql(RATE if estimated else None), batch, sql(CHAPTER_SLUG)))
 print("commit;")
