@@ -3,7 +3,7 @@ import { getTenantContext } from "@/lib/tenant/resolve-chapter";
 import { getInitiativeSnapshot } from "@/lib/initiatives/queries";
 import { PortalPageHeader } from "@/components/portal/portal-page-header";
 import { listPendingInitiativeSubmissions } from "@/lib/initiatives/review";
-import { reviewInitiative } from "./actions";
+import { approveImportedInitiatives, reviewInitiative } from "./actions";
 
 export default async function InitiativeReportPage() {
   await requireChapterAdmin();
@@ -11,6 +11,9 @@ export default async function InitiativeReportPage() {
   const month = new Date().toISOString().slice(0, 7);
   const snapshot = await getInitiativeSnapshot(chapterId, month);
   const pending = await listPendingInitiativeSubmissions(chapterId);
+  const pendingImportedCount = pending.filter(
+    (entry: any) => entry.submission_source === "group_chat_import"
+  ).length;
   return (
     <div className="space-y-8">
       <PortalPageHeader
@@ -39,7 +42,16 @@ export default async function InitiativeReportPage() {
         </div>
       </div>
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Awaiting review</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-semibold">Awaiting review</h2>
+          {pendingImportedCount > 0 && (
+            <form action={approveImportedInitiatives}>
+              <button className="rounded-full bg-navy px-4 py-2 text-sm font-semibold text-white">
+                Approve {pendingImportedCount} imported {pendingImportedCount === 1 ? "entry" : "entries"}
+              </button>
+            </form>
+          )}
+        </div>
         {pending.length === 0 ? <p className="text-sm text-zinc-500">No entries are waiting for review.</p> : pending.map((entry: any) => (
           <article key={entry.id} className="rounded-2xl bg-white p-5 shadow-sm">
             <p className="font-semibold">{entry.first_name} {entry.last_name} · {entry.initiative === "steps" ? `${entry.steps?.toLocaleString() ?? 0} steps` : `$${((entry.amount_cents ?? 0) / 100).toFixed(2)}`}</p>

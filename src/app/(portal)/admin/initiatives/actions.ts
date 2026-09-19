@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireChapterAdmin } from "@/lib/auth/authorization";
-import { reviewInitiativeSubmission } from "@/lib/initiatives/review";
+import {
+  approvePendingImportedInitiatives,
+  reviewInitiativeSubmission,
+} from "@/lib/initiatives/review";
 
 const reviewSchema = z.object({
   submissionId: z.string().uuid(),
@@ -22,5 +25,20 @@ export async function reviewInitiative(formData: FormData) {
     status: parsed.data.status,
     ...(parsed.data.note ? { note: parsed.data.note } : {}),
   });
-  if (!result.error) revalidatePath("/admin/initiatives");
+  if (!result.error) {
+    revalidatePath("/admin/initiatives");
+    revalidatePath("/initiatives");
+  }
+}
+
+export async function approveImportedInitiatives() {
+  const actor = await requireChapterAdmin();
+  const result = await approvePendingImportedInitiatives({
+    chapterId: actor.chapterId!,
+    reviewerId: actor.user.id,
+  });
+  if (!result.error) {
+    revalidatePath("/admin/initiatives");
+    revalidatePath("/initiatives");
+  }
 }
