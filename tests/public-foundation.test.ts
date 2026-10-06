@@ -5,6 +5,10 @@ import { isSafeExternalUrl } from "../src/lib/content-links.ts";
 import { foundationInformationRequestSchema } from "../src/lib/validation/schemas.ts";
 import { getSafeDonationHref } from "../src/lib/foundation-donation.ts";
 import * as foundationActions from "../src/app/(public)/foundation/actions.ts";
+import {
+  NEUTRAL_FOUNDATION_INFORMATION_REQUEST_RESULT,
+  foundationInformationRequestActionDependencies,
+} from "../src/lib/foundation-information-request-action-support.ts";
 
 const validInput = {
   name: "Jordan Miles",
@@ -71,12 +75,12 @@ test("foundationInformationRequestSchema rejects a non-empty honeypot value", ()
 
 test("submitFoundationInformationRequest returns an error result when rate limited", async (context) => {
   context.mock.method(
-    foundationActions.foundationInformationRequestActionDependencies,
+    foundationInformationRequestActionDependencies,
     "headers",
     async () => createHeaders(),
   );
   context.mock.method(
-    foundationActions.foundationInformationRequestActionDependencies,
+    foundationInformationRequestActionDependencies,
     "checkRateLimit",
     async () => ({ success: false }),
   );
@@ -93,22 +97,22 @@ test("submitFoundationInformationRequest returns a validation error for invalid 
   const notifyCalls: unknown[] = [];
 
   context.mock.method(
-    foundationActions.foundationInformationRequestActionDependencies,
+    foundationInformationRequestActionDependencies,
     "headers",
     async () => createHeaders(),
   );
   context.mock.method(
-    foundationActions.foundationInformationRequestActionDependencies,
+    foundationInformationRequestActionDependencies,
     "checkRateLimit",
     async () => ({ success: true }),
   );
   context.mock.method(
-    foundationActions.foundationInformationRequestActionDependencies,
+    foundationInformationRequestActionDependencies,
     "getCurrentChapter",
     async () => ({ name: "Tau Sigma", chapterSlug: "root" }) as never,
   );
   context.mock.method(
-    foundationActions.foundationInformationRequestActionDependencies,
+    foundationInformationRequestActionDependencies,
     "sendFoundationInformationRequestNotification",
     async (payload: Record<string, unknown>) => {
       notifyCalls.push(payload);
@@ -129,22 +133,22 @@ test("submitFoundationInformationRequest returns neutral success without notifyi
   const notifyCalls: unknown[] = [];
 
   context.mock.method(
-    foundationActions.foundationInformationRequestActionDependencies,
+    foundationInformationRequestActionDependencies,
     "headers",
     async () => createHeaders(),
   );
   context.mock.method(
-    foundationActions.foundationInformationRequestActionDependencies,
+    foundationInformationRequestActionDependencies,
     "checkRateLimit",
     async () => ({ success: true }),
   );
   context.mock.method(
-    foundationActions.foundationInformationRequestActionDependencies,
+    foundationInformationRequestActionDependencies,
     "getCurrentChapter",
     async () => ({ name: "Tau Sigma", chapterSlug: "root" }) as never,
   );
   context.mock.method(
-    foundationActions.foundationInformationRequestActionDependencies,
+    foundationInformationRequestActionDependencies,
     "sendFoundationInformationRequestNotification",
     async (payload: Record<string, unknown>) => {
       notifyCalls.push(payload);
@@ -157,7 +161,7 @@ test("submitFoundationInformationRequest returns neutral success without notifyi
     website: "http://spam.example",
   });
 
-  assert.deepEqual(result, foundationActions.NEUTRAL_FOUNDATION_INFORMATION_REQUEST_RESULT);
+  assert.deepEqual(result, NEUTRAL_FOUNDATION_INFORMATION_REQUEST_RESULT);
   assert.equal(notifyCalls.length, 0);
 });
 
@@ -165,22 +169,22 @@ test("submitFoundationInformationRequest sends a notification and returns neutra
   const notifyCalls: Array<Record<string, unknown>> = [];
 
   context.mock.method(
-    foundationActions.foundationInformationRequestActionDependencies,
+    foundationInformationRequestActionDependencies,
     "headers",
     async () => createHeaders(),
   );
   context.mock.method(
-    foundationActions.foundationInformationRequestActionDependencies,
+    foundationInformationRequestActionDependencies,
     "checkRateLimit",
     async () => ({ success: true }),
   );
   context.mock.method(
-    foundationActions.foundationInformationRequestActionDependencies,
+    foundationInformationRequestActionDependencies,
     "getCurrentChapter",
     async () => ({ name: "Tau Sigma Charity Foundation", chapterSlug: "root" }) as never,
   );
   context.mock.method(
-    foundationActions.foundationInformationRequestActionDependencies,
+    foundationInformationRequestActionDependencies,
     "sendFoundationInformationRequestNotification",
     async (payload: Record<string, unknown>) => {
       notifyCalls.push(payload);
@@ -190,7 +194,7 @@ test("submitFoundationInformationRequest sends a notification and returns neutra
 
   const result = await foundationActions.submitFoundationInformationRequest(validInput);
 
-  assert.deepEqual(result, foundationActions.NEUTRAL_FOUNDATION_INFORMATION_REQUEST_RESULT);
+  assert.deepEqual(result, NEUTRAL_FOUNDATION_INFORMATION_REQUEST_RESULT);
   assert.equal(notifyCalls.length, 1);
   assert.equal(notifyCalls[0]?.to, validInput.email);
   assert.equal(notifyCalls[0]?.submitterName, validInput.name);

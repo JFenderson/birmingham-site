@@ -1,9 +1,9 @@
 "use server";
 
-import { headers } from "next/headers";
-import { checkRateLimit } from "@/lib/rate-limit";
-import { sendFoundationInformationRequestNotification } from "@/lib/email/send-foundation-information-request-notification";
-import { getCurrentChapter } from "@/lib/tenant/get-chapter";
+import {
+  NEUTRAL_FOUNDATION_INFORMATION_REQUEST_RESULT,
+  foundationInformationRequestActionDependencies,
+} from "@/lib/foundation-information-request-action-support";
 import {
   foundationInformationRequestSchema,
   type FoundationInformationRequestInput,
@@ -12,18 +12,6 @@ import {
 export type FoundationInformationRequestResult =
   | { success: true; message: string }
   | { success: false; error: string };
-
-export const NEUTRAL_FOUNDATION_INFORMATION_REQUEST_RESULT: FoundationInformationRequestResult = {
-  success: true,
-  message: "Thanks for reaching out. A foundation representative will follow up soon.",
-};
-
-export const foundationInformationRequestActionDependencies = {
-  checkRateLimit,
-  headers,
-  getCurrentChapter,
-  sendFoundationInformationRequestNotification,
-};
 
 function getClientIp(headerList: Headers): string {
   return (
