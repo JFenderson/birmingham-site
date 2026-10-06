@@ -1,5 +1,6 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { checkFixedWindowLimit, isScriptPermissionError } from "./fixed-window";
 
 interface RateLimitOptions {
   limit: number;
@@ -51,6 +52,22 @@ export async function checkRateLimit(
     const { success } = await getLimiter(opts).limit(key);
     return { success };
   } catch (err) {
+    if (isScriptPermissionError(err)) {
+      try {
+        return {
+          success: await checkFixedWindowLimit(
+            redis,
+            key,
+            opts.limit,
+            opts.windowMs,
+            process.env.VERCEL_ENV ?? "dev",
+          ),
+        };
+      } catch (fallbackError) {
+        console.error("[rate-limit] fixed-window fallback unavailable", fallbackError);
+        return { success: opts.failOpen === true };
+      }
+    }
     console.error("[rate-limit] backend unavailable", err);
     return { success: opts.failOpen === true };
   }
