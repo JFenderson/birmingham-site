@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHmac } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export function isScriptPermissionError(error: unknown): boolean {
@@ -10,8 +10,9 @@ export function hashRateLimitKey(
   limit: number,
   windowMs: number,
   environment: string,
+  secret: string,
 ): string {
-  return createHash("sha256")
+  return createHmac("sha256", secret)
     .update(`${environment}:${limit}:${windowMs}:${key}`)
     .digest("hex");
 }
@@ -23,10 +24,12 @@ export async function checkDatabaseRateLimit(
   windowMs: number,
   environment: string,
 ): Promise<boolean> {
+  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!secret) throw new Error("Rate-limit database credentials are missing.");
   const { data, error } = await createAdminClient().rpc(
     "check_request_rate_limit" as never,
     {
-      p_key_hash: hashRateLimitKey(key, limit, windowMs, environment),
+      p_key_hash: hashRateLimitKey(key, limit, windowMs, environment, secret),
       p_limit: limit,
       p_window_ms: windowMs,
     } as never,

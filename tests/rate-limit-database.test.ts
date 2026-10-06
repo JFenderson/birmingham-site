@@ -11,9 +11,10 @@ import {
 test("rate-limit fallback recognizes Redis ACL errors and hashes visitor keys", () => {
   assert.equal(isScriptPermissionError(new Error("NOPERM this user cannot run 'evalsha'")), true);
   assert.equal(isScriptPermissionError(new Error("Redis unavailable")), false);
-  const hash = hashRateLimitKey("203.0.113.20:form", 5, 600_000, "preview");
+  const hash = hashRateLimitKey("203.0.113.20:form", 5, 600_000, "preview", "test-secret");
   assert.match(hash, /^[0-9a-f]{64}$/);
-  assert.notEqual(hash, hashRateLimitKey("203.0.113.20:form", 5, 600_000, "production"));
+  assert.notEqual(hash, hashRateLimitKey("203.0.113.20:form", 5, 600_000, "production", "test-secret"));
+  assert.notEqual(hash, hashRateLimitKey("203.0.113.20:form", 5, 600_000, "preview", "other-secret"));
 });
 
 test("private database counter allows up to the configured limit", async (context) => {
@@ -23,7 +24,7 @@ test("private database counter allows up to the configured limit", async (contex
   await db.exec(readFileSync("supabase/migrations/20261006185000_request_rate_limit_windows.sql", "utf8"));
   await db.exec("grant usage on schema public to service_role, anon, authenticated; set role service_role;");
 
-  const key = hashRateLimitKey("203.0.113.20:form", 2, 60_000, "test");
+  const key = hashRateLimitKey("203.0.113.20:form", 2, 60_000, "test", "test-secret");
   for (const expected of [true, true, false]) {
     const result = await db.query<{ allowed: boolean }>(
       "select public.check_request_rate_limit($1, 2, 60000) as allowed",
