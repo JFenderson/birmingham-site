@@ -1,18 +1,26 @@
 import { Body, Container, Head, Heading, Text, Html } from "@react-email/components";
 
 export function SigmaBetaInterestAdminNotificationEmail({
-  submitterName,
-  submitterEmail,
+  parentName,
+  parentEmail,
+  parentPhone,
+  studentName,
+  studentAge,
+  gradeLevel,
+  studentSchool,
   chapterName,
-  roleLabel,
-  phone,
+  referralSource,
   message,
 }: {
-  submitterName: string;
-  submitterEmail: string;
+  parentName: string;
+  parentEmail: string;
+  parentPhone: string;
+  studentName: string;
+  studentAge: number;
+  gradeLevel: string;
+  studentSchool: string;
   chapterName: string;
-  roleLabel: string;
-  phone?: string | undefined;
+  referralSource?: string | undefined;
   message?: string | undefined;
 }) {
   return (
@@ -22,12 +30,13 @@ export function SigmaBetaInterestAdminNotificationEmail({
         <Container style={{ backgroundColor: "#ffffff", padding: "32px", borderRadius: "8px" }}>
           <Heading style={{ color: "#1e3a8a" }}>New Sigma Beta Club Interest</Heading>
           <Text>
-            {submitterName} ({roleLabel}) submitted an interest form for the{" "}
-            {chapterName || "chapter"} Sigma Beta Club.
+            {parentName} submitted an interest form for the {chapterName || "chapter"} Sigma Beta Club.
           </Text>
-          {phone ? <Text>Phone: {phone}</Text> : null}
-          {message ? <Text>Message: {message}</Text> : null}
-          <Text>Reply to {submitterEmail} to follow up.</Text>
+          <Text>Parent/Guardian: {parentName} | Email: {parentEmail} | Phone: {parentPhone}</Text>
+          <Text>Student: {studentName} | Age: {studentAge} | Grade: {gradeLevel} | School: {studentSchool}</Text>
+          {referralSource ? <Text>Heard about us: {referralSource}</Text> : null}
+          {message ? <Text>Questions / additional information: {message}</Text> : null}
+          <Text>Reply to {parentEmail} to follow up with the parent or guardian. This is an interest submission, not a membership application.</Text>
         </Container>
       </Body>
     </Html>

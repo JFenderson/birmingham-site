@@ -1,10 +1,10 @@
 import { Html, Head, Body, Container, Heading, Text } from "@react-email/components";
 
 export function SigmaBetaInterestReceivedEmail({
-  submitterName,
+  parentName,
   chapterName,
 }: {
-  submitterName: string;
+  parentName: string;
   chapterName: string;
 }) {
   return (
@@ -14,11 +14,10 @@ export function SigmaBetaInterestReceivedEmail({
         <Container style={{ backgroundColor: "#ffffff", padding: "32px", borderRadius: "8px" }}>
           <Heading style={{ color: "#1e3a8a" }}>Thanks for Your Interest</Heading>
           <Text>
-            Hi {submitterName}, thank you for reaching out to the {chapterName || "chapter"} Sigma
-            Beta Club.
+            Hi {parentName}, thank you for your interest in the {chapterName || "chapter"} Sigma Beta Club. Your information has been received.
           </Text>
           <Text>
-            A club advisor will review your message and follow up soon.
+            An interest form does not constitute membership or acceptance. A member of our Sigma Beta Club leadership team will contact the parent or guardian about upcoming activities and the next intake cycle.
           </Text>
         </Container>
       </Body>

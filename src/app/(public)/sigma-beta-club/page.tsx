@@ -66,11 +66,13 @@ export default async function SigmaBetaClubPage() {
         <div className="mx-auto max-w-[var(--public-content-max)] px-[var(--public-gutter)]">
           <SectionHeading
             eyebrow="Get involved"
-            title="Tell us about your interest"
-            description={settings.interestFormIntro}
+            title="Interested in Sigma Beta Club?"
+            description={chapter.chapterSlug === "root"
+              ? "The Tau Sigma Chapter welcomes interest from young men and their families throughout the year. Our annual Sigma Beta Club intake period is held December through January. Complete the interest form below to join our prospective member list and receive information about upcoming meetings, activities, and the next intake cycle."
+              : settings.interestFormIntro || "Complete the interest form below to receive information about Sigma Beta Club."}
           />
           <div className="mt-8 max-w-2xl">
-            <SigmaBetaInterestForm />
+            <SigmaBetaInterestForm chapterName={chapter.chapterSlug === "root" ? "Tau Sigma Chapter" : chapter.name} />
           </div>
         </div>
       </section>

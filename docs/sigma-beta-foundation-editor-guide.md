@@ -6,7 +6,7 @@ This is a focused first-content checklist and troubleshooting reference for the 
 
 The page is chapter-scoped: it looks for content matching the current chapter's slug. Publish in this order.
 
-1. Publish a `Sigma Beta Club Settings` document for your chapter. This is required first — the page shows a neutral empty state until this document exists, is `Publicly visible`, and has a publication date that is not in the future. It must include a required `Overview`, `Mission`, `Hero image` with alt text, `Program director contact`, and `Interest form introduction`.
+1. Publish a `Sigma Beta Club Settings` document for your chapter. This is required first — the page shows a neutral empty state until this document exists, is `Publicly visible`, and has a publication date that is not in the future. It must include a required `Overview`, `Mission`, `Hero image` with alt text, and `Program director contact`. The interest form introduction is now standard year-round copy.
 2. Optionally publish one or more `Sigma Beta Club Event` documents for the same chapter. Each needs a required `Event image` with alt text.
 3. Optionally add `Advisors` directly inside the settings document. Advisor portraits are optional, but any portrait you upload needs alt text.
 4. Reload `/sigma-beta-club` for your chapter and confirm the hero, overview, mission, director contact, advisors, events, and interest form all appear as expected.
@@ -31,9 +31,9 @@ Both the Sigma Beta Club interest form and the Foundation information-request fo
 - creates a member record
 - creates an authentication user
 
-A successful submission only does two things: send a confirmation email to the submitter, and send an admin notification email to the chapter's configured recipient, if one is configured. See `docs/resend-setup.md` and the "Sigma Beta Club and Foundation form notifications" section of `docs/sanity-setup.md` for the underlying Resend setup.
+A successful Sigma Beta Club submission creates a row in `public.sigma_beta_interest_submissions` before email is attempted. This table is separate from fraternity membership intake and is viewable by authorized Supabase project operators in the Table Editor. It has RLS enabled and no `anon` or `authenticated` table grants. A failed database write displays an error and sends no email. Confirmation goes to the parent or guardian; the optional chapter notification goes to `SIGMA_BETA_ADMIN_EMAIL`. Email failure does not erase a stored row. The Foundation form remains email-only. See `docs/resend-setup.md` and the "Sigma Beta Club and Foundation form notifications" section of `docs/sanity-setup.md` for Resend setup.
 
-Each form also has a hidden honeypot field. If a bot fills it in, the form returns the same neutral success message a real visitor would see, but skips sending any email at all — no confirmation, no admin notification.
+Each form also has a hidden honeypot field. If a bot fills it in, the form returns the same neutral success message a real visitor would see, but skips storage and email.
 
 ## Donations are processed entirely outside Sanity
 
