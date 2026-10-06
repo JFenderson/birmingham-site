@@ -4,10 +4,11 @@ import { headers } from "next/headers";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sendSigmaBetaInterestNotification } from "@/lib/email/send-sigma-beta-interest-notification";
 import { getCurrentChapter } from "@/lib/tenant/get-chapter";
+import { storeSigmaBetaInterest } from "@/lib/sigma-beta/store-interest";
 import {
   sigmaBetaInterestSchema,
+  sigmaBetaReferralLabels,
   type SigmaBetaInterestInput,
-  type SigmaBetaInterestRole,
 } from "@/lib/validation/schemas";
 
 export type SigmaBetaInterestResult =
@@ -16,13 +17,7 @@ export type SigmaBetaInterestResult =
 
 export const NEUTRAL_SIGMA_BETA_INTEREST_RESULT: SigmaBetaInterestResult = {
   success: true,
-  message: "Thanks for reaching out. A Sigma Beta Club advisor will follow up soon.",
-};
-
-const SIGMA_BETA_ROLE_LABELS: Record<SigmaBetaInterestRole, string> = {
-  student: "Student",
-  parent_guardian: "Parent/Guardian",
-  other: "Other",
+  message: "Thank you for your interest in the Tau Sigma Chapter Sigma Beta Club. Your information has been received. A member of our Sigma Beta Club leadership team will contact the parent or guardian regarding upcoming activities and the next intake cycle.",
 };
 
 export const sigmaBetaInterestActionDependencies = {
@@ -30,6 +25,7 @@ export const sigmaBetaInterestActionDependencies = {
   headers,
   getCurrentChapter,
   sendSigmaBetaInterestNotification,
+  storeSigmaBetaInterest,
 };
 
 function getClientIp(headerList: Headers): string {
@@ -44,10 +40,14 @@ function getClientIp(headerList: Headers): string {
 function toSigmaBetaInterestInput(input: SigmaBetaInterestInput | FormData): unknown {
   if (input instanceof FormData) {
     return {
-      name: input.get("name"),
-      email: input.get("email"),
-      phone: input.get("phone"),
-      role: input.get("role"),
+      parentName: input.get("parentName"),
+      parentEmail: input.get("parentEmail"),
+      parentPhone: input.get("parentPhone"),
+      studentName: input.get("studentName"),
+      studentAge: input.get("studentAge"),
+      gradeLevel: input.get("gradeLevel"),
+      studentSchool: input.get("studentSchool"),
+      referralSource: input.get("referralSource"),
       message: input.get("message"),
       website: input.get("website"),
     };
@@ -99,25 +99,41 @@ export async function submitSigmaBetaInterest(
 
   const chapter = await sigmaBetaInterestActionDependencies.getCurrentChapter();
 
-  const { submitterError, adminError } =
-    await sigmaBetaInterestActionDependencies.sendSigmaBetaInterestNotification({
-      to: parsed.data.email,
-      submitterName: parsed.data.name,
-      submitterEmail: parsed.data.email,
-      chapterName: chapter.name,
-      roleLabel: SIGMA_BETA_ROLE_LABELS[parsed.data.role],
-      phone: parsed.data.phone || undefined,
-      message: parsed.data.message || undefined,
-    });
-
-  if (submitterError || adminError) {
-    console.error("[sigma-beta-interest] notification failed", {
-      submitterError,
-      adminError,
-    });
+  try {
+    await sigmaBetaInterestActionDependencies.storeSigmaBetaInterest(chapter.chapterId, parsed.data);
+  } catch (error) {
+    console.error("[sigma-beta-interest] storage failed", error);
+    return { success: false, error: "We couldn't save your interest form right now. Please try again later." };
   }
 
-  return NEUTRAL_SIGMA_BETA_INTEREST_RESULT;
+  try {
+    const { submitterError, adminError } =
+      await sigmaBetaInterestActionDependencies.sendSigmaBetaInterestNotification({
+        to: parsed.data.parentEmail,
+        parentName: parsed.data.parentName,
+        parentEmail: parsed.data.parentEmail,
+        parentPhone: parsed.data.parentPhone,
+        studentName: parsed.data.studentName,
+        studentAge: parsed.data.studentAge,
+        gradeLevel: parsed.data.gradeLevel,
+        studentSchool: parsed.data.studentSchool,
+        chapterName: chapter.chapterSlug === "root" ? "Tau Sigma Chapter" : chapter.name,
+        referralSource: parsed.data.referralSource ? sigmaBetaReferralLabels[parsed.data.referralSource] : undefined,
+        message: parsed.data.message || undefined,
+      });
+    if (submitterError || adminError) {
+      console.error("[sigma-beta-interest] notification failed", { submitterError, adminError });
+    }
+  } catch (error) {
+    console.error("[sigma-beta-interest] notification failed", error);
+  }
+
+  return chapter.chapterSlug === "root"
+    ? NEUTRAL_SIGMA_BETA_INTEREST_RESULT
+    : {
+        success: true,
+        message: `Thank you for your interest in the ${chapter.name} Sigma Beta Club. Your information has been received. A member of our Sigma Beta Club leadership team will contact the parent or guardian regarding upcoming activities and the next intake cycle.`,
+      };
 }
 
 export async function submitSigmaBetaInterestFormAction(

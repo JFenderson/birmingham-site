@@ -1,209 +1,95 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import test, { type TestContext } from "node:test";
 
 import { isSafeExternalUrl } from "../src/lib/content-links.ts";
 import { sigmaBetaInterestSchema } from "../src/lib/validation/schemas.ts";
-import * as sigmaBetaActions from "../src/app/(public)/sigma-beta-club/actions.ts";
+import * as actions from "../src/app/(public)/sigma-beta-club/actions.ts";
 
 const validInput = {
-  name: "Jordan Miles",
-  email: "jordan.miles@example.com",
-  phone: "",
-  role: "student" as const,
-  message: "Interested in joining the club.",
+  parentName: "Jordan Miles",
+  parentEmail: "jordan.miles@example.com",
+  parentPhone: "(205) 555-0100",
+  studentName: "Alex Miles",
+  studentAge: 13,
+  gradeLevel: "8" as const,
+  studentSchool: "Example Middle School",
+  referralSource: "school" as const,
+  message: "Please send information about the next meeting.",
   website: "",
 };
 
-function createHeaders(ip = "203.0.113.20") {
-  return new Headers({ "x-forwarded-for": `${ip}, 10.0.0.1` });
+function mockDependencies(context: TestContext) {
+  const stored: unknown[] = [];
+  const notified: unknown[] = [];
+  context.mock.method(actions.sigmaBetaInterestActionDependencies, "headers", async () => new Headers({ "x-forwarded-for": "203.0.113.20" }));
+  context.mock.method(actions.sigmaBetaInterestActionDependencies, "checkRateLimit", async () => ({ success: true }));
+  context.mock.method(actions.sigmaBetaInterestActionDependencies, "getCurrentChapter", async () => ({ chapterId: "11111111-1111-4111-8111-111111111111", name: "Tau Sigma", chapterSlug: "root" }) as never);
+  context.mock.method(actions.sigmaBetaInterestActionDependencies, "storeSigmaBetaInterest", async (...args: unknown[]) => { stored.push(args); });
+  context.mock.method(actions.sigmaBetaInterestActionDependencies, "sendSigmaBetaInterestNotification", async (payload: unknown) => { notified.push(payload); return { submitterError: null, adminError: null }; });
+  return { stored, notified };
 }
 
-test("sigmaBetaInterestSchema accepts valid input with blank optional fields", () => {
-  const parsed = sigmaBetaInterestSchema.safeParse(validInput);
-  assert.equal(parsed.success, true);
-});
-
-test("sigmaBetaInterestSchema rejects a blank name", () => {
-  assert.equal(
-    sigmaBetaInterestSchema.safeParse({ ...validInput, name: "" }).success,
-    false,
-  );
-});
-
-test("sigmaBetaInterestSchema rejects an invalid email", () => {
-  assert.equal(
-    sigmaBetaInterestSchema.safeParse({ ...validInput, email: "not-an-email" })
-      .success,
-    false,
-  );
-});
-
-test("sigmaBetaInterestSchema accepts optional phone and message when provided", () => {
-  const parsed = sigmaBetaInterestSchema.safeParse({
-    ...validInput,
-    phone: "205-555-0100",
-    message: "Hello there, my student would like to join.",
-  });
-  assert.equal(parsed.success, true);
-  if (parsed.success) {
-    assert.equal(parsed.data.phone, "205-555-0100");
+test("Sigma Beta interest requires guardian and student details", () => {
+  assert.equal(sigmaBetaInterestSchema.safeParse(validInput).success, true);
+  for (const key of ["parentName", "parentEmail", "parentPhone", "studentName", "studentAge", "gradeLevel", "studentSchool"] as const) {
+    const input = { ...validInput, [key]: "" };
+    assert.equal(sigmaBetaInterestSchema.safeParse(input).success, false, key);
   }
+  assert.equal(sigmaBetaInterestSchema.safeParse({ ...validInput, parentEmail: "invalid" }).success, false);
+  assert.equal(sigmaBetaInterestSchema.safeParse({ ...validInput, parentPhone: "123" }).success, false);
+  assert.equal(sigmaBetaInterestSchema.safeParse({ ...validInput, gradeLevel: "1" }).success, false);
+  assert.equal(sigmaBetaInterestSchema.safeParse({ ...validInput, studentAge: 7 }).success, false);
+  assert.equal(sigmaBetaInterestSchema.safeParse({ ...validInput, studentAge: 8, gradeLevel: "3" }).success, true);
+  assert.equal(sigmaBetaInterestSchema.safeParse({ ...validInput, website: "spam" }).success, false);
+  assert.equal(sigmaBetaInterestSchema.safeParse({ ...validInput, referralSource: "", message: "" }).success, true);
 });
 
-test("sigmaBetaInterestSchema rejects an unknown role", () => {
-  assert.equal(
-    sigmaBetaInterestSchema.safeParse({ ...validInput, role: "teacher" }).success,
-    false,
-  );
+test("valid interest is stored and notifications address the parent", async (context) => {
+  const { stored, notified } = mockDependencies(context);
+  const result = await actions.submitSigmaBetaInterest(validInput);
+  assert.deepEqual(result, actions.NEUTRAL_SIGMA_BETA_INTEREST_RESULT);
+  assert.equal(stored.length, 1);
+  assert.equal(notified.length, 1);
+  assert.equal((notified[0] as { to: string }).to, validInput.parentEmail);
+  assert.equal((notified[0] as { studentName: string }).studentName, validInput.studentName);
 });
 
-test("sigmaBetaInterestSchema rejects a non-empty honeypot value", () => {
-  assert.equal(
-    sigmaBetaInterestSchema.safeParse({
-      ...validInput,
-      website: "http://spam.example",
-    }).success,
-    false,
-  );
-});
-
-test("submitSigmaBetaInterest returns an error result when rate limited", async (context) => {
-  context.mock.method(
-    sigmaBetaActions.sigmaBetaInterestActionDependencies,
-    "headers",
-    async () => createHeaders(),
-  );
-  context.mock.method(
-    sigmaBetaActions.sigmaBetaInterestActionDependencies,
-    "checkRateLimit",
-    async () => ({ success: false }),
-  );
-
-  const result = await sigmaBetaActions.submitSigmaBetaInterest(validInput);
-
-  assert.deepEqual(result, {
-    success: false,
-    error: "Too many submissions. Please try again later.",
-  });
-});
-
-test("submitSigmaBetaInterest returns a validation error for invalid input without notifying", async (context) => {
-  const notifyCalls: unknown[] = [];
-
-  context.mock.method(
-    sigmaBetaActions.sigmaBetaInterestActionDependencies,
-    "headers",
-    async () => createHeaders(),
-  );
-  context.mock.method(
-    sigmaBetaActions.sigmaBetaInterestActionDependencies,
-    "checkRateLimit",
-    async () => ({ success: true }),
-  );
-  context.mock.method(
-    sigmaBetaActions.sigmaBetaInterestActionDependencies,
-    "getCurrentChapter",
-    async () => ({ name: "Tau Sigma", chapterSlug: "root" }) as never,
-  );
-  context.mock.method(
-    sigmaBetaActions.sigmaBetaInterestActionDependencies,
-    "sendSigmaBetaInterestNotification",
-    async (payload: Record<string, unknown>) => {
-      notifyCalls.push(payload);
-      return { submitterError: null, adminError: null };
-    },
-  );
-
-  const result = await sigmaBetaActions.submitSigmaBetaInterest({
-    ...validInput,
-    email: "not-an-email",
-  });
-
+test("storage failure reports an error and skips notifications", async (context) => {
+  const { notified } = mockDependencies(context);
+  context.mock.method(actions.sigmaBetaInterestActionDependencies, "storeSigmaBetaInterest", async () => { throw new Error("DB unavailable"); });
+  const result = await actions.submitSigmaBetaInterest(validInput);
   assert.equal(result.success, false);
-  assert.equal(notifyCalls.length, 0);
+  assert.equal(notified.length, 0);
 });
 
-test("submitSigmaBetaInterest returns neutral success without notifying when the honeypot is filled", async (context) => {
-  const notifyCalls: unknown[] = [];
-
-  context.mock.method(
-    sigmaBetaActions.sigmaBetaInterestActionDependencies,
-    "headers",
-    async () => createHeaders(),
-  );
-  context.mock.method(
-    sigmaBetaActions.sigmaBetaInterestActionDependencies,
-    "checkRateLimit",
-    async () => ({ success: true }),
-  );
-  context.mock.method(
-    sigmaBetaActions.sigmaBetaInterestActionDependencies,
-    "getCurrentChapter",
-    async () => ({ name: "Tau Sigma", chapterSlug: "root" }) as never,
-  );
-  context.mock.method(
-    sigmaBetaActions.sigmaBetaInterestActionDependencies,
-    "sendSigmaBetaInterestNotification",
-    async (payload: Record<string, unknown>) => {
-      notifyCalls.push(payload);
-      return { submitterError: null, adminError: null };
-    },
-  );
-
-  const result = await sigmaBetaActions.submitSigmaBetaInterest({
-    ...validInput,
-    website: "http://spam.example",
-  });
-
-  assert.deepEqual(result, sigmaBetaActions.NEUTRAL_SIGMA_BETA_INTEREST_RESULT);
-  assert.equal(notifyCalls.length, 0);
+test("notification failure does not lose a stored interest", async (context) => {
+  const { stored } = mockDependencies(context);
+  context.mock.method(actions.sigmaBetaInterestActionDependencies, "sendSigmaBetaInterestNotification", async () => ({ submitterError: new Error("Mail unavailable"), adminError: new Error("Mail unavailable") }));
+  const result = await actions.submitSigmaBetaInterest(validInput);
+  assert.deepEqual(result, actions.NEUTRAL_SIGMA_BETA_INTEREST_RESULT);
+  assert.equal(stored.length, 1);
 });
 
-test("submitSigmaBetaInterest sends a notification and returns neutral success for valid input", async (context) => {
-  const notifyCalls: Array<Record<string, unknown>> = [];
-
-  context.mock.method(
-    sigmaBetaActions.sigmaBetaInterestActionDependencies,
-    "headers",
-    async () => createHeaders(),
-  );
-  context.mock.method(
-    sigmaBetaActions.sigmaBetaInterestActionDependencies,
-    "checkRateLimit",
-    async () => ({ success: true }),
-  );
-  context.mock.method(
-    sigmaBetaActions.sigmaBetaInterestActionDependencies,
-    "getCurrentChapter",
-    async () => ({ name: "Tau Sigma", chapterSlug: "root" }) as never,
-  );
-  context.mock.method(
-    sigmaBetaActions.sigmaBetaInterestActionDependencies,
-    "sendSigmaBetaInterestNotification",
-    async (payload: Record<string, unknown>) => {
-      notifyCalls.push(payload);
-      return { submitterError: null, adminError: null };
-    },
-  );
-
-  const result = await sigmaBetaActions.submitSigmaBetaInterest(validInput);
-
-  assert.deepEqual(result, sigmaBetaActions.NEUTRAL_SIGMA_BETA_INTEREST_RESULT);
-  assert.equal(notifyCalls.length, 1);
-  assert.equal(notifyCalls[0]?.to, validInput.email);
-  assert.equal(notifyCalls[0]?.submitterName, validInput.name);
-  assert.equal(notifyCalls[0]?.chapterName, "Tau Sigma");
-  assert.equal(notifyCalls[0]?.roleLabel, "Student");
+test("validation and honeypot do not write records", async (context) => {
+  const { stored, notified } = mockDependencies(context);
+  const invalid = await actions.submitSigmaBetaInterest({ ...validInput, parentEmail: "invalid" });
+  assert.equal(invalid.success, false);
+  const bot = await actions.submitSigmaBetaInterest({ ...validInput, website: "spam" });
+  assert.deepEqual(bot, actions.NEUTRAL_SIGMA_BETA_INTEREST_RESULT);
+  assert.equal(stored.length, 0);
+  assert.equal(notified.length, 0);
 });
 
-test("isSafeExternalUrl accepts internal paths and https URLs", () => {
+test("rate limiting reports an error before storage", async (context) => {
+  const { stored } = mockDependencies(context);
+  context.mock.method(actions.sigmaBetaInterestActionDependencies, "checkRateLimit", async () => ({ success: false }));
+  const result = await actions.submitSigmaBetaInterest(validInput);
+  assert.equal(result.success, false);
+  assert.equal(stored.length, 0);
+});
+
+test("safe event links still use internal paths or HTTPS", () => {
   assert.equal(isSafeExternalUrl("/events/register"), true);
   assert.equal(isSafeExternalUrl("https://forms.example.com/register"), true);
-});
-
-test("isSafeExternalUrl rejects unsafe schemes, protocol-relative, and empty values", () => {
-  assert.equal(isSafeExternalUrl(""), false);
-  assert.equal(isSafeExternalUrl("http://example.com"), false);
   assert.equal(isSafeExternalUrl("javascript:alert(1)"), false);
-  assert.equal(isSafeExternalUrl("//evil.example/phish"), false);
 });

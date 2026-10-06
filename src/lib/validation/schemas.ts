@@ -195,19 +195,42 @@ export const memberRoleAssignmentSchema = z.object({
  * non-empty value fails validation and the Server Action treats it as a bot
  * submission before doing any work.
  */
-export const sigmaBetaInterestRoleSchema = z.enum([
-  "student",
-  "parent_guardian",
+export const sigmaBetaGradeSchema = z.enum([
+  "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+]);
+
+export const sigmaBetaReferralSchema = z.enum([
+  "chapter_website",
+  "social_media",
+  "current_member",
+  "sigma_member",
+  "school",
+  "community_event",
+  "friend_family",
   "other",
 ]);
-export type SigmaBetaInterestRole = z.infer<typeof sigmaBetaInterestRoleSchema>;
+
+export const sigmaBetaReferralLabels: Record<z.infer<typeof sigmaBetaReferralSchema>, string> = {
+  chapter_website: "Chapter website",
+  social_media: "Social media",
+  current_member: "Current Sigma Beta Club member",
+  sigma_member: "Phi Beta Sigma member",
+  school: "School",
+  community_event: "Community event",
+  friend_family: "Friend or family member",
+  other: "Other",
+};
 
 export const sigmaBetaInterestSchema = z.object({
-  name: plainPublicText.min(1).max(200),
-  email: z.string().trim().email().max(254),
-  phone: z.string().trim().max(20).optional().or(z.literal("")),
-  role: sigmaBetaInterestRoleSchema,
-  message: z.string().trim().max(2000).optional().or(z.literal("")),
+  parentName: plainPublicText.min(1).max(200),
+  parentEmail: z.string().trim().email().max(254),
+  parentPhone: z.string().trim().regex(/^\+?1?[\s.-]?(?:\(\d{3}\)|\d{3})[\s.-]?\d{3}[\s.-]?\d{4}$/, "Enter a valid U.S. phone number."),
+  studentName: plainPublicText.min(1).max(200),
+  studentAge: z.coerce.number<number>().int().min(8).max(18),
+  gradeLevel: sigmaBetaGradeSchema,
+  studentSchool: plainPublicText.min(1).max(200),
+  referralSource: z.union([sigmaBetaReferralSchema, z.literal("")]).optional(),
+  message: plainPublicText.max(2000).optional().or(z.literal("")),
   website: z.string().max(0).optional().or(z.literal("")),
 });
 export type SigmaBetaInterestInput = z.infer<typeof sigmaBetaInterestSchema>;

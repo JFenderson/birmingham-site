@@ -7,11 +7,15 @@ import {
 
 export type SigmaBetaInterestNotificationParams = {
   to: string;
-  submitterName: string;
-  submitterEmail: string;
+  parentName: string;
+  parentEmail: string;
+  parentPhone: string;
+  studentName: string;
+  studentAge: number;
+  gradeLevel: string;
+  studentSchool: string;
   chapterName: string;
-  roleLabel: string;
-  phone?: string | undefined;
+  referralSource?: string | undefined;
   message?: string | undefined;
 };
 
@@ -52,28 +56,30 @@ function toPlainTextLine(value: string) {
 }
 
 function getSubmitterContent(
-  params: Pick<SigmaBetaInterestNotificationParams, "submitterName" | "chapterName">,
+  params: Pick<SigmaBetaInterestNotificationParams, "parentName" | "chapterName">,
 ) {
-  const submitterName = toPlainTextLine(params.submitterName);
+  const parentName = toPlainTextLine(params.parentName);
   const chapterName = toPlainTextLine(params.chapterName) || "the chapter";
 
   return {
     subject: "Thanks for Your Interest — Sigma Beta Club",
     text: [
-      `Hi ${submitterName},`,
+      `Hi ${parentName},`,
       "",
-      `Thank you for reaching out to the ${chapterName} Sigma Beta Club.`,
-      "A club advisor will follow up soon.",
+      `Thank you for your interest in the ${chapterName} Sigma Beta Club. Your information has been received.`,
+      "An interest form does not constitute membership or acceptance. A member of our Sigma Beta Club leadership team will contact the parent or guardian about upcoming activities and the next intake cycle.",
     ].join("\n"),
   };
 }
 
 function getAdminContent(params: SigmaBetaInterestNotificationParams) {
-  const submitterName = toPlainTextLine(params.submitterName);
-  const submitterEmail = toPlainTextLine(params.submitterEmail);
+  const parentName = toPlainTextLine(params.parentName);
+  const parentEmail = toPlainTextLine(params.parentEmail);
+  const parentPhone = toPlainTextLine(params.parentPhone);
+  const studentName = toPlainTextLine(params.studentName);
+  const studentSchool = toPlainTextLine(params.studentSchool);
   const chapterName = toPlainTextLine(params.chapterName) || "the chapter";
-  const roleLabel = toPlainTextLine(params.roleLabel);
-  const phone = params.phone ? toPlainTextLine(params.phone) : "";
+  const referralSource = params.referralSource ? toPlainTextLine(params.referralSource) : "";
   const message = params.message ? toPlainTextLine(params.message) : "";
 
   return {
@@ -82,13 +88,17 @@ function getAdminContent(params: SigmaBetaInterestNotificationParams) {
       "New Sigma Beta Club interest submission",
       "",
       `Chapter: ${chapterName}`,
-      `Name: ${submitterName}`,
-      `Role: ${roleLabel}`,
-      `Email: ${submitterEmail}`,
-      ...(phone ? [`Phone: ${phone}`] : []),
-      ...(message ? ["", `Message: ${message}`] : []),
+      `Parent/Guardian: ${parentName}`,
+      `Email: ${parentEmail}`,
+      `Phone: ${parentPhone}`,
+      `Student: ${studentName}`,
+      `Age: ${params.studentAge}`,
+      `Grade: ${params.gradeLevel}`,
+      `School: ${studentSchool}`,
+      ...(referralSource ? [`Heard about us: ${referralSource}`] : []),
+      ...(message ? ["", `Questions / additional information: ${message}`] : []),
       "",
-      "Follow up with the submitter directly.",
+      "Follow up with the parent or guardian. This is an interest submission, not a membership application.",
     ].join("\n"),
   };
 }
@@ -135,7 +145,7 @@ export async function sendSigmaBetaInterestNotification(
       subject: submitterContent.subject,
       text: submitterContent.text,
       react: SigmaBetaInterestReceivedEmail({
-        submitterName: params.submitterName,
+        parentName: params.parentName,
         chapterName: params.chapterName,
       }),
     });
@@ -157,11 +167,15 @@ export async function sendSigmaBetaInterestNotification(
       subject: adminContent.subject,
       text: adminContent.text,
       react: SigmaBetaInterestAdminNotificationEmail({
-        submitterName: params.submitterName,
-        submitterEmail: params.submitterEmail,
+        parentName: params.parentName,
+        parentEmail: params.parentEmail,
+        parentPhone: params.parentPhone,
+        studentName: params.studentName,
+        studentAge: params.studentAge,
+        gradeLevel: params.gradeLevel,
+        studentSchool: params.studentSchool,
         chapterName: params.chapterName,
-        roleLabel: params.roleLabel,
-        phone: params.phone,
+        referralSource: params.referralSource,
         message: params.message,
       }),
     });

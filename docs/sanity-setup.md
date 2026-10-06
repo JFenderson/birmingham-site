@@ -56,7 +56,7 @@ The public interest form on `/sigma-beta-club` and the public information-reques
 - `SIGMA_BETA_ADMIN_EMAIL`: chapter recipient for Sigma Beta Club interest-form admin notifications.
 - `FOUNDATION_ADMIN_EMAIL`: chapter recipient for Foundation information-request admin notifications.
 
-Both forms reuse the existing `RESEND_API_KEY` and `EMAIL_FROM` values documented in `docs/resend-setup.md`. If `SIGMA_BETA_ADMIN_EMAIL` or `FOUNDATION_ADMIN_EMAIL` is not set, the corresponding admin notification is skipped without error; the submitter's own confirmation email still sends. Neither form ever creates a Supabase account, member record, or authentication user.
+Both forms reuse the existing `RESEND_API_KEY` and `EMAIL_FROM` values documented in `docs/resend-setup.md`. If `SIGMA_BETA_ADMIN_EMAIL` or `FOUNDATION_ADMIN_EMAIL` is not set, the corresponding admin notification is skipped without error; the submitter's own confirmation email still sends. Neither form creates a Supabase account, member record, or authentication user. Sigma Beta Club submissions are stored in `public.sigma_beta_interest_submissions` using the existing server-only Supabase service role key. Apply migration `20261006163819_sigma_beta_interest_submissions.sql` before deploying the form.
 
 Donations on `/foundation` are not part of this email setup. The `Donation URL` field in `Tau Sigma Charity Foundation Settings` only stores a link to the chapter's existing approved external or Square donation destination; Sanity and this codebase never process payments.
 

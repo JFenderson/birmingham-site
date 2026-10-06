@@ -107,11 +107,10 @@ export const sigmaBetaSettings = defineType({
     }),
     defineField({
       name: "interestFormIntro",
-      title: "Interest form introduction",
+      title: "Legacy interest form introduction",
       type: "text",
       rows: 4,
-      description: "Public introduction shown above the Sigma Beta Club interest form.",
-      validation: (rule) => rule.required(),
+      description: "Shown above the form on collegiate chapter sites. The Tau Sigma site uses standard year-round interest copy; its prior value is kept for reference.",
     }),
   ],
 });

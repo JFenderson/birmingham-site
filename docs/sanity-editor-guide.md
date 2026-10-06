@@ -201,7 +201,7 @@ There is normally one `Sigma Beta Club Settings` document per chapter.
 6. Upload the required `Hero image` and add alt text.
 7. Fill in `Program director contact`: required `Director name or label`, required `Director email`, and optional `Director phone`.
 8. Optionally add one or more `Advisors`. For each advisor, add the required `Name` and `Role`, an optional `Bio`, and an optional `Portrait` with alt text if you upload one.
-9. Add the required `Interest form introduction` shown above the public interest form.
+9. The form introduction uses standard year-round copy. The legacy introduction field is optional and retained for reference.
 10. When ready, turn on `Publicly visible`.
 11. Set `Publication date`.
 12. Publish and verify the result on `/sigma-beta-club`.
@@ -224,9 +224,9 @@ There is normally one `Sigma Beta Club Settings` document per chapter.
 
 ### Sigma Beta Club interest form
 
-The public interest form on `/sigma-beta-club` collects name, email, optional phone, role (student, parent, or guardian), and message. It is rate-limited and validated before it sends anything.
+The public interest form on `/sigma-beta-club` collects parent or guardian contact details, student name, age, grade, and school, plus optional referral source and questions. It is open year-round, rate-limited, and validated before storage.
 
-A successful submission never creates a Supabase account, member record, or authentication user. It only sends a confirmation email to the submitter and, if `SIGMA_BETA_ADMIN_EMAIL` is configured, an admin notification email. If that environment variable is not set, the admin notification is silently skipped and the submitter still receives their confirmation.
+A successful submission creates a private row in `public.sigma_beta_interest_submissions`, not a Supabase account, fraternity intake record, or authentication user. Authorized Supabase project operators can review the rows in the Table Editor. A confirmation email goes to the parent or guardian, and an admin notification is sent if `SIGMA_BETA_ADMIN_EMAIL` is configured. Database storage remains successful even if email delivery fails.
 
 The form includes a hidden honeypot field. If it is filled in (a bot behavior), the form returns the same neutral success message a real submitter would see, but no confirmation or admin email is sent.
 
