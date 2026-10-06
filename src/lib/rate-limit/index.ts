@@ -1,6 +1,6 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import { checkFixedWindowLimit, isScriptPermissionError } from "./fixed-window";
+import { checkDatabaseRateLimit, isScriptPermissionError } from "./database";
 
 interface RateLimitOptions {
   limit: number;
@@ -55,8 +55,7 @@ export async function checkRateLimit(
     if (isScriptPermissionError(err)) {
       try {
         return {
-          success: await checkFixedWindowLimit(
-            redis,
+          success: await checkDatabaseRateLimit(
             key,
             opts.limit,
             opts.windowMs,
@@ -64,7 +63,7 @@ export async function checkRateLimit(
           ),
         };
       } catch (fallbackError) {
-        console.error("[rate-limit] fixed-window fallback unavailable", fallbackError);
+        console.error("[rate-limit] database fallback unavailable", fallbackError);
         return { success: opts.failOpen === true };
       }
     }
