@@ -41,7 +41,7 @@ export function SigmaBetaInterestForm({ chapterName }: { chapterName: string }) 
           </div>
           <div className="space-y-2">
             <label htmlFor="parentPhone" className={labelClass}>Parent/Guardian Phone Number <span aria-hidden="true">*</span></label>
-            <input id="parentPhone" name="parentPhone" type="tel" autoComplete="tel" required maxLength={20} pattern="[+]?1?[ .-]?(\([0-9]{3}\)|[0-9]{3})[ .-]?[0-9]{3}[ .-]?[0-9]{4}" title="Enter a 10-digit U.S. phone number, such as (205) 555-0100." className={fieldClass} />
+            <input id="parentPhone" name="parentPhone" type="tel" autoComplete="tel" required maxLength={20} pattern="[+]?1?[ .\-]?(\([0-9]{3}\)|[0-9]{3})[ .\-]?[0-9]{3}[ .\-]?[0-9]{4}" title="Enter a 10-digit U.S. phone number, such as (205) 555-0100." className={fieldClass} />
           </div>
         </div>
       </fieldset>
