@@ -62,7 +62,7 @@ export default async function SigmaBetaClubPage() {
         </div>
       </section>
 
-      <section className="bg-[var(--public-surface)] py-16 sm:py-20">
+      <section id="interest-form" tabIndex={-1} className="scroll-mt-32 bg-[var(--public-surface)] py-16 sm:py-20">
         <div className="mx-auto max-w-[var(--public-content-max)] px-[var(--public-gutter)]">
           <SectionHeading
             eyebrow="Get involved"

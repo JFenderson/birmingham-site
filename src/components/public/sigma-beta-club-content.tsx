@@ -1,3 +1,4 @@
+import { ArrowDown } from "lucide-react";
 import { isSafeExternalUrl } from "@/lib/content-links";
 import { getSanityImageUrl } from "@/sanity/image-url";
 import type {
@@ -57,8 +58,17 @@ export function SigmaBetaHero({ chapterName, overview, heroImage }: SigmaBetaHer
           as="h1"
           eyebrow="Sigma Beta Club"
           title={`${chapterName} Sigma Beta Club`}
-          description={overview}
         />
+        <a
+          href="#interest-form"
+          className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-[var(--public-blue)] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[var(--public-blue-deep)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--public-focus)]"
+        >
+          Go to Interest Form
+          <ArrowDown aria-hidden="true" className="h-4 w-4" />
+        </a>
+        <p className="mt-6 max-w-3xl text-base leading-7 text-[var(--public-muted)] sm:text-lg">
+          {overview}
+        </p>
       </div>
       {heroImageUrl && heroAlt ? (
         // eslint-disable-next-line @next/next/no-img-element
