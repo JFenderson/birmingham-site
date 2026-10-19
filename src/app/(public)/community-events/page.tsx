@@ -9,7 +9,7 @@ const COMMUNITY_EVENTS = [
     description: "A signature chapter gathering that celebrates fellowship, legacy, and service in the Birmingham community.",
   },
   {
-    href: "/community-events/shoes-for-kids",
+    href: "/shoes-for-kids",
     title: "Shoes for Kids",
     description: "Annual outreach focused on helping students start the school year with confidence and support.",
   },

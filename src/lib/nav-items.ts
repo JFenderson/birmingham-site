@@ -17,7 +17,7 @@ export const NAV_ITEMS = [
     label: "Events",
     children: [
       { href: "/community-events/bhm-blue-and-white-weekend", label: "BHM Blue and White Weekend" },
-      { href: "/community-events/shoes-for-kids", label: "Shoes for Kids" },
+      { href: "/shoes-for-kids", label: "Shoes for Kids" },
       { href: "/community-events/toys-for-kids", label: "Toys for Kids" },
       { href: "/community-events/scholarship", label: "Scholarship" },
     ],

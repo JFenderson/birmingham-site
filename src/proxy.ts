@@ -34,6 +34,9 @@ export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(TENANT_ID_HEADER, tenant.chapterId);
   requestHeaders.set(TENANT_SLUG_HEADER, tenant.chapterSlug);
+  // This internal marker is overwritten on every request and lets the shared
+  // admin layout apply the narrower Shoes for Kids staff gate to this route.
+  requestHeaders.set("x-shoe-admin-route", request.nextUrl.pathname.startsWith("/admin/shoes-for-kids") ? "1" : "0");
 
   let response = NextResponse.next({ request: { headers: requestHeaders } });
 
