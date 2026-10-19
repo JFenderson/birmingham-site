@@ -151,17 +151,16 @@ export function ShoesPortal(initial: PortalData) {
           <p className="mt-5 text-xl font-semibold text-blue-100">Every Child Deserves a Great Pair of Shoes.</p>
           <p className="mt-5 max-w-3xl text-base leading-8 text-blue-50">Since 1948, Tau Sigma has worked to make a difference in the lives of children through Shoes for Kids. Help us continue that tradition by adopting a child&apos;s shoe request, purchasing a pair in a needed size, or making a monetary donation.</p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a href="#adopt" onClick={() => switchMode("requests")} className="rounded-full bg-white px-5 py-3 font-bold text-[#103777]">Adopt a Child&apos;s Request</a>
-            <a href="#adopt" onClick={() => switchMode("sizes")} className="rounded-full border border-white/70 px-5 py-3 font-bold text-white">Choose a Shoe Size</a>
-            <a href="#donate" className="rounded-full border border-white/70 px-5 py-3 font-bold text-white">Make a Donation</a>
+            {campaign?.status === "published" ? <><a href="#adopt" onClick={() => switchMode("requests")} className="rounded-full bg-white px-5 py-3 font-bold text-[#103777]">Adopt a Child&apos;s Request</a><a href="#adopt" onClick={() => switchMode("sizes")} className="rounded-full border border-white/70 px-5 py-3 font-bold text-white">Choose a Shoe Size</a></> : null}
+            <a href="#donate" className={campaign?.status === "published" ? "rounded-full border border-white/70 px-5 py-3 font-bold text-white" : "rounded-full bg-white px-5 py-3 font-bold text-[#103777]"}>Make a Donation</a>
           </div>
         </div>
       </section>
       <div className="mx-auto max-w-6xl space-y-16 px-5 py-12 sm:py-16">
         {data.error ? <section className="rounded-3xl border border-amber-200 bg-amber-50 p-7" role="alert"><h2 className="text-2xl font-bold">Campaign data unavailable</h2><p className="mt-2">{data.error} Please try again later.</p></section> : !campaign || campaign.status !== "published" ? (
           <section className="rounded-3xl border border-blue-100 bg-blue-50 p-7" aria-live="polite">
-            <h2 className="text-2xl font-bold text-[#103777]">Shoe adoption is not open yet</h2>
-            <p className="mt-2 leading-7 text-slate-700">The shoe request list is being prepared. {campaign?.zeffyUrl ? "You can support Shoes for Kids now with a donation through Zeffy." : "Please check back when Tau Sigma opens adoption."}</p>
+            <h2 className="text-2xl font-bold text-[#103777]">{campaign?.zeffyUrl ? "Shoes for Kids fundraising is active" : "Shoe adoption is not open yet"}</h2>
+            <p className="mt-2 leading-7 text-slate-700">{campaign?.zeffyUrl ? "The Zeffy donation campaign is accepting gifts now. Shoe adoption will open when the request list is ready." : "The shoe request list is being prepared. Please check back when Tau Sigma opens adoption."}</p>
           </section>
         ) : (
           <>
@@ -214,11 +213,11 @@ export function ShoesPortal(initial: PortalData) {
                 <label className="text-sm font-semibold">Phone (optional) <input type="tel" name="phone" className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-3" /></label>
                 <label className="text-sm font-semibold">Sponsorship type <select value={sponsorType} onChange={(e) => setSponsorType(e.target.value as "individual" | "organization")} className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-3"><option value="individual">Individual</option><option value="organization">Organization or group</option></select></label>
                 {sponsorType === "organization" ? <label className="text-sm font-semibold sm:col-span-2">Organization name <input required name="organizationName" maxLength={160} className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-3" /></label> : null}
-                <label className="text-sm font-semibold sm:col-span-2">Delivery method <select name="deliveryMethod" className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-3"><option value="dropoff">Deliver to confirmed drop-off location</option><option value="coordinator">Coordinate handoff with committee</option></select></label>
+                {campaign.dropoffLocation ? <label className="text-sm font-semibold sm:col-span-2">Delivery method <select name="deliveryMethod" className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-3"><option value="dropoff">Deliver to confirmed drop-off location</option><option value="coordinator">Coordinate handoff with committee</option></select></label> : <div className="sm:col-span-2"><input type="hidden" name="deliveryMethod" value="coordinator" /><p className="font-semibold">Delivery: committee-coordinated handoff</p><p className="mt-1 text-sm text-slate-600">A program team member will contact you with handoff details after you reserve.</p></div>}
                 <div className="space-y-3 text-sm sm:col-span-2">
                   <p><strong>Delivery deadline:</strong> {deadline(campaign.physicalDeadline)} Central Time. Each reservation may expire earlier under the seven-day reservation window.</p>
-                  <p>Shoes must be new and match the selected size, width, and style. Used shoes are not accepted. Original packaging is preferred.</p>
-                  {campaign.dropoffLocation ? <p><strong>Confirmed drop-off:</strong> {campaign.dropoffLocation}{campaign.dropoffHours ? ` · ${campaign.dropoffHours}` : ""}</p> : <p>A coordinator will provide a confirmed drop-off location. No unconfirmed address is displayed.</p>}
+                  <p>Shoes must be new athletic shoes and match the selected size and width. Kid-friendly styles are encouraged. Used shoes are not accepted. Original packaging is preferred.</p>
+                  {campaign.dropoffLocation ? <p><strong>Confirmed drop-off:</strong> {campaign.dropoffLocation}{campaign.dropoffHours ? ` · ${campaign.dropoffHours}` : ""}</p> : <p>The committee will arrange the handoff with you. Please wait for those details before delivering shoes.</p>}
                   <label className="flex gap-2"><input required type="checkbox" name="deliveryAgreement" /> I agree to the shoe and delivery requirements.</label>
                   <label className="flex gap-2"><input required type="checkbox" name="transactionalConsent" /> I agree to receive communications about this reservation.</label>
                   <label className="flex gap-2"><input type="checkbox" name="recognitionConsent" /> My name or organization may be recognized in campaign acknowledgments.</label>

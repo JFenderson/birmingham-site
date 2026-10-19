@@ -5,7 +5,7 @@ import { getTenantContext } from "@/lib/tenant/resolve-chapter";
 import { checkDatabaseRateLimit } from "@/lib/rate-limit/database";
 import { reservationSchema } from "@/lib/shoes/model";
 import { createShoeReservation } from "@/lib/shoes/store";
-import { sendShoeConfirmation } from "@/lib/shoes/notifications";
+import { sendShoeReservationNotifications } from "@/lib/shoes/notifications";
 
 export async function reserveShoes(input: unknown): Promise<
   | { success: true; reference: string; token: string; expiresAt: string; checkInCode: string; emailSent: boolean }
@@ -25,9 +25,11 @@ export async function reserveShoes(input: unknown): Promise<
   }
   try {
     const reservation = await createShoeReservation(tenant.chapterId, parsed.data);
-    const emailSent = await sendShoeConfirmation({
+    const emailSent = await sendShoeReservationNotifications({
       to: parsed.data.email, name: parsed.data.name, reference: reservation.reference,
       token: reservation.token, expiresAt: reservation.expiresAt,
+      phone: parsed.data.phone, pairCount: parsed.data.selections.reduce((sum, selection) => sum + selection.quantity, 0),
+      deliveryMethod: parsed.data.deliveryMethod,
     });
     return { success: true, ...reservation, emailSent };
   } catch (error) {
