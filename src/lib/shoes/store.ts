@@ -41,6 +41,8 @@ export async function getPublicShoePortal(chapterId: string) {
       dropoffHours: null,
       dropoffContact: null,
       dropoffInstructions: null,
+      zeffyUrl: campaign.status === "draft" ? campaign.zeffyUrl : null,
+      zeffyEmbedUrl: campaign.status === "draft" ? campaign.zeffyEmbedUrl : null,
       showDonationTotal: false,
     },
     requests: [], inventoryGroups: [], progress: null,
