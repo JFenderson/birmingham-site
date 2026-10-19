@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { PublicCampaign, PublicInventoryGroup, PublicProgress, PublicShoeRequest, ShoeReservationInput } from "./model";
+import { shoeGroupKey, type PublicCampaign, type PublicInventoryGroup, type PublicProgress, type PublicShoeRequest, type ShoeReservationInput } from "./model";
 
 // The generated database types are updated after the migration is applied.
 // Keep new server-only tables out of the browser client in the meantime.
@@ -48,25 +48,25 @@ export async function getPublicShoePortal(chapterId: string) {
     requests: [], inventoryGroups: [], progress: null,
   };
   const [all, donations] = await Promise.all([
-    fetchShoeRows(database, "shoe_requests", "id,public_ref,size_system,shoe_size,width,shoe_type,status,reserved_until,received_at,purchased_at", campaign.id),
+    fetchShoeRows(database, "shoe_requests", "id,public_ref,grade_level,gender,size_system,shoe_size,width,shoe_type,status,reserved_until,received_at,purchased_at", campaign.id),
     fetchShoeRows(database, "shoe_donations", "amount_cents,refunded_cents,payment_status", campaign.id),
   ]);
   const currentRequests = all.filter((row: { status: string }) => row.status !== "cancelled");
   const now = Date.now();
   const requests: PublicShoeRequest[] = currentRequests.filter((row: { status: string; reserved_until: string | null }) =>
     row.status === "available" || (row.status === "reserved" && row.reserved_until && Date.parse(row.reserved_until) <= now)
-  ).map((row: { id: string; public_ref: string; size_system: string; shoe_size: string; width: string; shoe_type: string }) => ({
-    id: row.id, publicRef: row.public_ref, sizeSystem: row.size_system,
+  ).map((row: { id: string; public_ref: string; grade_level: string | null; gender: string | null; size_system: string; shoe_size: string; width: string; shoe_type: string }) => ({
+    id: row.id, publicRef: row.public_ref, gradeLevel: row.grade_level, gender: row.gender, sizeSystem: row.size_system,
     shoeSize: row.shoe_size, width: row.width, shoeType: row.shoe_type,
   }));
   const inventory = new Map<string, PublicInventoryGroup>();
   const availableIds = new Set(requests.map((request) => request.id));
   for (const row of currentRequests) {
-    const key = `${row.size_system}|${row.shoe_size}|${row.width}|${row.shoe_type}`;
+    const key = shoeGroupKey({ gradeLevel: row.grade_level, gender: row.gender, sizeSystem: row.size_system, shoeSize: row.shoe_size, width: row.width, shoeType: row.shoe_type });
     const existing = inventory.get(key);
     if (existing) { existing.needed++; if (availableIds.has(row.id)) existing.count++; }
     else inventory.set(key, { key, request: {
-      id: row.id, publicRef: row.public_ref, sizeSystem: row.size_system,
+      id: row.id, publicRef: row.public_ref, gradeLevel: row.grade_level, gender: row.gender, sizeSystem: row.size_system,
       shoeSize: row.shoe_size, width: row.width, shoeType: row.shoe_type,
     }, count: availableIds.has(row.id) ? 1 : 0, needed: 1 });
   }

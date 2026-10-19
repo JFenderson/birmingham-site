@@ -1,10 +1,12 @@
 import { inflateRawSync } from "node:zlib";
 import { z } from "zod";
-import { sizeSystems, widths } from "./model";
+import { genders, gradeLevels, sizeSystems, widths } from "./model";
 
 export const importRowSchema = z.object({
   externalRef: z.string().trim().min(1).max(120),
   schoolCode: z.string().trim().min(1).max(40).regex(/^[A-Za-z0-9_-]+$/, "Use a short school code without spaces."),
+  gradeLevel: z.enum(gradeLevels).nullable().optional(),
+  gender: z.enum(genders).nullable().optional(),
   sizeSystem: z.enum(sizeSystems),
   shoeSize: z.string().trim().regex(/^(?:[1-9]|1[0-6])(?:\.5)?$/, "Use a numeric US shoe size, such as 4 or 4.5."),
   width: z.enum(widths),
@@ -110,7 +112,7 @@ export function xlsxRecords(buffer: Buffer): string[][] {
 export function parseShoeImport(records: string[][]): { rows: ShoeImportRow[]; errors: string[] } {
   if (records.length < 2) return { rows: [], errors: ["The file needs a header and at least one request."] };
   const headers = (records[0] ?? []).map((value) => value.trim().toLowerCase().replace(/[^a-z0-9]/g, ""));
-  const columns = ["externalrequestreference","schoolcode","shoesizesystem","shoesize","shoewidth","shoetype","quantity","optionalapprovedpurchasenotes"];
+  const columns = ["externalrequestreference","schoolcode","shoesizesystem","shoesize","shoewidth","shoetype","quantity","optionalapprovedpurchasenotes","gradelevel","gender"];
   const indices = columns.map((name) => headers.indexOf(name));
   if (indices.slice(0, 7).some((index) => index < 0)) return { rows: [], errors: ["Required columns: External Request Reference, School Code, Shoe Size System, Shoe Size, Shoe Width, Shoe Type, Quantity."] };
   const rows: ShoeImportRow[] = [], errors: string[] = [], seen = new Set<string>();
@@ -122,9 +124,13 @@ export function parseShoeImport(records: string[][]): { rows: ShoeImportRow[]; e
     const system = (values[2] ?? "").toLowerCase().replace(/[\s_]+/g, "-");
     const width = (values[4] ?? "").toLowerCase().replace(/[\s_]+/g, "-");
     const size = (values[3] ?? "").replace(/^(toddler|little kid|little-kid|youth|adult)\s*/i, "");
+    const gradeLevel = gradeLevels.find((grade) => grade.toLowerCase() === values[8]?.toLowerCase()) ?? values[8] ?? "";
+    const gender = genders.find((option) => option.toLowerCase() === values[9]?.toLowerCase()) ?? values[9] ?? "";
     for (let unit = 1; unit <= quantity; unit++) {
       const row = importRowSchema.safeParse({
-        externalRef: `${values[0]}#${unit}`, schoolCode: values[1], sizeSystem: system,
+        externalRef: `${values[0]}#${unit}`, schoolCode: values[1],
+        gradeLevel: (indices[8] ?? -1) < 0 ? undefined : gradeLevel || null,
+        gender: (indices[9] ?? -1) < 0 ? undefined : gender || null, sizeSystem: system,
         shoeSize: size, width, shoeType: values[5], purchaseNote: values[7],
       });
       if (!row.success) { errors.push(`Row ${i + 1}: ${row.error.issues[0]?.message ?? "Invalid data"}`); break; }
