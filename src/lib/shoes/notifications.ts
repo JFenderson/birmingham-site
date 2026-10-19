@@ -1,6 +1,6 @@
 import "server-only";
 import { Resend } from "resend";
-import { getEmailFrom, getResendApiKey, getShoeProgramDirectorEmails } from "@/lib/email/config";
+import { getEmailFrom, getFormNotificationRecipients, getResendApiKey, getSocialActionDirectorEmail } from "@/lib/email/config";
 
 export async function sendShoeReservationNotifications(input: {
   to: string; name: string; phone?: string | undefined; reference: string; token: string;
@@ -12,7 +12,7 @@ export async function sendShoeReservationNotifications(input: {
   const resend = new Resend(key);
   const from = getEmailFrom();
   const expires = new Date(input.expiresAt).toLocaleString("en-US", { timeZone: "America/Chicago", dateStyle: "full", timeStyle: "short" });
-  const recipients = getShoeProgramDirectorEmails();
+  const recipients = getFormNotificationRecipients(getSocialActionDirectorEmail());
   const adminUrl = siteUrl ? new URL("/admin/shoes-for-kids", siteUrl).toString() : null;
   const directorText = `A sponsor reserved ${input.pairCount} ${input.pairCount === 1 ? "pair" : "pairs"} for Shoes for Kids.\n\nReservation: ${input.reference}\nSponsor: ${input.name}\nEmail: ${input.to}${input.phone ? `\nPhone: ${input.phone}` : ""}\nHandoff: ${input.deliveryMethod === "coordinator" ? "Coordinate with committee" : "Confirmed drop-off"}\nReservation expires: ${expires} Central Time.${adminUrl ? `\n\nReview the reservation: ${adminUrl}` : ""}\n\nPlease coordinate directly with the sponsor. Do not forward this notice outside the program team.`;
   let sponsorEmailSent = false;

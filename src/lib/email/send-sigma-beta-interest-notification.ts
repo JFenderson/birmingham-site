@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import {
   getEmailFrom,
+  getFormNotificationRecipients,
   getResendApiKey,
   getSigmaBetaAdminEmail,
 } from "./config.ts";
@@ -111,7 +112,7 @@ export const sigmaBetaInterestNotificationDependencies = {
     return new Resend(getResendApiKey() ?? undefined);
   },
   getAdminRecipient() {
-    return getSigmaBetaAdminEmail();
+    return getFormNotificationRecipients(getSigmaBetaAdminEmail());
   },
   getEmailFrom() {
     return getEmailFrom();
@@ -152,10 +153,6 @@ export async function sendSigmaBetaInterestNotification(
     throwIfResendError(result);
   } catch (error) {
     submitterError = toError(error);
-  }
-
-  if (!adminRecipient) {
-    return { submitterError, adminError };
   }
 
   try {

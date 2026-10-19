@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import {
   getEmailFrom,
+  getFormNotificationRecipients,
   getIntakeAdminEmail,
   getResendApiKey,
 } from "./config.ts";
@@ -53,7 +54,7 @@ export const interestFormNotificationDependencies = {
     return new Resend(getResendApiKey() ?? undefined);
   },
   getAdminRecipient() {
-    return getIntakeAdminEmail();
+    return getFormNotificationRecipients(getIntakeAdminEmail());
   },
   getEmailFrom() {
     return getEmailFrom();
@@ -95,10 +96,6 @@ export async function sendInterestFormNotifications(
     throwIfResendError(result);
   } catch (error) {
     applicantError = toError(error);
-  }
-
-  if (!adminRecipient) {
-    return { applicantError, adminError };
   }
 
   try {

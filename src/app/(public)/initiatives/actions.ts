@@ -11,6 +11,7 @@ import { getTenantContext } from "@/lib/tenant/resolve-chapter";
 import { estimateStepsFromMiles, initiativeSubmissionSchema } from "@/lib/initiatives/tracker";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { validateUploadFile } from "@/lib/security/file-signature";
+import { sendInitiativeSubmissionNotification } from "@/lib/email/send-initiative-notification";
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 const TYPES = new Set([
@@ -83,6 +84,7 @@ export async function finalizeInitiativeUpload(id: string): Promise<{ error?: st
     return { error: "Could not save the submission." };
   }
   await (admin as any).from("public_upload_intents").update({ finalized_at: new Date().toISOString() }).eq("id", id);
+  await sendInitiativeSubmissionNotification(value.data);
   return { success: true };
 }
 
@@ -165,5 +167,6 @@ export async function submitInitiative(formData: FormData) {
     await admin.storage.from("initiative-evidence").remove([path]);
     return { error: "Could not save the submission." };
   }
+  await sendInitiativeSubmissionNotification(value);
   return { success: true, token };
 }

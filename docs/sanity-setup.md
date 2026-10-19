@@ -56,7 +56,7 @@ The public interest form on `/sigma-beta-club` and the public information-reques
 - `SIGMA_BETA_ADMIN_EMAIL`: chapter recipient for Sigma Beta Club interest-form admin notifications.
 - `FOUNDATION_ADMIN_EMAIL`: chapter recipient for Foundation information-request admin notifications.
 
-Both forms reuse the existing `RESEND_API_KEY` and `EMAIL_FROM` values documented in `docs/resend-setup.md`. If `SIGMA_BETA_ADMIN_EMAIL` or `FOUNDATION_ADMIN_EMAIL` is not set, the corresponding admin notification is skipped without error; the submitter's own confirmation email still sends. Neither form creates a Supabase account, member record, or authentication user. Sigma Beta Club submissions are stored in `public.sigma_beta_interest_submissions` using the existing server-only Supabase service role key. Apply migration `20261006163819_sigma_beta_interest_submissions.sql` before deploying the form.
+Both forms reuse the existing `RESEND_API_KEY` and `EMAIL_FROM` values documented in `docs/resend-setup.md`. The chapter inbox receives every admin notification; the matching program address also receives it when configured. Neither form creates a Supabase account, member record, or authentication user. Sigma Beta Club submissions are stored in `public.sigma_beta_interest_submissions` using the existing server-only Supabase service role key. Apply migration `20261006163819_sigma_beta_interest_submissions.sql` before deploying the form.
 
 Donations on `/foundation` are not part of this email setup. The `Donation URL` field in `Tau Sigma Charity Foundation Settings` only stores a link to the chapter's existing approved external or Square donation destination; Sanity and this codebase never process payments.
 
@@ -74,4 +74,4 @@ For the full editor workflow, including Sigma Beta Club and Foundation content, 
 - A published item does not appear on the expected page: confirm the correct chapter slug, confirm `Publicly visible` is on, confirm the publication date is not in the future, and allow a short CDN refresh window before rechecking the public route.
 - Images are not rendering publicly: make sure the image has meaningful alt text. Public image rendering intentionally skips blank alt text.
 - `/sigma-beta-club` or `/foundation` shows an empty state: publish a `Sigma Beta Club Settings` or `Tau Sigma Charity Foundation Settings` document for the current chapter first; other content types depend on it.
-- A Sigma Beta Club or Foundation form submission is not producing an admin email: confirm `SIGMA_BETA_ADMIN_EMAIL` or `FOUNDATION_ADMIN_EMAIL` is set. This is optional; when unset, only the admin notification is skipped, not the submitter's confirmation.
+- A Sigma Beta Club or Foundation form submission is not producing an admin email: confirm `RESEND_API_KEY` is set and review delivery logs. A missing program address does not prevent delivery to the chapter inbox.

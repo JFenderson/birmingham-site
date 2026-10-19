@@ -226,7 +226,7 @@ There is normally one `Sigma Beta Club Settings` document per chapter.
 
 The public interest form on `/sigma-beta-club` collects parent or guardian contact details, student name, age, grade, and school, plus optional referral source and questions. It is open year-round, rate-limited, and validated before storage.
 
-A successful submission creates a private row in `public.sigma_beta_interest_submissions`, not a Supabase account, fraternity intake record, or authentication user. Authorized Supabase project operators can review the rows in the Table Editor. A confirmation email goes to the parent or guardian, and an admin notification is sent if `SIGMA_BETA_ADMIN_EMAIL` is configured. Database storage remains successful even if email delivery fails.
+A successful submission creates a private row in `public.sigma_beta_interest_submissions`, not a Supabase account, fraternity intake record, or authentication user. Authorized Supabase project operators can review the rows in the Table Editor. A confirmation email goes to the parent or guardian, and an admin notification goes to the chapter inbox plus `SIGMA_BETA_ADMIN_EMAIL` when configured. Database storage remains successful even if email delivery fails.
 
 The form includes a hidden honeypot field. If it is filled in (a bot behavior), the form returns the same neutral success message a real submitter would see, but no confirmation or admin email is sent.
 
@@ -300,7 +300,7 @@ If `Donation URL` is missing, or fails the safe-link check (not an internal `/`-
 
 The public information-request form on `/foundation` collects name, email, optional organization, optional phone, and message. It is rate-limited and validated before it sends anything.
 
-A successful submission never creates a Supabase account, member record, or authentication user. It only sends a confirmation email to the submitter and, if `FOUNDATION_ADMIN_EMAIL` is configured, an admin notification email. If that environment variable is not set, the admin notification is silently skipped and the submitter still receives their confirmation.
+A successful submission never creates a Supabase account, member record, or authentication user. It sends a confirmation email to the submitter and an admin notification to the chapter inbox plus `FOUNDATION_ADMIN_EMAIL` when configured.
 
 The form includes a hidden honeypot field. If it is filled in, the form returns the same neutral success message a real submitter would see, but no confirmation or admin email is sent.
 
@@ -369,4 +369,4 @@ The donate button or a registration link is missing:
 This is expected, not a bug, when the URL is blank or fails the safe-link check. Only an internal `/`-path or an `https://` URL renders as a link; anything else is silently omitted along with a text fallback where applicable.
 
 A Sigma Beta Club interest or Foundation information-request submission did not send an admin notification:
-Check whether `SIGMA_BETA_ADMIN_EMAIL` (Sigma Beta Club) or `FOUNDATION_ADMIN_EMAIL` (Foundation) is set. If either is unset, the admin notification is intentionally skipped; the submitter still receives their own confirmation email and no error occurs.
+Check `RESEND_API_KEY` and the delivery logs. The chapter inbox receives these notifications even when `SIGMA_BETA_ADMIN_EMAIL` or `FOUNDATION_ADMIN_EMAIL` is unset.
