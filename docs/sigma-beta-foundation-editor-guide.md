@@ -31,7 +31,7 @@ Both the Sigma Beta Club interest form and the Foundation information-request fo
 - creates a member record
 - creates an authentication user
 
-A successful Sigma Beta Club submission creates a row in `public.sigma_beta_interest_submissions` before email is attempted. This table is separate from fraternity membership intake and is viewable by authorized Supabase project operators in the Table Editor. It has RLS enabled and no `anon` or `authenticated` table grants. A failed database write displays an error and sends no email. Confirmation goes to the parent or guardian; the optional chapter notification goes to `SIGMA_BETA_ADMIN_EMAIL`. Email failure does not erase a stored row. The Foundation form remains email-only. See `docs/resend-setup.md` and the "Sigma Beta Club and Foundation form notifications" section of `docs/sanity-setup.md` for Resend setup.
+A successful Sigma Beta Club submission creates a row in `public.sigma_beta_interest_submissions` before email is attempted. This table is separate from fraternity membership intake and is viewable by authorized Supabase project operators in the Table Editor. It has RLS enabled and no `anon` or `authenticated` table grants. A failed database write displays an error and sends no email. Confirmation goes to the parent or guardian; the chapter notification goes to the chapter inbox and `SIGMA_BETA_ADMIN_EMAIL` when configured. Email failure does not erase a stored row. The Foundation form remains email-only. See `docs/resend-setup.md` and the "Sigma Beta Club and Foundation form notifications" section of `docs/sanity-setup.md` for Resend setup.
 
 Each form also has a hidden honeypot field. If a bot fills it in, the form returns the same neutral success message a real visitor would see, but skips storage and email.
 
@@ -57,7 +57,7 @@ No `Sigma Beta Club Settings` document is published for the current chapter, or 
 Same cause, but for `Tau Sigma Charity Foundation Settings`. Publish a settings document for the current chapter first.
 
 An interest-form or information-request submission does not produce an admin email:
-This is expected if `SIGMA_BETA_ADMIN_EMAIL` (Sigma Beta Club) or `FOUNDATION_ADMIN_EMAIL` (Foundation) is not set in the environment. The admin notification is skipped without error. The submitter's own confirmation email still sends normally. This is not a bug — set the corresponding environment variable and restart the app if you want admin notifications.
+Check `RESEND_API_KEY` and delivery logs. The chapter notification should send even if `SIGMA_BETA_ADMIN_EMAIL` or `FOUNDATION_ADMIN_EMAIL` is unset; set the corresponding variable to add the program recipient.
 
 The donate button is missing on `/foundation`:
 Check `Donation URL` on the foundation settings document. It must be filled in and must be either a `/`-path or an `https://` URL. If it fails either check, the button is intentionally not shown and a text fallback renders instead.

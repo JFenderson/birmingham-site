@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import {
   getEmailFrom,
+  getFormNotificationRecipients,
   getFoundationAdminEmail,
   getResendApiKey,
 } from "./config.ts";
@@ -104,7 +105,7 @@ export const foundationInformationRequestNotificationDependencies = {
     return new Resend(getResendApiKey() ?? undefined);
   },
   getAdminRecipient() {
-    return getFoundationAdminEmail();
+    return getFormNotificationRecipients(getFoundationAdminEmail());
   },
   getEmailFrom() {
     return getEmailFrom();
@@ -147,10 +148,6 @@ export async function sendFoundationInformationRequestNotification(
     throwIfResendError(result);
   } catch (error) {
     submitterError = toError(error);
-  }
-
-  if (!adminRecipient) {
-    return { submitterError, adminError };
   }
 
   try {

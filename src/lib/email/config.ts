@@ -1,4 +1,5 @@
 const DEFAULT_EMAIL_FROM = "notifications@mail.birminghamsigmas.org";
+const DEFAULT_CHAPTER_FORM_EMAIL = "tausigmapbs@gmail.com";
 
 function readEnv(name: string) {
   const value = process.env[name]?.trim();
@@ -14,6 +15,25 @@ export function getEmailFrom() {
 
 export function getResendApiKey() {
   return readEnv("RESEND_API_KEY");
+}
+
+/** Chapter receives every public program submission; the relevant program
+ * recipient is included once, even when it is the same mailbox. */
+export function getFormNotificationRecipients(programEmails?: string | string[] | null) {
+  const emails = [
+    readEnv("CHAPTER_FORM_EMAIL") ?? DEFAULT_CHAPTER_FORM_EMAIL,
+    ...(Array.isArray(programEmails) ? programEmails : [programEmails]),
+  ];
+  const recipients: string[] = [];
+  const seen = new Set<string>();
+  for (const email of emails.flatMap((value) => (value ?? "").split(/[,;\n]/))) {
+    const trimmed = email.trim();
+    if (trimmed && !seen.has(trimmed.toLowerCase())) {
+      recipients.push(trimmed);
+      seen.add(trimmed.toLowerCase());
+    }
+  }
+  return recipients;
 }
 
 export function getIntakeAdminEmail() {
@@ -38,13 +58,6 @@ export function getBbbDirectorEmail() {
 
 export function getSocialActionDirectorEmail() {
   return readEnv("SOCIAL_ACTION_DIRECTOR_EMAIL");
-}
-
-export function getShoeProgramDirectorEmails() {
-  return [...new Set((readEnv("SHOES_PROGRAM_DIRECTOR_EMAILS") ?? "")
-    .split(/[,;\n]/)
-    .map((email) => email.trim())
-    .filter(Boolean))];
 }
 
 export const EMAIL_FROM = getEmailFrom();
