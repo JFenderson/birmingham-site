@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import Image from "next/image";
 import encodeQR from "qr";
-import type { PublicCampaign, PublicInventoryGroup, PublicProgress, PublicShoeRequest, ShoeSelection } from "@/lib/shoes/model";
+import { genders, gradeLevels, shoeGroupKey, type PublicCampaign, type PublicInventoryGroup, type PublicProgress, type PublicShoeRequest, type ShoeSelection } from "@/lib/shoes/model";
 import { ZeffyDonationEmbed } from "@/components/public/zeffy-donation-embed";
 import { reserveShoes } from "./actions";
 
@@ -12,7 +12,7 @@ type Mode = "requests" | "sizes";
 
 function shoeLabel(request: PublicShoeRequest) {
   const system = request.sizeSystem === "little-kid" ? "Little kid" : request.sizeSystem === "youth" ? "Youth" : request.sizeSystem === "toddler" ? "Toddler" : "Adult";
-  return `${system} ${request.shoeSize} · ${request.width} · ${request.shoeType}`;
+  return `${request.gradeLevel ?? "Grade not listed"} · ${request.gender ?? "Gender not listed"} · ${system} ${request.shoeSize} · ${request.width} · ${request.shoeType}`;
 }
 
 function deadline(value: string) {
@@ -25,6 +25,8 @@ export function ShoesPortal(initial: PortalData) {
   const [selected, setSelected] = useState<string[]>([]);
   const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({});
   const [sizeSystem, setSizeSystem] = useState("all");
+  const [gradeLevel, setGradeLevel] = useState("all");
+  const [gender, setGender] = useState("all");
   const [width, setWidth] = useState("all");
   const [shoeType, setShoeType] = useState("all");
   const [availability, setAvailability] = useState("available");
@@ -46,13 +48,22 @@ export function ShoesPortal(initial: PortalData) {
 
   const groups = data.inventoryGroups;
   const shoeTypes = [...new Set(data.requests.map((request) => request.shoeType))].sort();
+  const matchesFilters = (request: PublicShoeRequest) =>
+    (gradeLevel === "all" || (request.gradeLevel ?? "Not specified") === gradeLevel) &&
+    (gender === "all" || (request.gender ?? "Not specified") === gender) &&
+    (sizeSystem === "all" || request.sizeSystem === sizeSystem) &&
+    (width === "all" || request.width === width) &&
+    (shoeType === "all" || request.shoeType === shoeType);
+  const visibleRequests = data.requests.filter(matchesFilters);
+  const visibleGroups = groups.filter((group) => (availability === "all" || group.count > 0) && matchesFilters(group.request));
+  const noVisiblePairs = mode === "requests" ? visibleRequests.length === 0 : visibleGroups.length === 0;
 
   const selectedRequests = data.requests.filter((request) => selected.includes(request.id));
-  const sizeSelections: ShoeSelection[] = groups.filter((group) => (sizeQuantities[group.key] ?? 0) > 0).map((group) => ({
-    sizeSystem: group.request.sizeSystem as "toddler" | "little-kid" | "youth" | "adult",
-    shoeSize: group.request.shoeSize, width: group.request.width as "standard" | "wide" | "extra-wide" | "narrow",
-    shoeType: group.request.shoeType, quantity: sizeQuantities[group.key] ?? 0,
-  }));
+  const sizeSelections: ShoeSelection[] = groups.flatMap((group) =>
+    data.requests.filter((request) => shoeGroupKey(request) === group.key)
+      .slice(0, sizeQuantities[group.key] ?? 0)
+      .map((request) => ({ requestId: request.id, quantity: 1 as const }))
+  );
   const selections: ShoeSelection[] = mode === "requests"
     ? selectedRequests.map((request) => ({ requestId: request.id, quantity: 1 as const }))
     : sizeSelections;
@@ -68,7 +79,7 @@ export function ShoesPortal(initial: PortalData) {
     setMode("sizes"); setSelected([]);
     let remaining = target;
     const quantities: Record<string, number> = {};
-    for (const group of groups) {
+    for (const group of visibleGroups) {
       if (remaining <= 0) break;
       const count = Math.min(group.count, remaining);
       quantities[group.key] = count; remaining -= count;
@@ -176,15 +187,19 @@ export function ShoesPortal(initial: PortalData) {
               </div>
               <div className="mt-5 flex flex-wrap gap-3">
                 <label className="text-sm font-semibold">Size range <select value={sizeSystem} onChange={(e) => setSizeSystem(e.target.value)} className="ml-2 rounded-lg border border-slate-300 p-2"><option value="all">All sizes</option><option value="toddler">Toddler</option><option value="little-kid">Little kid</option><option value="youth">Youth</option><option value="adult">Adult</option></select></label>
+                <label className="text-sm font-semibold">Grade <select value={gradeLevel} onChange={(e) => setGradeLevel(e.target.value)} className="ml-2 rounded-lg border border-slate-300 p-2"><option value="all">All grades</option>{gradeLevels.map((grade) => <option key={grade} value={grade}>{grade}</option>)}<option value="Not specified">Not specified</option></select></label>
+                <label className="text-sm font-semibold">Gender <select value={gender} onChange={(e) => setGender(e.target.value)} className="ml-2 rounded-lg border border-slate-300 p-2"><option value="all">All genders</option>{genders.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
                 <label className="text-sm font-semibold">Width <select value={width} onChange={(e) => setWidth(e.target.value)} className="ml-2 rounded-lg border border-slate-300 p-2"><option value="all">All widths</option><option value="standard">Standard</option><option value="wide">Wide</option><option value="extra-wide">Extra wide</option><option value="narrow">Narrow</option></select></label>
                 <label className="text-sm font-semibold">Shoe type <select value={shoeType} onChange={(e) => setShoeType(e.target.value)} className="ml-2 rounded-lg border border-slate-300 p-2"><option value="all">All types</option>{shoeTypes.map((type) => <option key={type} value={type}>{type}</option>)}</select></label>
                 <label className="text-sm font-semibold">Availability <select value={availability} onChange={(e) => setAvailability(e.target.value)} className="ml-2 rounded-lg border border-slate-300 p-2"><option value="available">Available</option><option value="all">All</option></select></label>
               </div>
-              {data.requests.length === 0 && (mode === "requests" || availability === "available") ? <p className="mt-6 rounded-2xl bg-slate-50 p-6">No pairs are currently available. Please check back or make a donation.</p> : (
+              {data.requests.length === 0 && (mode === "requests" || availability === "available") ? <p className="mt-6 rounded-2xl bg-slate-50 p-6">No pairs are currently available. Please check back or make a donation.</p> : noVisiblePairs ? (
+                <p className="mt-6 rounded-2xl bg-slate-50 p-6">No pairs match these filters. Try another grade, gender, or size.</p>
+              ) : (
                 <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {mode === "requests" ? data.requests.filter((request) => (sizeSystem === "all" || request.sizeSystem === sizeSystem) && (width === "all" || request.width === width) && (shoeType === "all" || request.shoeType === shoeType)).map((request) => (
+                  {mode === "requests" ? visibleRequests.map((request) => (
                     <label key={request.id} className="flex cursor-pointer gap-3 rounded-2xl border border-slate-200 p-5 hover:border-[#1748A3]"><input type="checkbox" checked={selected.includes(request.id)} onChange={(e) => setSelected((current) => e.target.checked ? [...current, request.id].slice(0, 20) : current.filter((id) => id !== request.id))} className="mt-1 size-5" /><span><strong className="block text-[#1748A3]">{request.publicRef}</strong><span className="mt-1 block text-sm">{shoeLabel(request)}</span><span className="mt-2 block text-xs font-semibold text-green-700">Available · one pair</span></span></label>
-                  )) : groups.filter((group) => (availability === "all" || group.count > 0) && (sizeSystem === "all" || group.request.sizeSystem === sizeSystem) && (width === "all" || group.request.width === width) && (shoeType === "all" || group.request.shoeType === shoeType)).map((group) => (
+                  )) : visibleGroups.map((group) => (
                     <label key={group.key} className="rounded-2xl border border-slate-200 p-5"><strong className="block text-[#1748A3]">{shoeLabel(group.request)}</strong><span className="mt-1 block text-sm">{group.needed} needed · {group.count} available</span><span className="mt-3 flex items-center gap-3 text-sm font-semibold">Quantity <input type="number" min="0" max={Math.min(group.count, 20)} disabled={group.count === 0} value={sizeQuantities[group.key] ?? 0} onChange={(e) => setSizeQuantities((current) => ({ ...current, [group.key]: Math.max(0, Math.min(group.count, Number(e.target.value) || 0)) }))} className="w-20 rounded-lg border border-slate-300 p-2 disabled:opacity-50" /></span></label>
                   ))}
                 </div>

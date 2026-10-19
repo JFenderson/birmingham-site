@@ -3,6 +3,8 @@ import { z } from "zod";
 export const CAMPAIGN_CODE = "sfk-2026";
 export const sizeSystems = ["toddler", "little-kid", "youth", "adult"] as const;
 export const widths = ["standard", "wide", "extra-wide", "narrow"] as const;
+export const gradeLevels = ["Pre-K", "Kindergarten", "1st Grade", "2nd Grade", "3rd Grade", "4th Grade", "5th Grade"] as const;
+export const genders = ["Boy", "Girl", "Not specified"] as const;
 
 export const selectionSchema = z.union([
   z.object({ requestId: z.string().uuid(), quantity: z.literal(1) }),
@@ -40,10 +42,16 @@ export type ShoeReservationInput = z.infer<typeof reservationSchema>;
 export interface PublicShoeRequest {
   id: string;
   publicRef: string;
+  gradeLevel: string | null;
+  gender: string | null;
   sizeSystem: string;
   shoeSize: string;
   width: string;
   shoeType: string;
+}
+
+export function shoeGroupKey(request: Pick<PublicShoeRequest, "gradeLevel" | "gender" | "sizeSystem" | "shoeSize" | "width" | "shoeType">) {
+  return JSON.stringify([request.gradeLevel, request.gender, request.sizeSystem, request.shoeSize, request.width, request.shoeType]);
 }
 
 export interface PublicInventoryGroup {

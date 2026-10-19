@@ -39,9 +39,11 @@ The app's `serverActions.bodySizeLimit` is 3 MB for the import form. Each CSV/XL
 
 Provide CSV or XLSX with the columns:
 
-`External Request Reference, School Code, Shoe Size System, Shoe Size, Shoe Width, Shoe Type, Quantity, Optional Approved Purchase Notes`
+`External Request Reference, School Code, Grade Level, Gender, Shoe Size System, Shoe Size, Shoe Width, Shoe Type, Quantity, Optional Approved Purchase Notes`
 
-Accepted size systems are `toddler`, `little-kid`, `youth`, and `adult`; widths are `standard`, `wide`, `extra-wide`, and `narrow`. Use a numeric US size such as `4` or `4.5`. Each quantity expands into individual request records. Reimporting an external reference updates an available record; an already reserved or fulfilled record is skipped. School staff should keep any child-to-reference mapping outside this portal. Never upload student names, birth dates, school IDs, addresses, or private circumstances.
+Accepted grades are Pre-K, Kindergarten, and 1st through 5th Grade. Gender accepts Boy, Girl, or Not specified. These two columns are optional for older files; when present they are shown to sponsors with size, width, and shoe type. Accepted size systems are `toddler`, `little-kid`, `youth`, and `adult`; widths are `standard`, `wide`, `extra-wide`, and `narrow`. Use a numeric US size such as `4` or `4.5`. Each quantity expands into individual request records. Reimporting an external reference updates an available record; an already reserved or fulfilled record is skipped. Keep the private child-to-reference mapping outside this portal. Never upload student names, birth dates, school IDs, addresses, or private circumstances.
+
+When a school cannot provide stable anonymous IDs, the committee assigns IDs in a private working list and maintains a separate, protected name-to-ID crosswalk. Match each revised list against that crosswalk before importing. Keep the same ID for each returning request, assign new IDs only to new requests, and review changed spellings manually. A row missing from a later import is not deleted automatically. Abbreviated names may appear in the staff working list but must be omitted from the import file and public portal.
 
 ### Reservations and physical shoes
 

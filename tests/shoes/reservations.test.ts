@@ -22,6 +22,7 @@ async function setup(context: { after: (callback: () => Promise<void>) => void }
     grant select on public.profiles to service_role;
   `);
   await db.exec(readFileSync("supabase/migrations/20261019155341_shoes_for_kids.sql", "utf8"));
+  await db.exec(readFileSync("supabase/migrations/20261019191918_shoe_request_grade_gender.sql", "utf8"));
   await db.exec("grant usage on schema public to service_role, anon, authenticated; set role service_role;");
   const campaign = await db.query<{ id: string }>("update public.shoe_campaigns set status = 'published' where code = 'sfk-2026' returning id");
   return { db, campaignId: campaign.rows[0]!.id };
@@ -92,6 +93,30 @@ test("imports expand quantity and reject duplicate anonymous references", () => 
   const parsed = parseShoeImport(csvRecords(`${headers}\nA1,SC,youth,4,standard,Athletic sneakers,2`));
   assert.deepEqual(parsed.rows.map((row) => row.externalRef), ["A1#1", "A1#2"]);
   assert.equal(parseShoeImport(csvRecords(`${headers}\nA1,SC,youth,4,standard,Athletic sneakers,1\nA1,SC,youth,4,standard,Athletic sneakers,1`)).errors.length, 1);
+});
+
+test("reimport keeps a stable request and updates grade and gender", async (context) => {
+  const { db, campaignId } = await setup(context);
+  const headers = "External Request Reference,School Code,Grade Level,Gender,Shoe Size System,Shoe Size,Shoe Width,Shoe Type,Quantity";
+  const parsed = parseShoeImport(csvRecords(`${headers}\nGI26-001,GLEN_IRIS,Pre-K,Girl,little-kid,2,standard,Athletic sneakers,1`));
+  assert.deepEqual(parsed.errors, []);
+  assert.equal(parsed.rows[0]?.externalRef, "GI26-001#1");
+  assert.equal(parsed.rows[0]?.gradeLevel, "Pre-K");
+  assert.equal(parsed.rows[0]?.gender, "Girl");
+  const importRows = () => db.query<{ result: { inserted: number; updated: number } }>(
+    "select public.shoe_import_requests($1,$2,$3::jsonb) as result",
+    [campaignId, actorId, JSON.stringify(parsed.rows)],
+  );
+  assert.equal((await importRows()).rows[0]?.result.inserted, 1);
+  assert.equal((await importRows()).rows[0]?.result.updated, 1);
+  const oldHeaders = "External Request Reference,School Code,Shoe Size System,Shoe Size,Shoe Width,Shoe Type,Quantity";
+  const oldRows = parseShoeImport(csvRecords(`${oldHeaders}\nGI26-001,GLEN_IRIS,little-kid,2,standard,Athletic sneakers,1`)).rows;
+  await db.query("select public.shoe_import_requests($1,$2,$3::jsonb)", [campaignId, actorId, JSON.stringify(oldRows)]);
+  const requests = await db.query<{ grade_level: string; gender: string }>(
+    "select grade_level, gender from public.shoe_requests where campaign_id = $1",
+    [campaignId],
+  );
+  assert.deepEqual(requests.rows, [{ grade_level: "Pre-K", gender: "Girl" }]);
 });
 
 test("XLSX first worksheet reads shared strings without evaluating formulas", () => {
