@@ -9,7 +9,7 @@ This site uses Next.js App Router, Supabase Auth/Postgres, Sanity for editorial 
 3. The existing member admin area manages campaign settings, imports, check-in, purchases, distribution, staff roles, and verified Zeffy CSV records.
 4. A Vercel Cron releases expired physical reservations daily. The reservation transaction also releases overdue items if the scheduled job is late.
 
-The migration was applied to the connected `birmingham-site` Supabase project on October 19, 2026. The campaign remains Draft for shoe adoption. The active Zeffy donation URL is configured and can be shown on the public page before the shoe list is imported. No Zeffy account setting or email configuration was changed by this repository work.
+The migration was applied to the connected `birmingham-site` Supabase project on October 19, 2026. The 2026 shoe adoption campaign was published that day with 36 anonymous requests from the first Glen Iris list. The active Zeffy donation URL remains configured. The original school list has 81 entries; 45 without sizes are waiting for an updated list. The sponsor confirmation uses the existing Resend setup, and two program notice recipients are configured in Vercel production.
 
 ## Database and security
 
@@ -45,6 +45,8 @@ Accepted grades are Pre-K, Kindergarten, and 1st through 5th Grade. Gender accep
 
 When a school cannot provide stable anonymous IDs, the committee assigns IDs in a private working list and maintains a separate, protected name-to-ID crosswalk. Match each revised list against that crosswalk before importing. Keep the same ID for each returning request, assign new IDs only to new requests, and review changed spellings manually. A row missing from a later import is not deleted automatically. Abbreviated names may appear in the staff working list but must be omitted from the import file and public portal.
 
+For the first Glen Iris import, the owner approved interpreting the school's 9–13 “youth” labels as little-kid sizes, 1–4 “child” and 4 “youth” as youth sizes, and “women” as adult women's sizes. The eight women's requests use the shoe type “Women's athletic shoes” so the public label is unambiguous. All 36 imported rows use standard width because the school supplied no width values; verify that assumption against the updated list and reimport corrections while requests are available. New athletic shoes are required, with kid-friendly styles encouraged. The public page offers committee-coordinated handoff until a drop-off location is confirmed.
+
 ### Reservations and physical shoes
 
 Sponsors may reserve up to 20 pairs as an individual or organization. The management link uses a random 256-bit token stored only as a SHA-256 hash and expires 30 days after the reservation deadline. Save or print the confirmation if email is unavailable. The sponsor confirmation email is sent only when Resend is configured and confirms acceptance. A separate notice goes to the configured program addresses with the reservation reference and sponsor contact details, but no management token or student identity. An email failure does not undo an accepted reservation. A separate QR code contains only an opaque random reservation UUID with an `SFK-CI:` prefix. It identifies the reservation for signed-in staff but grants no sponsor-management or check-in authority by itself.
@@ -63,7 +65,7 @@ Use ISO 8601 for `Paid At` and `USD` for currency. Supported statuses are `succe
 
 ## Current limits and follow-up work
 
-- The Draft campaign has no imported shoe list or reservations. Public adoption stays closed until an administrator imports the list and publishes the campaign; the configured Zeffy donation link remains available.
+- The 2026 campaign is published with 36 sized requests from the first Glen Iris list. The 45 entries lacking sizes remain out of the public inventory. Match the next school list against the private stable-ID crosswalk before importing additions or corrections.
 - API/webhook reconciliation requires Zeffy account credentials and verification details; the implemented path is manual CSV reconciliation.
 - Resend confirmation uses the site's existing configured provider. Reminder, thank-you, cancellation, and donation emails are not yet automated.
 - Check-in supports QR camera scanning, reference lookup, and manual item selection. Camera access requires HTTPS and browser permission; the printed reference remains a fallback.
