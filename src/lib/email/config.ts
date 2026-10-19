@@ -40,4 +40,11 @@ export function getSocialActionDirectorEmail() {
   return readEnv("SOCIAL_ACTION_DIRECTOR_EMAIL");
 }
 
+export function getShoeProgramDirectorEmails() {
+  return [...new Set((readEnv("SHOES_PROGRAM_DIRECTOR_EMAILS") ?? "")
+    .split(/[,;\n]/)
+    .map((email) => email.trim())
+    .filter(Boolean))];
+}
+
 export const EMAIL_FROM = getEmailFrom();
