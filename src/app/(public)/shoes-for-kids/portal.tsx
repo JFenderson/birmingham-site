@@ -149,8 +149,8 @@ export function ShoesPortal(initial: PortalData) {
       <div className="mx-auto max-w-6xl space-y-16 px-5 py-12 sm:py-16">
         {data.error ? <section className="rounded-3xl border border-amber-200 bg-amber-50 p-7" role="alert"><h2 className="text-2xl font-bold">Campaign data unavailable</h2><p className="mt-2">{data.error} Please try again later.</p></section> : !campaign || campaign.status !== "published" ? (
           <section className="rounded-3xl border border-blue-100 bg-blue-50 p-7" aria-live="polite">
-            <h2 className="text-2xl font-bold text-[#103777]">The adoption campaign is not open yet</h2>
-            <p className="mt-2 leading-7 text-slate-700">Please check back when Tau Sigma publishes the campaign. No shoe requests or sponsor information are visible before launch.</p>
+            <h2 className="text-2xl font-bold text-[#103777]">Shoe adoption is not open yet</h2>
+            <p className="mt-2 leading-7 text-slate-700">The shoe request list is being prepared. {campaign?.zeffyUrl ? "You can support Shoes for Kids now with a donation through Zeffy." : "Please check back when Tau Sigma opens adoption."}</p>
           </section>
         ) : (
           <>
@@ -220,7 +220,7 @@ export function ShoesPortal(initial: PortalData) {
           <h2 className="mt-2 text-3xl font-bold">Make a monetary donation</h2>
           <p className="mt-3 max-w-3xl leading-7 text-slate-700">Suggested gifts: one pair $50, two pairs $100, five pairs $250, or any amount you choose. A financial gift supports the general Shoes for Kids fund until it is verified and allocated by the committee.</p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[["Sponsor one pair","$50"],["Sponsor two pairs","$100"],["Sponsor five pairs","$250"],["Give a custom amount","Your choice"]].map(([label,amount]) => <div key={label} className="rounded-2xl border border-blue-100 bg-white p-4"><p className="text-sm font-semibold text-slate-700">{label}</p><p className="mt-1 text-2xl font-bold text-[#1748A3]">{amount}</p></div>)}</div>
-          <div className="mt-6"><ZeffyDonationEmbed url={campaign?.status === "published" ? campaign.zeffyUrl : null} embedUrl={campaign?.status === "published" ? campaign.zeffyEmbedUrl : null} /></div>
+          <div className="mt-6"><ZeffyDonationEmbed url={campaign?.zeffyUrl ?? null} embedUrl={campaign?.zeffyEmbedUrl ?? null} /></div>
         </section>
       </div>
     </div>

@@ -34,7 +34,17 @@ export async function getPublicShoePortal(chapterId: string) {
     zeffyEmbedUrl: chosen.zeffy_embed_url, suggestedPairCents: chosen.suggested_pair_cents,
     showDonationTotal: chosen.show_donation_total,
   };
-  if (campaign.status !== "published") return { campaign: null, requests: [], inventoryGroups: [], progress: null };
+  if (campaign.status !== "published") return {
+    campaign: {
+      ...campaign,
+      dropoffLocation: null,
+      dropoffHours: null,
+      dropoffContact: null,
+      dropoffInstructions: null,
+      showDonationTotal: false,
+    },
+    requests: [], inventoryGroups: [], progress: null,
+  };
   const [all, donations] = await Promise.all([
     fetchShoeRows(database, "shoe_requests", "id,public_ref,size_system,shoe_size,width,shoe_type,status,reserved_until,received_at,purchased_at", campaign.id),
     fetchShoeRows(database, "shoe_donations", "amount_cents,refunded_cents,payment_status", campaign.id),

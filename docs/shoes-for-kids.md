@@ -9,7 +9,7 @@ This site uses Next.js App Router, Supabase Auth/Postgres, Sanity for editorial 
 3. The existing member admin area manages campaign settings, imports, check-in, purchases, distribution, staff roles, and verified Zeffy CSV records.
 4. A Vercel Cron releases expired physical reservations daily. The reservation transaction also releases overdue items if the scheduled job is late.
 
-The migration was applied to the connected `birmingham-site` Supabase project on October 19, 2026. The campaign remains Draft. No Zeffy account setting or email configuration was changed by this repository work.
+The migration was applied to the connected `birmingham-site` Supabase project on October 19, 2026. The campaign remains Draft for shoe adoption. The active Zeffy donation URL is configured and can be shown on the public page before the shoe list is imported. No Zeffy account setting or email configuration was changed by this repository work.
 
 ## Database and security
 
@@ -61,8 +61,8 @@ Use ISO 8601 for `Paid At` and `USD` for currency. Supported statuses are `succe
 
 ## Current limits and follow-up work
 
-- The Draft campaign has no imported shoe list or reservations. Public adoption stays closed until an administrator imports the list and publishes the campaign.
-- Zeffy checkout needs the organization's real campaign URL. API/webhook reconciliation requires account credentials and verification details; the implemented path is manual CSV reconciliation.
+- The Draft campaign has no imported shoe list or reservations. Public adoption stays closed until an administrator imports the list and publishes the campaign; the configured Zeffy donation link remains available.
+- API/webhook reconciliation requires Zeffy account credentials and verification details; the implemented path is manual CSV reconciliation.
 - Resend confirmation uses the site's existing configured provider. Reminder, thank-you, cancellation, and donation emails are not yet automated.
 - Check-in supports QR camera scanning, reference lookup, and manual item selection. Camera access requires HTTPS and browser permission; the printed reference remains a fallback.
 - The reservation list displays the most recent 100 entries. Staff can look up older reservations by exact reference for check-in. Bulk reservation pagination and reassignment to another sponsor are not yet implemented.
