@@ -6,6 +6,12 @@ import { PortalStatusBadge } from "@/components/portal/portal-status-badge";
 
 const adminAreas = [
   {
+    title: "Shoes for Kids",
+    description: "Manage campaigns, school requests, reservations, shoe check-in, and Zeffy reconciliation.",
+    href: "/admin/shoes-for-kids",
+    action: "Open campaign",
+  },
+  {
     title: "Scholarship applications",
     description: "Review Sapphire Scholarship applications and supporting documents.",
     href: "/admin/scholarship",

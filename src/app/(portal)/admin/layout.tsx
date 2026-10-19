@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import {
   AuthorizationError,
   requireChapterAdmin,
 } from "@/lib/auth/authorization";
+import { requireShoeStaff } from "@/lib/shoes/authorization";
 
 function redirectForAuthorizationError(error: AuthorizationError): never {
   if (error.code === "UNAUTHENTICATED") {
@@ -21,9 +23,17 @@ export default async function AdminLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   let member;
+  let roleLabel;
 
   try {
-    member = await requireChapterAdmin();
+    if ((await headers()).get("x-shoe-admin-route") === "1") {
+      const staff = await requireShoeStaff();
+      member = staff.member;
+      roleLabel = staff.role;
+    } else {
+      member = await requireChapterAdmin();
+      roleLabel = member.role;
+    }
   } catch (error) {
     if (error instanceof AuthorizationError) {
       redirectForAuthorizationError(error);
@@ -39,18 +49,21 @@ export default async function AdminLayout({
           <p className="text-sm font-medium text-navy dark:text-blue-300">Chapter administration</p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight">Admin workspace</h1>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Signed in as {member.profile.fullName} · {member.role.replace("_", " ")}
+            Signed in as {member.profile.fullName} · {roleLabel?.replace("_", " ")}
           </p>
         </div>
         <nav aria-label="Admin navigation" className="flex flex-wrap gap-3 text-sm font-medium">
-          <Link href="/admin" className="text-navy hover:underline dark:text-blue-300">
+          {(roleLabel === "chapter_admin" || roleLabel === "super_admin" || roleLabel === "super") ? <Link href="/admin" className="text-navy hover:underline dark:text-blue-300">
             Overview
-          </Link>
-          <Link href="/admin/members" className="text-navy hover:underline dark:text-blue-300">
+          </Link> : null}
+          {(roleLabel === "chapter_admin" || roleLabel === "super_admin" || roleLabel === "super") ? <Link href="/admin/members" className="text-navy hover:underline dark:text-blue-300">
             Members
-          </Link>
-          <Link href="/events" className="text-navy hover:underline dark:text-blue-300">
+          </Link> : null}
+          {(roleLabel === "chapter_admin" || roleLabel === "super_admin" || roleLabel === "super") ? <Link href="/events" className="text-navy hover:underline dark:text-blue-300">
             Events
+          </Link> : null}
+          <Link href="/admin/shoes-for-kids" className="text-navy hover:underline dark:text-blue-300">
+            Shoes for Kids
           </Link>
         </nav>
       </header>

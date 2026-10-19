@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import path from "node:path";
 
 const nextConfig: NextConfig = {
+  experimental: { serverActions: { bodySizeLimit: "3mb" } },
   async headers() {
     const commonHeaders = [
       { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains; preload" },
@@ -28,6 +29,14 @@ const nextConfig: NextConfig = {
           { key: "X-Frame-Options", value: "DENY" },
           { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
         ],
+      },
+      {
+        source: "/shoes-for-kids/manage/:path*",
+        headers: [{ key: "Referrer-Policy", value: "no-referrer" }, { key: "Cache-Control", value: "no-store" }],
+      },
+      {
+        source: "/admin/shoes-for-kids/:path*",
+        headers: [{ key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=(self)" }],
       },
     ];
   },
