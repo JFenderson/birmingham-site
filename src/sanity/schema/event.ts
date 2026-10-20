@@ -1,5 +1,6 @@
 import { defineField, defineType } from "sanity";
 import {
+  createAccessibleImageField,
   createChapterSlugField,
   createPublishedAtField,
   createPublishedField,
@@ -23,6 +24,11 @@ export const event = defineType({
       description: "Public summary explaining what the event is and who it serves.",
       validation: (rule) => rule.required(),
     }),
+    createAccessibleImageField(
+      "image",
+      "Flyer or event photo",
+      "Optional public flyer or photo shown with this event. Add alt text after uploading an image.",
+    ),
     createChapterSlugField("event"),
     defineField({
       name: "order",

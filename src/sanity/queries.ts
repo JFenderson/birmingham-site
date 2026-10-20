@@ -14,6 +14,7 @@ export interface SanityEvent {
   _id: string;
   title: string;
   description: string;
+  image?: SanityImageWithAlt | null;
   order: number;
   publishedAt: string | null;
 }
@@ -196,6 +197,7 @@ export function getPublishedEvents(
       _id,
       title,
       description,
+      image { ..., alt },
       order,
       publishedAt
     }`,

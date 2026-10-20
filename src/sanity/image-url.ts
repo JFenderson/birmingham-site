@@ -14,9 +14,10 @@ export function getSanityImageUrl(
   source: SanityImageSource,
   width: number,
   height: number,
+  fit: "crop" | "max" = "crop",
 ): string | null {
   try {
-    return builder.image(source).width(width).height(height).fit("crop").url();
+    return builder.image(source).width(width).height(height).fit(fit).url();
   } catch {
     return null;
   }
