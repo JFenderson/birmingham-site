@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { QRCamera } from "qr/dom.js";
+import { parseShoeCheckInCode } from "@/lib/shoes/check-in";
 
 export function ShoeCheckInScanner({ onScan }: { onScan: (code: string) => void }) {
   const video = useRef<HTMLVideoElement>(null);
@@ -27,8 +28,9 @@ export function ShoeCheckInScanner({ onScan }: { onScan: (code: string) => void 
           if (stopped || !camera) return;
           try {
             const result = await camera.readFrame(reader);
-            if (typeof result === "string" && /^SFK-CI:[0-9a-f-]{36}$/i.test(result)) {
-              onScanRef.current(result);
+            const code = typeof result === "string" ? parseShoeCheckInCode(result) : null;
+            if (code) {
+              onScanRef.current(code);
               setOpen(false);
               return;
             }

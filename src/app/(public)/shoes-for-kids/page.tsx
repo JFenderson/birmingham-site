@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTenantContext } from "@/lib/tenant/resolve-chapter";
 import { getPublicShoePortal } from "@/lib/shoes/store";
+import { getShoeProgramContactEmail } from "@/lib/email/config";
 import { ShoesPortal } from "./portal";
 
 export const metadata: Metadata = { title: "Shoes for Kids — Adopt a Pair | Birmingham Sigmas" };
@@ -11,5 +12,5 @@ export default async function ShoesForKidsPage() {
   let portal;
   try { portal = await getPublicShoePortal(tenant.chapterId); }
   catch { portal = { campaign: null, requests: [], inventoryGroups: [], progress: null, error: "Campaign data is temporarily unavailable." }; }
-  return <ShoesPortal {...portal} />;
+  return <ShoesPortal {...portal} contactEmail={getShoeProgramContactEmail()} />;
 }

@@ -68,6 +68,7 @@ export interface PublicCampaign {
   year: number;
   status: string;
   physicalDeadline: string;
+  reservationDays: number;
   dropoffLocation: string | null;
   dropoffHours: string | null;
   dropoffContact: string | null;

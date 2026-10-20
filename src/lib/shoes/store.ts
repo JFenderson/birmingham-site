@@ -21,14 +21,14 @@ export function newShoeToken() {
 export async function getPublicShoePortal(chapterId: string) {
   const database = db();
   const { data: campaigns, error } = await database.from("shoe_campaigns")
-    .select("id,code,name,year,status,physical_deadline,dropoff_location,dropoff_hours,dropoff_contact,dropoff_instructions,zeffy_url,zeffy_embed_url,suggested_pair_cents,show_donation_total")
+    .select("id,code,name,year,status,physical_deadline,reservation_days,dropoff_location,dropoff_hours,dropoff_contact,dropoff_instructions,zeffy_url,zeffy_embed_url,suggested_pair_cents,show_donation_total")
     .eq("chapter_id", chapterId).order("year", { ascending: false }).limit(10);
   if (error) throw error;
   const chosen = campaigns?.find((row: { status: string }) => row.status === "published") ?? campaigns?.find((row: { code: string }) => row.code === "sfk-2026");
   if (!chosen) return { campaign: null, requests: [], inventoryGroups: [], progress: null };
   const campaign: PublicCampaign = {
     id: chosen.id, code: chosen.code, name: chosen.name, year: chosen.year, status: chosen.status,
-    physicalDeadline: chosen.physical_deadline, dropoffLocation: chosen.dropoff_location,
+    physicalDeadline: chosen.physical_deadline, reservationDays: chosen.reservation_days, dropoffLocation: chosen.dropoff_location,
     dropoffHours: chosen.dropoff_hours, dropoffContact: chosen.dropoff_contact,
     dropoffInstructions: chosen.dropoff_instructions, zeffyUrl: chosen.zeffy_url,
     zeffyEmbedUrl: chosen.zeffy_embed_url, suggestedPairCents: chosen.suggested_pair_cents,

@@ -43,7 +43,7 @@ const campaignSchema = z.object({
   campaignId: z.string().uuid().optional(), code: z.string().regex(/^[a-z0-9-]{4,60}$/),
   name: z.string().trim().min(5).max(160), year: z.coerce.number().int().min(2026).max(2100),
   status: z.enum(["draft","published","paused","closed","archived"]),
-  deadlineDate: z.string(), reservationDays: z.coerce.number().int().min(1).max(30),
+  deadlineDate: z.string(), reservationDays: z.coerce.number().int().min(1).max(365),
   dropoffLocation: z.string().trim().max(300), dropoffHours: z.string().trim().max(300),
   dropoffContact: z.string().trim().max(300), dropoffInstructions: z.string().trim().max(1000),
   distributionNote: z.string().trim().max(300),

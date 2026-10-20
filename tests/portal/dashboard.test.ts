@@ -26,7 +26,7 @@ function unwrapModuleExports(moduleValue: unknown) {
 
 test("dashboard view model returns the four member dashboard sections", async () => {
   const dashboardPageModule = unwrapModuleExports(
-    (await import("../../src/app/(portal)/dashboard/page.tsx")) as unknown,
+    (await import("../../src/lib/dashboard/sections.ts")) as unknown,
   );
   const buildDashboardSections = dashboardPageModule.buildDashboardSections as
     | ((input: {

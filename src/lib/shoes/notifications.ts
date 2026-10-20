@@ -1,6 +1,6 @@
 import "server-only";
 import { Resend } from "resend";
-import { getEmailFrom, getFormNotificationRecipients, getResendApiKey, getSocialActionDirectorEmail } from "@/lib/email/config";
+import { getEmailFrom, getFormNotificationRecipients, getResendApiKey, getShoeProgramContactEmail } from "@/lib/email/config";
 
 export async function sendShoeReservationNotifications(input: {
   to: string; name: string; phone?: string | undefined; reference: string; token: string;
@@ -12,7 +12,8 @@ export async function sendShoeReservationNotifications(input: {
   const resend = new Resend(key);
   const from = getEmailFrom();
   const expires = new Date(input.expiresAt).toLocaleString("en-US", { timeZone: "America/Chicago", dateStyle: "full", timeStyle: "short" });
-  const recipients = getFormNotificationRecipients(getSocialActionDirectorEmail());
+  const contactEmail = getShoeProgramContactEmail();
+  const recipients = getFormNotificationRecipients(contactEmail);
   const adminUrl = siteUrl ? new URL("/admin/shoes-for-kids", siteUrl).toString() : null;
   const directorText = `A sponsor reserved ${input.pairCount} ${input.pairCount === 1 ? "pair" : "pairs"} for Shoes for Kids.\n\nReservation: ${input.reference}\nSponsor: ${input.name}\nEmail: ${input.to}${input.phone ? `\nPhone: ${input.phone}` : ""}\nHandoff: ${input.deliveryMethod === "coordinator" ? "Coordinate with committee" : "Confirmed drop-off"}\nReservation expires: ${expires} Central Time.${adminUrl ? `\n\nReview the reservation: ${adminUrl}` : ""}\n\nPlease coordinate directly with the sponsor. Do not forward this notice outside the program team.`;
   let sponsorEmailSent = false;
@@ -22,7 +23,7 @@ export async function sendShoeReservationNotifications(input: {
       const result = await resend.emails.send({
         from, to: input.to,
         subject: `Shoes for Kids reservation ${input.reference}`,
-        text: `Hello ${input.name},\n\nYour Shoes for Kids reservation is ${input.reference}. It expires ${expires} Central Time.\n\nView your pairs and delivery instructions: ${url}\n\n${input.deliveryMethod === "coordinator" ? "A program team member will contact you to coordinate the handoff. Please wait for those details before delivering shoes." : "Please follow the confirmed drop-off instructions on your reservation page."}\n\nShoes must be new athletic shoes and match the selected size and width. Kid-friendly styles are encouraged.\n\nTau Sigma Charity Foundation`,
+        text: `Hello ${input.name},\n\nYour Shoes for Kids reservation is ${input.reference}. Deliver your shoes by ${expires} Central Time. Your reservation remains active until then.\n\nView your pairs and delivery instructions: ${url}\n\n${input.deliveryMethod === "coordinator" ? "A program team member will contact you to coordinate the handoff. Please wait for those details before delivering shoes." : "Please follow the confirmed drop-off instructions on your reservation page."}\n\nQuestions? Contact the Social Action director at ${contactEmail}.\n\nShoes must be new athletic shoes and match the selected size and width. Kid-friendly styles are encouraged.\n\nTau Sigma Charity Foundation`,
       });
       if (result.error) throw result.error;
       sponsorEmailSent = true;

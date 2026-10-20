@@ -60,4 +60,8 @@ export function getSocialActionDirectorEmail() {
   return readEnv("SOCIAL_ACTION_DIRECTOR_EMAIL");
 }
 
+export function getShoeProgramContactEmail() {
+  return getSocialActionDirectorEmail() ?? "patrickdknight@gmail.com";
+}
+
 export const EMAIL_FROM = getEmailFrom();

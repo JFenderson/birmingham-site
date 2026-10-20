@@ -23,6 +23,7 @@ async function setup(context: { after: (callback: () => Promise<void>) => void }
   `);
   await db.exec(readFileSync("supabase/migrations/20261019155341_shoes_for_kids.sql", "utf8"));
   await db.exec(readFileSync("supabase/migrations/20261019191918_shoe_request_grade_gender.sql", "utf8"));
+  await db.exec(readFileSync("supabase/migrations/20261020130644_shoes_reserve_until_delivery_deadline.sql", "utf8"));
   await db.exec("grant usage on schema public to service_role, anon, authenticated; set role service_role;");
   const campaign = await db.query<{ id: string }>("update public.shoe_campaigns set status = 'published' where code = 'sfk-2026' returning id");
   return { db, campaignId: campaign.rows[0]!.id };
@@ -49,6 +50,23 @@ test("both adoption methods share atomic request inventory and private tables", 
   await db.exec("reset role; set role anon;");
   await assert.rejects(() => db.query("select * from public.shoe_sponsors"), /permission denied/);
   await assert.rejects(() => db.query("select public.shoe_reserve(null,null,null,null,null)"), /permission denied/);
+});
+
+test("2026 reservations remain active through the December 5 delivery deadline", async (context) => {
+  const { db, campaignId } = await setup(context);
+  const campaign = await db.query<{ physical_deadline: string; reservation_days: number }>(
+    "select physical_deadline,reservation_days from public.shoe_campaigns where id=$1", [campaignId],
+  );
+  assert.equal(campaign.rows[0]?.reservation_days, 365);
+  assert.equal(new Date(campaign.rows[0]!.physical_deadline).toISOString(), "2026-12-06T05:59:59.000Z");
+  const requestId = "55555555-5555-4555-8555-555555555555";
+  await db.query(`insert into public.shoe_requests(id,campaign_id,external_ref,public_ref,school_code,size_system,shoe_size,width,shoe_type)
+    values ($1,$2,'deadline-test','SFK-2026-DEADLINE','SC1','youth','4','standard','Athletic sneakers')`, [requestId, campaignId]);
+  const result = await db.query<{ result: { expiresAt: string } }>(
+    "select public.shoe_reserve($1,$2::jsonb,$3::jsonb,$4,'coordinator') as result",
+    [campaignId, sponsor("deadline@example.com"), JSON.stringify([{ requestId, quantity: 1 }]), "f".repeat(64)],
+  );
+  assert.equal(new Date(result.rows[0]!.result.expiresAt).toISOString(), "2026-12-06T05:59:59.000Z");
 });
 
 test("multi-size reservations are all-or-nothing and expire for reassignment", async (context) => {
