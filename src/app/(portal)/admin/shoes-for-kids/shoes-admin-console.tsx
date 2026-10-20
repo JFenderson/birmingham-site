@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ShoeCheckInScanner } from "./shoe-check-in-scanner";
 import {
@@ -16,7 +16,7 @@ type ActionResult = { success?: string; error?: string; rows?: any[] };
 function stateLabel(value: string) { return value.replaceAll("_", " "); }
 function money(cents: number) { return `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2 })}`; }
 
-export function ShoesAdminConsole({ data, role }: { data: AdminData; role: "super" | "director" | "committee" | "finance" | "distribution" }) {
+export function ShoesAdminConsole({ data, role, initialCheckInCode }: { data: AdminData; role: "super" | "director" | "committee" | "finance" | "distribution"; initialCheckInCode: string | null }) {
   const canCampaign = role === "super" || role === "director";
   const canReservations = canCampaign || role === "committee";
   const canFinance = role === "super" || role === "finance";
@@ -31,6 +31,7 @@ export function ShoesAdminConsole({ data, role }: { data: AdminData; role: "supe
   const [pending, start] = useTransition();
   const router = useRouter();
   const c = data.campaign;
+  const campaignId = c?.id as string | undefined;
 
   function run(form: FormData, action: (form: FormData) => Promise<ActionResult>) {
     setMessage({});
@@ -65,6 +66,24 @@ export function ShoesAdminConsole({ data, role }: { data: AdminData; role: "supe
       } else setMessage({ error: result.error ?? "Reservation lookup failed." });
     });
   }
+
+  useEffect(() => {
+    if (!initialCheckInCode || !campaignId || !canReservations) return;
+    let cancelled = false;
+    const form = new FormData();
+    form.set("campaignId", campaignId);
+    form.set("lookup", initialCheckInCode);
+    void lookupShoeReservationAction(form).then((result) => {
+      if (cancelled) return;
+      setLookupText(initialCheckInCode);
+      if (result.reservation) {
+        setLookedUpReservation(result.reservation);
+        setSearch(result.reservation.reference);
+        setStatusFilter("all");
+      } else setMessage({ error: result.error ?? "Reservation lookup failed." });
+    });
+    return () => { cancelled = true; };
+  }, [initialCheckInCode, campaignId, canReservations]);
 
   const filteredReservations = useMemo(() => [
     ...(lookedUpReservation && !data.reservations.some((reservation) => reservation.id === lookedUpReservation.id) ? [lookedUpReservation] : []),
@@ -111,7 +130,7 @@ export function ShoesAdminConsole({ data, role }: { data: AdminData; role: "supe
         <label className="text-sm font-semibold">Year<input required type="number" name="year" defaultValue={c?.year ?? 2026} className="mt-1 w-full rounded-lg border border-zinc-300 p-3" /></label>
         <label className="text-sm font-semibold">State<select name="status" defaultValue={c?.status ?? "draft"} className="mt-1 w-full rounded-lg border border-zinc-300 p-3">{["draft","published","paused","closed","archived"].map((status) => <option key={status} value={status}>{stateLabel(status)}</option>)}</select></label>
         <label className="text-sm font-semibold">Physical delivery deadline · Central Time<input required type="date" name="deadlineDate" defaultValue={c?.physical_deadline ? new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(c.physical_deadline)) : "2026-12-11"} className="mt-1 w-full rounded-lg border border-zinc-300 p-3" /></label>
-        <label className="text-sm font-semibold">Reservation days<input required type="number" min="1" max="30" name="reservationDays" defaultValue={c?.reservation_days ?? 7} className="mt-1 w-full rounded-lg border border-zinc-300 p-3" /></label>
+        <label className="text-sm font-semibold">Reservation days (capped at delivery deadline)<input required type="number" min="1" max="365" name="reservationDays" defaultValue={c?.reservation_days ?? 7} className="mt-1 w-full rounded-lg border border-zinc-300 p-3" /></label>
         <label className="text-sm font-semibold">Drop-off location<input name="dropoffLocation" defaultValue={c?.dropoff_location ?? ""} className="mt-1 w-full rounded-lg border border-zinc-300 p-3" /></label>
         <label className="text-sm font-semibold">Drop-off hours<input name="dropoffHours" defaultValue={c?.dropoff_hours ?? ""} className="mt-1 w-full rounded-lg border border-zinc-300 p-3" /></label>
         <label className="text-sm font-semibold">Recipient contact<input name="dropoffContact" defaultValue={c?.dropoff_contact ?? ""} className="mt-1 w-full rounded-lg border border-zinc-300 p-3" /></label>

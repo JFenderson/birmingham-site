@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import Image from "next/image";
 import encodeQR from "qr";
+import { shoeCheckInUrl } from "@/lib/shoes/check-in";
 import { genders, gradeLevels, shoeGroupKey, type PublicCampaign, type PublicInventoryGroup, type PublicProgress, type PublicShoeRequest, type ShoeSelection } from "@/lib/shoes/model";
 import { ZeffyDonationEmbed } from "@/components/public/zeffy-donation-embed";
 import { reserveShoes } from "./actions";
@@ -19,8 +20,8 @@ function deadline(value: string) {
   return new Date(value).toLocaleString("en-US", { timeZone: "America/Chicago", dateStyle: "long", timeStyle: "short" });
 }
 
-export function ShoesPortal(initial: PortalData) {
-  const [data, setData] = useState(initial);
+export function ShoesPortal(initial: PortalData & { contactEmail: string }) {
+  const [data, setData] = useState<PortalData>(initial);
   const [mode, setMode] = useState<Mode>("requests");
   const [selected, setSelected] = useState<string[]>([]);
   const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({});
@@ -125,14 +126,15 @@ export function ShoesPortal(initial: PortalData) {
         <ul className="mt-3 list-inside list-disc space-y-1">{confirmation.pairs.map((pair) => <li key={pair}>{pair}</li>)}</ul>
       </div>
       <div className="mt-6 flex flex-wrap items-center gap-5 rounded-2xl border border-slate-200 p-5">
-        <Image unoptimized src={encodeQR(confirmation.checkInCode, "data-url", { scale: 4, border: 4 })} alt={`Check-in QR for ${confirmation.reference}`} width={220} height={220} />
-        <p className="max-w-sm text-sm text-slate-700">Show this code when delivering shoes. It identifies the reservation for authorized staff; it contains no sponsor details. Your printed reference also works.</p>
+        <Image unoptimized src={encodeQR(shoeCheckInUrl(confirmation.checkInCode, window.location.origin), "data-url", { scale: 4, border: 4 })} alt={`Check-in QR for ${confirmation.reference}`} width={220} height={220} />
+        <p className="max-w-sm text-sm text-slate-700">Scan this QR to open the check-in page, or show it when delivering shoes. It contains no sponsor details. Your printed reference also works.</p>
       </div>
       <div className="mt-6 space-y-2 text-slate-700">
         <p>Shoes must be new and match the size, width, and style above. Original packaging is preferred. Used shoes cannot be accepted.</p>
         {confirmation.deliveryMethod === "coordinator" ? <p>A committee member will coordinate the handoff with you.</p> : campaign?.dropoffLocation ? <p><strong>Drop-off:</strong> {campaign.dropoffLocation}</p> : <p>A coordinator will confirm the drop-off location. Please do not deliver shoes until it is confirmed.</p>}
         {campaign?.dropoffHours ? <p><strong>Hours:</strong> {campaign.dropoffHours}</p> : null}
         {campaign?.dropoffInstructions ? <p>{campaign.dropoffInstructions}</p> : null}
+        <p>Questions? Contact the Social Action director at <a className="underline" href={`mailto:${initial.contactEmail}`}>{initial.contactEmail}</a>.</p>
       </div>
       <p className="mt-6 text-sm text-slate-600">{confirmation.emailSent ? "A confirmation email was sent." : "Email delivery is unavailable; save or print this confirmation now."}</p>
       <div className="mt-6 flex flex-wrap gap-3 print:hidden">
@@ -215,7 +217,7 @@ export function ShoesPortal(initial: PortalData) {
                 {sponsorType === "organization" ? <label className="text-sm font-semibold sm:col-span-2">Organization name <input required name="organizationName" maxLength={160} className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-3" /></label> : null}
                 {campaign.dropoffLocation ? <label className="text-sm font-semibold sm:col-span-2">Delivery method <select name="deliveryMethod" className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-3"><option value="dropoff">Deliver to confirmed drop-off location</option><option value="coordinator">Coordinate handoff with committee</option></select></label> : <div className="sm:col-span-2"><input type="hidden" name="deliveryMethod" value="coordinator" /><p className="font-semibold">Delivery: committee-coordinated handoff</p><p className="mt-1 text-sm text-slate-600">A program team member will contact you with handoff details after you reserve.</p></div>}
                 <div className="space-y-3 text-sm sm:col-span-2">
-                  <p><strong>Delivery deadline:</strong> {deadline(campaign.physicalDeadline)} Central Time. Each reservation may expire earlier under the seven-day reservation window.</p>
+                  <p><strong>Delivery deadline:</strong> {deadline(campaign.physicalDeadline)} Central Time. {campaign.reservationDays >= 365 ? "Reservations stay active until this deadline." : `Reservations are held for up to ${campaign.reservationDays} days.`}</p>
                   <p>Shoes must be new athletic shoes and match the selected size and width. Kid-friendly styles are encouraged. Used shoes are not accepted. Original packaging is preferred.</p>
                   {campaign.dropoffLocation ? <p><strong>Confirmed drop-off:</strong> {campaign.dropoffLocation}{campaign.dropoffHours ? ` · ${campaign.dropoffHours}` : ""}</p> : <p>The committee will arrange the handoff with you. Please wait for those details before delivering shoes.</p>}
                   <label className="flex gap-2"><input required type="checkbox" name="deliveryAgreement" /> I agree to the shoe and delivery requirements.</label>
