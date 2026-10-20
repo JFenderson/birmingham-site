@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentChapter } from "@/lib/tenant/get-chapter";
 import { getPublishedEvents } from "@/sanity/queries";
+import { getSanityImageUrl } from "@/sanity/image-url";
 
 const COMMUNITY_EVENTS = [
   {
@@ -40,13 +41,27 @@ export default async function CommunityEventsPage() {
 
         <div className="mt-10 space-y-6">
           {events.map((event) => {
+            const image = "_id" in event ? event.image : null;
+            const imageAlt = image?.alt?.trim();
+            const imageUrl = image && imageAlt ? getSanityImageUrl(image, 640, 880, "max") : null;
+            const fullImageUrl = image && imageAlt ? getSanityImageUrl(image, 1600, 2200, "max") : null;
             const className =
               "block rounded-md border border-zinc-200 bg-[#f8f9fc] p-6 shadow-sm transition-transform hover:-translate-y-0.5 sm:p-8";
             const content = (
-              <>
-                <h2 className="text-2xl font-bold text-[#013594]">{event.title}</h2>
-                <p className="mt-3 text-[15px] leading-8 text-zinc-700">{event.description}</p>
-              </>
+              <div className={imageUrl ? "grid gap-6 sm:grid-cols-[minmax(0,16rem)_1fr] sm:items-center" : undefined}>
+                {imageUrl && imageAlt ? (
+                  <a href={fullImageUrl ?? imageUrl} target="_blank" rel="noopener noreferrer" className="group block text-center">
+                    {/* Preserve the whole flyer, including text near its edges. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={imageUrl} alt={imageAlt} loading="lazy" decoding="async" className="mx-auto max-h-80 w-auto max-w-full rounded-md object-contain shadow-sm" />
+                    <span className="mt-3 inline-block text-sm font-semibold text-[#013594] underline-offset-2 group-hover:underline">View image full size</span>
+                  </a>
+                ) : null}
+                <div>
+                  <h2 className="text-2xl font-bold text-[#013594]">{event.title}</h2>
+                  <p className="mt-3 text-[15px] leading-8 text-zinc-700">{event.description}</p>
+                </div>
+              </div>
             );
 
             return "href" in event ? (

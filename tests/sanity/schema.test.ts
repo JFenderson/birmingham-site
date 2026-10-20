@@ -93,6 +93,15 @@ function validationFor(field: SchemaField): ValidationRuleRecorder {
   return rule;
 }
 
+test("community events can include an accessible flyer without requiring one", () => {
+  const image = schemaField(schemaType("event"), "image");
+  assert.equal(image.type, "image");
+  const rule = validationFor(image);
+  assert.equal(rule.customValidators[0]!(undefined, {}), true);
+  assert.notEqual(rule.customValidators[0]!({ asset: { _ref: "image-ref" }, alt: "" }, {}), true);
+  assert.equal(rule.customValidators[0]!({ asset: { _ref: "image-ref" }, alt: "Event flyer" }, {}), true);
+});
+
 test("chapter options include root and configured collegiate slugs in a readable list", () => {
   const options = getChapterSlugOptions({
     CHAPTER_SLUG_MAP:
