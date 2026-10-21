@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getCurrentChapter } from "@/lib/tenant/get-chapter";
 import { getPublishedEvents } from "@/sanity/queries";
 import { getSanityImageUrl } from "@/sanity/image-url";
+import { isScholarshipOpen, SCHOLARSHIP_DEADLINE_LABEL } from "@/lib/scholarship/application";
 
 const COMMUNITY_EVENTS = [
   {
@@ -38,6 +39,13 @@ export default async function CommunityEventsPage() {
         <p className="mx-auto mt-4 max-w-3xl text-center text-[15px] leading-8 text-zinc-600">
           Learn more about our signature outreach programs and year-round service commitments.
         </p>
+
+        {isScholarshipOpen() && (
+          <Link href="/community-events/scholarship" className="mt-8 block rounded-xl border border-blue-200 bg-blue-50 p-5 text-[#013594] transition-colors hover:bg-blue-100">
+            <span className="block text-lg font-bold">Sigma Sapphire Scholarship applications are open</span>
+            <span className="mt-1 block text-sm">Apply by {SCHOLARSHIP_DEADLINE_LABEL}. View requirements and start your application →</span>
+          </Link>
+        )}
 
         <div className="mt-10 space-y-6">
           {events.map((event) => {
