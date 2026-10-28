@@ -9,7 +9,7 @@ This site uses Next.js App Router, Supabase Auth/Postgres, Sanity for editorial 
 3. The existing member admin area manages campaign settings, imports, check-in, purchases, distribution, staff roles, and verified Zeffy CSV records.
 4. A Vercel Cron releases expired physical reservations daily. The reservation transaction also releases overdue items if the scheduled job is late.
 
-The migration was applied to the connected `birmingham-site` Supabase project on October 19, 2026. The 2026 shoe adoption campaign was published that day with 36 anonymous requests from the first Glen Iris list. The active Zeffy donation URL remains configured. The original school list has 81 entries; 45 without sizes are waiting for an updated list. The sponsor confirmation uses the existing Resend setup, and two program notice recipients are configured in Vercel production.
+The migration was applied to the connected `birmingham-site` Supabase project on October 19, 2026. The 2026 shoe adoption campaign was published that day with 36 anonymous requests from the first Glen Iris list. On October 28, the finalized school list was reconciled against the original 81 student IDs and 35 requests were added: 16 returning students whose sizes were previously missing and 19 newly listed students. The live campaign now has 71 unique requests. One identical duplicate row in the finalized document was excluded. The 29 original entries absent from the finalized list had no public requests. The active Zeffy donation URL remains configured. The sponsor confirmation uses the existing Resend setup, and two program notice recipients are configured in Vercel production.
 
 ## Database and security
 
@@ -45,7 +45,7 @@ Accepted grades are Pre-K, Kindergarten, and 1st through 5th Grade. Gender accep
 
 When a school cannot provide stable anonymous IDs, the committee assigns IDs in a private working list and maintains a separate, protected name-to-ID crosswalk. Match each revised list against that crosswalk before importing. Keep the same ID for each returning request, assign new IDs only to new requests, and review changed spellings manually. A row missing from a later import is not deleted automatically. Abbreviated names may appear in the staff working list but must be omitted from the import file and public portal.
 
-For the first Glen Iris import, the owner approved interpreting the school's 9–13 “youth” labels as little-kid sizes, 1–4 “child” and 4 “youth” as youth sizes, and “women” as adult women's sizes. The eight women's requests use the shoe type “Women's athletic shoes” so the public label is unambiguous. All 36 imported rows use standard width because the school supplied no width values; verify that assumption against the updated list and reimport corrections while requests are available. New athletic shoes are required, with kid-friendly styles encouraged. The public page offers committee-coordinated handoff until a drop-off location is confirmed.
+For Glen Iris, the owner approved interpreting the school's 9–13 “youth” labels as little-kid sizes, 1–4 “child” and 4 “youth” as youth sizes, and “women” as adult women's sizes. The finalized list also includes two men's sizes, shown as “Men's athletic shoes.” Two requests explicitly specify wide width; all others use standard width because no width was supplied. New athletic shoes are required, with kid-friendly styles encouraged. The public page offers committee-coordinated handoff until a drop-off location is confirmed. Keep the private ID crosswalk with the school documents outside the repository; the public import contains no student names.
 
 ### Reservations and physical shoes
 
@@ -65,7 +65,7 @@ Use ISO 8601 for `Paid At` and `USD` for currency. Supported statuses are `succe
 
 ## Current limits and follow-up work
 
-- The 2026 campaign is published with 36 sized requests from the first Glen Iris list. The 45 entries lacking sizes remain out of the public inventory. Match the next school list against the private stable-ID crosswalk before importing additions or corrections.
+- The 2026 campaign is published with 71 unique requests from the finalized Glen Iris list. Match any further school update against the private stable-ID crosswalk before importing additions or corrections. The owner confirmed that the identical entries on finalized-list rows 105 and 107 represent one pair, so only one request was imported.
 - API/webhook reconciliation requires Zeffy account credentials and verification details; the implemented path is manual CSV reconciliation.
 - Resend confirmation uses the site's existing configured provider. Reminder, thank-you, cancellation, and donation emails are not yet automated.
 - Check-in supports QR camera scanning, reference lookup, and manual item selection. Camera access requires HTTPS and browser permission; the printed reference remains a fallback.
